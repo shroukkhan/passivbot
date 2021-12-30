@@ -3,9 +3,9 @@
   market_type: futures
 
   # exchange from api-keys.json is used
-  user: your_user_name
+  user: binance_01
 
-  symbol: specify_symbol
+  symbol: BTCUSDT
   latency_simulation_ms: 1000
 
   # specify starting balance in terms of margin token (i.e. usdt for usdt-m, coin for inverse coin-m)
@@ -16,6 +16,9 @@
 
   # format YYYY-MM-DDTHH:mm:ss
   # e.g. 2020-02-18T19:34:59
-  start_date: 2021-01-01
-  end_date: 2021-08-23
+  start_date: 2021-12-01
+  end_date: 2021-12-30
+
+  # non default historical data path
+  # historical_data_path: "/mnt/d/"
 }

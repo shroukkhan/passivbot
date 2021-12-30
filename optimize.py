@@ -175,7 +175,7 @@ def single_sliding_window_run(config, data, do_print=True) -> (float, [dict]):
         analysis['score'] *= (analysis['n_days'] / config['n_days'])
         analyses.append(analysis)
         objective = np.sum([e['score'] for e in analyses]) * max(1.01, config['reward_multiplier_base']) ** (z + 1)
-        #objective = np.mean([e['score'] for e in analyses]) * max(1.01, config['reward_multiplier_base']) ** (z + 1)
+        # objective = np.mean([e['score'] for e in analyses]) * max(1.01, config['reward_multiplier_base']) ** (z + 1)
         analyses[-1]['objective'] = objective
         line = (f'{str(z).rjust(3, " ")} adg {analysis["average_daily_gain"]:.4f}, '
                 f'bkr {analysis["closest_bkr"]:.4f}, '
@@ -264,7 +264,7 @@ def backtest_tune(data: np.ndarray, config: dict, current_best: Union[dict, list
             current_best = clean_start_config(current_best, config)
             current_best_params.append(current_best)
 
-    ray.init(num_cpus=config['num_cpus'],
+    ray.init(num_cpus=config['num_cpus'], dashboard_host="0.0.0.0",
              object_store_memory=memory if memory > 4000000000 else None)  # , logging_level=logging.FATAL, log_to_driver=False)
     pso = ng.optimizers.ConfiguredPSO(transform='identity', popsize=config['n_particles'], omega=omega, phip=phi1,
                                       phig=phi2)

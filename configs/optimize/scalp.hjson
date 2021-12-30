@@ -36,7 +36,7 @@
 
   # will override any starting configs' long/shrt enabled parameter
   do_long: true
-  do_shrt: false
+  do_shrt: true
 
   # if lower and upper bound are set to same value, it's treated as a fixed variable
   ranges:

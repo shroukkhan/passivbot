@@ -394,7 +394,7 @@ class BinanceBot(Bot):
                       'timestamp': int(t['T']), 'is_buyer_maker': t['m']}
                      for t in fetched]
             if do_print:
-                print_(['fetched ticks', self.symbol, ticks[0]['trade_id'],
+                print_(['[Future] Fetched ticks', self.symbol, ticks[0]['trade_id'],
                         ts_to_date(float(ticks[0]['timestamp']) / 1000)])
         except Exception as e:
             print('error fetching ticks b', e, fetched)

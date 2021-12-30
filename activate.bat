@@ -1,0 +1,1 @@
+C:\Users\skhan\python-practice\passivbot\Scripts\activate.bat
