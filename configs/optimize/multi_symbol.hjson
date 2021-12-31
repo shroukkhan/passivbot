@@ -5,24 +5,25 @@
   bandwidth: 0.07
   pitch_adjusting_rate: 0.24
 
-  n_cpus: 2
+  n_cpus: 10
   iters: 10000
 
   maximum_pa_closeness_mean_long: 0.03
   maximum_pa_closeness_mean_shrt: 0.03
 
 
-  do_long: false
+  do_long: true
   do_shrt: true
 
   # top 42 volume symbols 2021-10-04 to 2021-10-24
-  symbols: ["BTCUSDT", "ETHUSDT", "SOLUSDT", "1000SHIBUSDT", "AXSUSDT", "FTMUSDT", "XRPUSDT",
-            "DOTUSDT", "BNBUSDT", "ADAUSDT", "DYDXUSDT", "LUNAUSDT", "DOGEUSDT", "AVAXUSDT",
-            "FILUSDT", "ATOMUSDT", "XTZUSDT", "MATICUSDT", "LINKUSDT", "LTCUSDT", "EOSUSDT",
-            "OMGUSDT", "CELRUSDT", "COTIUSDT", "SFPUSDT", "ETCUSDT", "KEEPUSDT", "ONEUSDT",
-            "UNIUSDT", "ALGOUSDT", "ICPUSDT", "BCHUSDT", "NEARUSDT", "XLMUSDT", "ALICEUSDT",
-            "VETUSDT", "TRXUSDT", "SUSHIUSDT", "THETAUSDT", "GALAUSDT", "RUNEUSDT", "AAVEUSDT",]
-  symbols: ["XMRUSDT", "XTZUSDT"]
+  symbols: ["NEARUSDT","SUSHIUSDT","SXPUSDT","LUNAUSDT","SANDUSDT",
+  "MATICUSDT","ATOMUSDT","FTMUSDT","ALGOUSDT","BTCBUSD","DOTUSDT",
+  "GALAUSDT","AVAXUSDT","SOLUSDT","XRPUSDT","ADAUSDT","1000SHIBUSDT",
+  "BNBUSDT","MANAUSDT","CRVUSDT","ETHBUSD","LINKUSDT","AAVEUSDT",
+  "DOGEUSDT","DYDXUSDT","FILUSDT","ICXUSDT","LTCUSDT","CHRUSDT",
+  "PEOPLEUSDT","ANTUSDT","EOSUSDT","ICPUSDT","UNIUSDT","IOTAUSDT",
+  "ALICEUSDT","YFIUSDT","XTZUSDT"]
+
 
   ranges:
   {

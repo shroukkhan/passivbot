@@ -1,0 +1,1 @@
+srouce /mnt/c/AgodaGit/passivbot/bin/activate
