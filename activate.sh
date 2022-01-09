@@ -1,1 +1,1 @@
-srouce /mnt/c/AgodaGit/passivbot/bin/activate
+source /mnt/c/AgodaGit/passivbot/bin/activate
