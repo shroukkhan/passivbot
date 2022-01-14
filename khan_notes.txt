@@ -1,3 +1,17 @@
 Param descriptions: https://discord.com/channels/804826506551230475/804832865320960060/928042256970162236
 
 Volatility site: https://www.shufflup.org/volatility_vol.php
+
+
+Configurations:
+https://github.com/JohnKearney1/PassivBot-Configurations
+
+https://github.com/hoeckxer/passivbot_configs
+
+--
+
+pip3 install jupyterlab
+juyper lab
+
+copy code into "Configure jupyter server"
+Now debug..it works :)

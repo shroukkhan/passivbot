@@ -5,7 +5,6 @@ os.environ['NOJIT'] = 'false'
 import argparse
 import asyncio
 import glob
-import json
 import pprint
 import sys
 from time import time
@@ -114,17 +113,17 @@ def objective_function(analysis: dict, config: dict, metric='adjusted_daily_gain
 
     min_iter_array = []
     if config['do_long']:
-        min_iter_array.append(('hrs_stuck_max_long', 'hrs_stuck_max_long' ))
-        min_iter_array.append(('hrs_stuck_avg_long', 'hrs_stuck_avg_long' ))
+        min_iter_array.append(('hrs_stuck_max_long', 'hrs_stuck_max_long'))
+        min_iter_array.append(('hrs_stuck_avg_long', 'hrs_stuck_avg_long'))
     if config['do_shrt']:
-        min_iter_array.append(('hrs_stuck_max_shrt', 'hrs_stuck_max_shrt' ))
-        min_iter_array.append(('hrs_stuck_avg_shrt', 'hrs_stuck_avg_shrt' ))
+        min_iter_array.append(('hrs_stuck_max_shrt', 'hrs_stuck_max_shrt'))
+        min_iter_array.append(('hrs_stuck_avg_shrt', 'hrs_stuck_avg_shrt'))
 
     for ckey, akey in min_iter_array:
         # minimize/break these
         if config[ckey] != 0.0:
-            #new_obj = obj * min(1.0, config[ckey] / analysis[akey])
-            #obj = -abs(new_obj) if (obj < 0.0 or analysis[akey] < 0.0) else new_obj
+            # new_obj = obj * min(1.0, config[ckey] / analysis[akey])
+            # obj = -abs(new_obj) if (obj < 0.0 or analysis[akey] < 0.0) else new_obj
             if config['break_early_factor'] != 0.0 \
                     and analysis[akey] > config[ckey] * (1 + config['break_early_factor']):
                 break_early = True
@@ -134,8 +133,8 @@ def objective_function(analysis: dict, config: dict, metric='adjusted_daily_gain
                        ('minimum_equity_balance_ratio', 'eqbal_ratio_min')]:
         # maximize/break these
         if config[ckey] != 0.0:
-            #new_obj = obj * min(1.0, analysis[akey] / config[ckey])
-            #obj = -abs(new_obj) if (obj < 0.0 or analysis[akey] < 0.0) else new_obj
+            # new_obj = obj * min(1.0, analysis[akey] / config[ckey])
+            # obj = -abs(new_obj) if (obj < 0.0 or analysis[akey] < 0.0) else new_obj
             if config['break_early_factor'] != 0.0 \
                     and analysis[akey] < config[ckey] * (1 - config['break_early_factor']):
                 break_early = True
@@ -145,11 +144,13 @@ def objective_function(analysis: dict, config: dict, metric='adjusted_daily_gain
         if analysis[akey] < config[ckey]:
             break_early = True
             line += f" broke on {ckey} {round_dynamic(analysis[akey], 5)}"
-    #pa_closeness objective search
+    # pa_closeness objective search
     pa_closeness_long = analysis['pa_closeness_mean_long']
     pa_closeness_shrt = analysis['pa_closeness_mean_shrt']
     adg = analysis['average_daily_gain']
-    obj = adg * (min(1.0, config['maximum_pa_closeness_mean_long'] / pa_closeness_long)**2 if config['do_long'] else 1) * (min(1.0, config['maximum_pa_closeness_mean_shrt'] / pa_closeness_shrt)**2 if config['do_shrt'] else 1)  
+    obj = adg * (
+        min(1.0, config['maximum_pa_closeness_mean_long'] / pa_closeness_long) ** 2 if config['do_long'] else 1) * (
+              min(1.0, config['maximum_pa_closeness_mean_shrt'] / pa_closeness_shrt) ** 2 if config['do_shrt'] else 1)
     return obj, break_early, line
 
 
@@ -252,7 +253,7 @@ def backtest_tune(data: np.ndarray, config: dict, current_best: Union[dict, list
             current_best = clean_start_config(current_best, config)
             current_best_params.append(current_best)
 
-    ray.init(num_cpus=config['num_cpus'],
+    ray.init(num_cpus=config['num_cpus'], log_to_driver=False,
              object_store_memory=memory if memory > 4000000000 else None)  # , logging_level=logging.FATAL, log_to_driver=False)
     pso = ng.optimizers.ConfiguredPSO(transform='identity', popsize=config['n_particles'], omega=omega, phip=phi1,
                                       phig=phi2)
@@ -261,7 +262,6 @@ def backtest_tune(data: np.ndarray, config: dict, current_best: Union[dict, list
     scheduler = AsyncHyperBandScheduler()
 
     print('\n\nsimple sliding window optimization\n\n')
-
 
     parameter_columns = []
     for side in ['long', 'shrt']:
@@ -324,7 +324,7 @@ async def execute_optimize(config):
                        'end_date', 'latency_simulation_ms',
                        'do_long', 'do_shrt',
                        'minimum_bankruptcy_distance', 'hrs_stuck_max_long',
-                       'hrs_stuck_max_shrt', 'hrs_stuck_avg_long','hrs_stuck_avg_shrt', 
+                       'hrs_stuck_max_shrt', 'hrs_stuck_avg_long', 'hrs_stuck_avg_shrt',
                        'maximum_pa_closeness_mean_long', 'maximum_pa_closeness_mean_shrt',
                        'iters', 'n_particles',
                        'sliding_window_days', 'metric',

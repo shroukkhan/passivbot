@@ -1,7 +1,7 @@
 {
   # pso options
   iters: 10000
-  num_cpus: 8
+  num_cpus: 10
   options: {"c1": 1.4962, "c2": 1.4962, "w": 0.7298}
   n_particles: 48
 
@@ -33,7 +33,7 @@
 
   # will override any starting configs' long/shrt enabled parameter
   do_long: true
-  do_shrt: true
+  do_shrt: false
 
   # if lower and upper bound are set to same value, it's treated as a fixed variable
   ranges:
