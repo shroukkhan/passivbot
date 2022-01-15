@@ -4,19 +4,11 @@ import subprocess
 def main():
     kwargs_list = [
         {'optimize_config_path': 'configs/optimize/scalp.hjson',
-         'symbol': 'XMRUSDT',
-         'starting_balance': 1000.0},
+         'symbol': 'XTZUSDT'},
         {'optimize_config_path': 'configs/optimize/scalp.hjson',
-         'symbol': 'BTCUSD_PERP',
-         'starting_balance': 0.1},
-        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
-         'symbol': 'ADABTC',
-         'starting_balance': 0.1,
-         'market_type': 'spot'},
+         'symbol': 'ATOMUSDT'},
         {'optimize_config_path': 'configs/optimize/scalp.hjson',
-         'user': 'ebybit',
-         'symbol': 'EOSUSD',
-         'starting_balance': 100.0},
+         'symbol': 'XLMUSDT'},
     ]
 
     for kwargs in kwargs_list:

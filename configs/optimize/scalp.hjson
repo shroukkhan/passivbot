@@ -1,7 +1,7 @@
 {
   # pso options
   iters: 15000
-  num_cpus: 4
+  num_cpus: 10
   options: {"c1": 1.4962, "c2": 1.4962, "w": 0.7298}
   n_particles: 48
 
