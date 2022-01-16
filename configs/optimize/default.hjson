@@ -1,7 +1,7 @@
 {
   # pso options
   iters: 10000
-  num_cpus: 4
+  num_cpus: 10
   options: {"c1": 1.4962, "c2": 1.4962, "w": 0.7298}
   n_particles: 48
 
@@ -37,11 +37,11 @@
   {
 
     long£grid_span: [0.09, 0.4]
-    long£pbr_limit: [0.2, 0.2]
+    long£pbr_limit: [0.1, 0.2]
     long£max_n_entry_orders: [10, 10]
     long£initial_qty_pct: [0.001, 0.1]
     long£eprice_pprice_diff: [0.002, 0.02]
-    long£secondary_pbr_allocation: [0.5, 0.5]
+    long£secondary_pbr_allocation: [0.2, 0.5]
     long£secondary_pprice_diff: [0.3, 0.5]
     long£eprice_exp_base: [1.618034, 1.618034]
     long£min_markup: [0.0005, 0.005]

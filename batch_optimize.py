@@ -1,15 +1,13 @@
-import subprocess
 import os
 import shutil
+import subprocess
+
 from procedures import make_get_filepath
 
+
 def main():
-    tokens = [
-        'BTS', 'LTC', 'STORJ', 'BAT', 'DASH', 'SOL', 'AVAX', 'LUNA', 'DYDX', 'COMP',
-        'FIL', 'LINK', 'MATIC', 'LIT', 'NEO', 'OMG', 'XRP', 'HBAR', 'MANA', 'IOTA',
-        'ADA', 'QTUM', 'SXP', 'XEM', 'EOS', 'XMR', 'ETC', 'XLM', 'MKR', 'BNB',
-        'AAVE', 'ALGO', 'TRX', 'ZEC','XTZ', 'BCH']
-    start_from = 'BTS'
+    tokens = ['DASH', 'LINK', 'XTZ', 'ATOM', 'MANA']
+    start_from = 'DASH'
     symbols = tokens[tokens.index(start_from):] + tokens[:tokens.index(start_from)]
 
     quote = 'USDT'
@@ -20,9 +18,9 @@ def main():
     kwargs_list = [{
         'start': cfgs_dir,
         'symbol': symbol,
-        #'starting_balance': 10000.0,
-        #'end_date': '2021-09-20T15:00',
-        #'start_date': '2021-03-01',
+        'starting_balance': 60.0,
+        'start_date': '2021-07-01',
+        'end_date': '2022-01-15',
     } for symbol in symbols]
     for kwargs in kwargs_list:
         formatted = f"python3 optimize.py "
