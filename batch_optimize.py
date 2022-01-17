@@ -3,12 +3,20 @@ import subprocess
 
 def main():
     kwargs_list = [
-        {'optimize_config_path': 'configs/optimize/scalp.hjson',
-         'symbol': 'XTZUSDT'},
-        {'optimize_config_path': 'configs/optimize/scalp.hjson',
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
          'symbol': 'ATOMUSDT'},
-        {'optimize_config_path': 'configs/optimize/scalp.hjson',
-         'symbol': 'XLMUSDT'},
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
+         'symbol': 'DASHUSDT'},
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
+         'symbol': 'DYDXUSDT'},
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
+         'symbol': 'LINKUSDT'},
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
+         'symbol': 'MANAUSDT'},
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
+         'symbol': 'MATICUSDT'},
+        {'optimize_config_path': 'configs/optimize/vanilla.hjson',
+         'symbol': 'XTZUSDT'},
     ]
 
     for kwargs in kwargs_list:
