@@ -6,8 +6,8 @@ from procedures import make_get_filepath
 
 
 def main():
-    tokens = ['DASH', 'LINK', 'XTZ', 'ATOM', 'MANA']
-    start_from = 'DASH'
+    tokens = ['DASH', 'LINK', 'XTZ', 'ATOM', 'MANA','AAVE','AXS','OMG','DOGE','ADA','SOL']
+    start_from = 'AAVE'
     symbols = tokens[tokens.index(start_from):] + tokens[:tokens.index(start_from)]
 
     quote = 'USDT'
