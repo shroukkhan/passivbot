@@ -5,7 +5,7 @@
   bandwidth: 0.07
   pitch_adjusting_rate: 0.24
 
-  n_cpus: 7
+  n_cpus: 10
   iters: 10000
 
   # score formula:

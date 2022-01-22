@@ -5,16 +5,17 @@
   # exchange from api-keys.json is used
   user: binance_01
 
-  symbol: specify_symbol
-  latency_simulation_ms: 1000
+  symbol: BTCUSDT
+  latency_simulation_ms: 250
 
   # specify starting balance in terms of margin token (i.e. usdt for usdt-m, coin for inverse coin-m)
-  starting_balance: 10000.0
+  starting_balance: 60.0
 
   # format YYYY-MM-DDTHH:mm:ss
+  # format YYYY-MM-DDTHH:mm:ss
   # e.g. 2020-02-18T19:34:59
-  start_date: 2021-05-01
-  end_date: 2022-01-05
+  start_date: 2021-07-01
+  end_date: 2022-01-18
 
   # non default historical data path
   # historical_data_path: "/mnt/d/"
