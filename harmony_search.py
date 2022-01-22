@@ -10,7 +10,7 @@ import numpy as np
 import traceback
 from copy import deepcopy
 from backtest import backtest
-from multiprocessing import Pool
+from multiprocessing import Pool, shared_memory
 from njit_funcs import round_dynamic
 from pure_funcs import (
     analyze_fills,
@@ -38,7 +38,7 @@ import logging.config
 logging.config.dictConfig({"version": 1, "disable_existing_loggers": True})
 
 
-def backtest_wrap(config_: dict):
+def backtest_wrap(config_: dict, ticks_caches: dict):
     """
     loads historical data from disk, runs backtest and returns relevant metrics
     """
@@ -56,15 +56,17 @@ def backtest_wrap(config_: dict):
         },
         **{k: v for k, v in config_["market_specific_settings"].items()},
     }
-    if config["symbol"] in config_["ticks_caches"]:
-        ticks = config_["ticks_caches"][config["symbol"]]
+    if config["symbol"] in ticks_caches:
+        ticks = ticks_caches[config["symbol"]]
     else:
         ticks = np.load(config_["ticks_cache_fname"])
     try:
         fills, stats = backtest(config, ticks)
         fdf, sdf, analysis = analyze_fills(fills, stats, config)
-        pa_distance_long = analysis["pa_distance_mean_long"]
-        pa_distance_short = analysis["pa_distance_mean_short"]
+        pa_distance_mean_long = analysis["pa_distance_mean_long"]
+        pa_distance_mean_short = analysis["pa_distance_mean_short"]
+        pad_std_long = analysis["pa_distance_std_long"]
+        pad_std_short = analysis["pa_distance_std_short"]
         adg_long = analysis["adg_long"]
         adg_short = analysis["adg_short"]
         """
@@ -72,20 +74,25 @@ def backtest_wrap(config_: dict):
             f.write(json.dumps({"config": denumpyize(config), "analysis": analysis}) + "\n")
         """
         logging.debug(
-            f"backtested {config['symbol']: <12} pa distance long {pa_distance_long:.6f} "
-            + f"pa distance short {pa_distance_short:.6f} adg long {adg_long:.6f} adg short {adg_short:.6f}"
+            f"backtested {config['symbol']: <12} pa distance long {pa_distance_mean_long:.6f} "
+            + f"pa distance short {pa_distance_mean_short:.6f} adg long {adg_long:.6f} "
+            + f"adg short {adg_short:.6f} std long {pad_std_long:.5f} "
+            + f"std short {pad_std_short:.5f}"
         )
     except Exception as e:
         logging.error(f'error with {config["symbol"]} {e}')
         logging.error("config")
         traceback.print_exc()
         adg_long, adg_short = 0.0, 0.0
-        pa_distance_long = pa_distance_short = 100.0
+        pa_distance_mean_long = pa_distance_mean_short = 100.0
+        pad_std_long = pad_std_short = 100.0
         with open(make_get_filepath("tmp/harmony_search_errors.txt"), "a") as f:
             f.write(json.dumps([time(), "error", str(e), denumpyize(config)]) + "\n")
     return {
-        "pa_distance_long": pa_distance_long,
-        "pa_distance_short": pa_distance_short,
+        "pa_distance_mean_long": pa_distance_mean_long,
+        "pa_distance_mean_short": pa_distance_mean_short,
+        "pa_distance_std_long": pad_std_long,
+        "pa_distance_std_short": pad_std_short,
         "adg_long": adg_long,
         "adg_short": adg_short,
     }
@@ -134,7 +141,8 @@ class HarmonySearch:
             else {}
         )
         """
-        self.ticks_caches = {}  # todo implement shared memory
+        self.ticks_caches = {}
+        self.shms = {}  # shared memories
         self.current_best_config = None
 
         # [{'config': dict, 'task': process, 'id_key': tuple}]
@@ -161,30 +169,55 @@ class HarmonySearch:
         if set(results) == set(self.symbols):
             # completed multisymbol iter
             adg_mean_long = np.mean([v["adg_long"] for v in results.values()])
+            pad_std_long = np.mean(
+                [
+                    max(self.config["maximum_pa_distance_std_long"], v["pa_distance_std_long"])
+                    for v in results.values()
+                ]
+            )
             pad_mean_long = np.mean(
                 [
-                    max(self.config["maximum_pa_distance_mean_long"], v["pa_distance_long"])
+                    max(self.config["maximum_pa_distance_mean_long"], v["pa_distance_mean_long"])
                     for v in results.values()
                 ]
-            )
-            score_long = -adg_mean_long * min(
-                1.0, self.config["maximum_pa_distance_mean_long"] / pad_mean_long
             )
             adg_mean_short = np.mean([v["adg_short"] for v in results.values()])
-            pad_mean_short = np.mean(
+            pad_std_short = np.mean(
                 [
-                    max(self.config["maximum_pa_distance_mean_short"], v["pa_distance_short"])
+                    max(self.config["maximum_pa_distance_std_short"], v["pa_distance_std_short"])
                     for v in results.values()
                 ]
             )
-            score_short = -adg_mean_short * min(
-                1.0, self.config["maximum_pa_distance_mean_short"] / pad_mean_short
+            pad_mean_short = np.mean(
+                [
+                    max(self.config["maximum_pa_distance_mean_short"], v["pa_distance_mean_short"])
+                    for v in results.values()
+                ]
             )
+            if self.config["score_formula"] == "adg_pad_mean":
+                score_long = -adg_mean_long * min(
+                    1.0, self.config["maximum_pa_distance_mean_long"] / pad_mean_long
+                )
+                score_short = -adg_mean_short * min(
+                    1.0, self.config["maximum_pa_distance_mean_short"] / pad_mean_short
+                )
+            elif self.config["score_formula"] == "adg_pad_std":
+                score_long = -adg_mean_long * min(
+                    1.0, self.config["maximum_pa_distance_std_long"] / pad_std_long
+                )
+                score_short = -adg_mean_short * min(
+                    1.0, self.config["maximum_pa_distance_std_short"] / pad_std_short
+                )
+            else:
+                raise Exception(f"unknown score formula {self.config['score_formula']}")
+
             line = f"completed multisymbol iter {cfg['config_no']} "
             if self.do_long:
-                line += f"- adg long {adg_mean_long:.6f} pad long {pad_mean_long:.6f} score long {score_long:.7f} "
+                line += f"- adg long {adg_mean_long:.6f} pad long {pad_mean_long:.6f} std long "
+                line += f"{pad_std_long:.5f} score long {score_long:.7f} "
             if self.do_short:
-                line += f"- adg short {adg_mean_short:.6f} pad short {pad_mean_short:.6f} score short {score_short:.7f}"
+                line += f"- adg short {adg_mean_short:.6f} pad short {pad_mean_short:.6f} std short "
+                line += f"{pad_std_short:.5f} score short {score_short:.7f}"
             logging.debug(line)
             # check whether initial eval or new harmony
             if "initial_eval_key" in cfg:
@@ -222,8 +255,8 @@ class HarmonySearch:
                 )[-1]
                 if self.do_short and score_short < self.hm[worst_key_short]["short"]["score"]:
                     logging.debug(
-                        f"improved short harmony, prev score ",
-                        f"{self.hm[worst_key_short]['short']['score']:.7f} new score {score_short:.7f} - "
+                        f"improved short harmony, prev score "
+                        + f"{self.hm[worst_key_short]['short']['score']:.7f} new score {score_short:.7f} - "
                         + " ".join(
                             [str(round_dynamic(e[1], 3)) for e in sorted(cfg["short"].items())]
                         ),
@@ -266,7 +299,7 @@ class HarmonySearch:
                 is_better = True
                 logging.info(
                     f"i{cfg['config_no']} - new best config long, score {score_long:.7f} "
-                    + f"adg {adg_mean_long:.7f} pad {pad_mean_long:.7f}"
+                    + f"adg {adg_mean_long:.7f} pad {pad_mean_long:.7f} std {pad_std_long:.5f}"
                 )
                 tmp_fname += "_long"
                 json.dump(
@@ -279,7 +312,7 @@ class HarmonySearch:
                 is_better = True
                 logging.info(
                     f"i{cfg['config_no']} - new best config short, score {score_short:.7f} "
-                    + f"adg {adg_mean_short:.7f} pad {pad_mean_short:.7f}"
+                    + f"adg {adg_mean_short:.7f} pad {pad_mean_short:.7f} std {pad_std_short:.5f}"
                 )
                 tmp_fname += "_short"
                 json.dump(
@@ -292,6 +325,7 @@ class HarmonySearch:
                 dump_live_config(best_config, tmp_fname + ".json")
             elif cfg["config_no"] % 25 == 0:
                 logging.info(f"i{cfg['config_no']}")
+            results["config_no"] = cfg["config_no"]
             with open(self.results_fpath + "all_results.txt", "a") as f:
                 f.write(
                     json.dumps(
@@ -355,14 +389,15 @@ class HarmonySearch:
             + self.symbols[0]
         )
 
-        new_harmony["ticks_caches"] = {}  # todo implement shared memory
         new_harmony["market_specific_settings"] = self.market_specific_settings[new_harmony["symbol"]]
         new_harmony[
             "ticks_cache_fname"
         ] = f"{self.bt_dir}/{new_harmony['symbol']}/{self.ticks_cache_fname}"
         self.workers[wi] = {
             "config": deepcopy(new_harmony),
-            "task": self.pool.apply_async(backtest_wrap, args=(deepcopy(new_harmony),)),
+            "task": self.pool.apply_async(
+                backtest_wrap, args=(deepcopy(new_harmony), self.ticks_caches)
+            ),
             "id_key": new_harmony["config_no"],
         }
         self.unfinished_evals[new_harmony["config_no"]] = {
@@ -402,13 +437,12 @@ class HarmonySearch:
         line += " - " + self.symbols[0]
         logging.info(line)
 
-        config["ticks_caches"] = {}  # todo implement shared memory
         config["market_specific_settings"] = self.market_specific_settings[config["symbol"]]
         config["ticks_cache_fname"] = f"{self.bt_dir}/{config['symbol']}/{self.ticks_cache_fname}"
 
         self.workers[wi] = {
             "config": deepcopy(config),
-            "task": self.pool.apply_async(backtest_wrap, args=(deepcopy(config),)),
+            "task": self.pool.apply_async(backtest_wrap, args=(deepcopy(config), self.ticks_caches)),
             "id_key": config["config_no"],
         }
         self.unfinished_evals[config["config_no"]] = {
@@ -420,6 +454,31 @@ class HarmonySearch:
         self.hm[hm_key]["short"]["score"] = "in_progress"
 
     def run(self):
+        try:
+            self.run_()
+        finally:
+            for s in self.shms:
+                self.shms[s].close()
+                self.shms[s].unlink()
+
+    def run_(self):
+
+        # initialize ticks cache
+        """
+        if self.n_cpus >= len(self.symbols) or (
+            "cache_ticks" in self.config and self.config["cache_ticks"]
+        ):
+        """
+        if False:
+            for s in self.symbols:
+                ticks = np.load(f"{self.bt_dir}/{s}/{self.ticks_cache_fname}")
+                self.shms[s] = shared_memory.SharedMemory(create=True, size=ticks.nbytes)
+                self.ticks_caches[s] = np.ndarray(
+                    ticks.shape, dtype=ticks.dtype, buffer=self.shms[s].buf
+                )
+                self.ticks_caches[s][:] = ticks[:]
+                del ticks
+                logging.info(f"loaded {s} ticks into shared memory")
 
         # initialize harmony memory
         for _ in range(self.n_harmonies):
@@ -443,15 +502,21 @@ class HarmonySearch:
                 for k in self.long_bounds
             }
             cfg["long"]["enabled"] = self.do_long
+            seen_key = tuplify(cfg["long"], sort=True)
+            if seen_key not in seen:
+                hm_key = available_ids.pop()
+                self.hm[hm_key]["long"]["config"] = cfg["long"]
+        seen = set()
+        available_ids = set(self.hm)
+        for cfg in self.starting_configs:
             cfg["short"] = {
                 k: max(self.short_bounds[k][0], min(self.short_bounds[k][1], cfg["short"][k]))
                 for k in self.short_bounds
             }
             cfg["short"]["enabled"] = self.do_short
-            seen_key = tuplify(cfg, sort=True)
+            seen_key = tuplify(cfg["short"], sort=True)
             if seen_key not in seen:
                 hm_key = available_ids.pop()
-                self.hm[hm_key]["long"]["config"] = cfg["long"]
                 self.hm[hm_key]["short"]["config"] = cfg["short"]
                 seen.add(seen_key)
 
@@ -482,7 +547,6 @@ class HarmonySearch:
                             symbol = sorted(missing_symbols)[0]
                             config = deepcopy(self.unfinished_evals[id_key]["config"])
                             config["symbol"] = symbol
-                            config["ticks_caches"] = {}  # todo implement shared memory
                             config["market_specific_settings"] = self.market_specific_settings[
                                 config["symbol"]
                             ]
@@ -491,7 +555,9 @@ class HarmonySearch:
                             ] = f"{self.bt_dir}/{config['symbol']}/{self.ticks_cache_fname}"
                             self.workers[wi] = {
                                 "config": config,
-                                "task": self.pool.apply_async(backtest_wrap, args=(config,)),
+                                "task": self.pool.apply_async(
+                                    backtest_wrap, args=(config, self.ticks_caches)
+                                ),
                                 "id_key": id_key,
                             }
                             self.unfinished_evals[id_key]["in_progress"].add(symbol)
@@ -536,17 +602,61 @@ async def main():
     parser.add_argument(
         "-i", "--iters", type=int, required=False, dest="iters", default=None, help="n optimize iters"
     )
+    parser.add_argument(
+        "-c", "--n_cpus", type=int, required=False, dest="n_cpus", default=None, help="n cpus"
+    )
+    parser.add_argument(
+        "-le",
+        "--long",
+        type=str,
+        required=False,
+        dest="long_enabled",
+        default=None,
+        help="long enabled: [y/n]",
+    )
+    parser.add_argument(
+        "-se",
+        "--short",
+        type=str,
+        required=False,
+        dest="short_enabled",
+        default=None,
+        help="short enabled: [y/n]",
+    )
     parser = add_argparse_args(parser)
     args = parser.parse_args()
     args.symbol = "BTCUSDT"  # dummy symbol
     config = await prepare_optimize_config(args)
     config.update(get_template_live_config())
     config["exchange"], _, _ = load_exchange_key_secret(config["user"])
-    config["long"]["enabled"] = config["do_long"]
-    config["short"]["enabled"] = config["do_short"]
     args = parser.parse_args()
+    if args.long_enabled is None:
+        config["long"]["enabled"] = config["do_long"]
+    else:
+        if "y" in args.long_enabled.lower():
+            config["long"]["enabled"] = config["do_long"] = True
+        elif "n" in args.long_enabled.lower():
+            config["long"]["enabled"] = config["do_long"] = False
+        else:
+            raise Exception("please specify y/n with kwarg -le/--long")
+    if args.short_enabled is None:
+        config["short"]["enabled"] = config["do_short"]
+    else:
+        if "y" in args.short_enabled.lower():
+            config["short"]["enabled"] = config["do_short"] = True
+        elif "n" in args.short_enabled.lower():
+            config["short"]["enabled"] = config["do_short"] = False
+        else:
+            raise Exception("please specify y/n with kwarg -le/--short")
     if args.symbol is not None:
         config["symbols"] = args.symbol.split(",")
+    if args.n_cpus is not None:
+        config["n_cpus"] = args.n_cpus
+    print()
+    lines = [(k, getattr(args, k)) for k in args.__dict__ if args.__dict__[k] is not None]
+    for line in lines:
+        logging.info(f"{line[0]: <{max([len(x[0]) for x in lines]) + 2}} {line[1]}")
+    print()
 
     # download ticks .npy file if missing
     cache_fname = f"{config['start_date']}_{config['end_date']}_ticks_cache.npy"
