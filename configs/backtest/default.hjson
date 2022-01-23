@@ -14,8 +14,8 @@
   # format YYYY-MM-DDTHH:mm:ss
   # format YYYY-MM-DDTHH:mm:ss
   # e.g. 2020-02-18T19:34:59
-  start_date: 2021-07-01
-  end_date: 2022-01-18
+  start_date: 2021-09-01
+  end_date: 2022-01-22
 
   # non default historical data path
   # historical_data_path: "/mnt/d/"

@@ -556,20 +556,20 @@ def find_long_close_qty_bringing_wallet_exposure_to_target(
             )
         except:
             print("debug zero div error find_long_close_qty_bringing_wallet_exposure_to_target")
-            print(
-                "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
-            )
-            print(
-                balance,
-                psize,
-                pprice,
-                wallet_exposure_target,
-                close_price,
-                inverse,
-                qty_step,
-                c_mult,
-            )
-            print("guesses, vals", guesses, vals)
+            # print(
+            #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
+            # )
+            # print(
+            #     balance,
+            #     psize,
+            #     pprice,
+            #     wallet_exposure_target,
+            #     close_price,
+            #     inverse,
+            #     qty_step,
+            #     c_mult,
+            # )
+            # print("guesses, vals", guesses, vals)
             new_guess = round_(psize / 2, qty_step)
         guesses.append(min(psize, max(0.0, round_(new_guess, qty_step))))
         vals.append(
@@ -582,28 +582,30 @@ def find_long_close_qty_bringing_wallet_exposure_to_target(
             break
     evals_guesses = sorted([(e, g) for e, g in zip(evals, guesses)])
     if evals_guesses[0][0] > 0.15:
-        print("debug find_long_close_qty_bringing_wallet_exposure_to_target")
-        print(
-            "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
-        )
-        print(
-            balance,
-            psize,
-            pprice,
-            wallet_exposure_target,
-            close_price,
-            inverse,
-            qty_step,
-            c_mult,
-        )
-        print("wallet_exposure", wallet_exposure)
-        print("wallet_exposure_target", wallet_exposure_target)
-        print(
-            "guess, val, target diff",
-            [(g, round_dynamic(v, 4), round_dynamic(e, 4)) for g, v, e in zip(guesses, vals, evals)],
-        )
-        print("n tries", len(guesses))
-        print()
+        '''
+        '''
+        # print("debug find_long_close_qty_bringing_wallet_exposure_to_target")
+        # print(
+        #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
+        # )
+        # print(
+        #     balance,
+        #     psize,
+        #     pprice,
+        #     wallet_exposure_target,
+        #     close_price,
+        #     inverse,
+        #     qty_step,
+        #     c_mult,
+        # )
+        # print("wallet_exposure", wallet_exposure)
+        # print("wallet_exposure_target", wallet_exposure_target)
+        # print(
+        #     "guess, val, target diff",
+        #     [(g, round_dynamic(v, 4), round_dynamic(e, 4)) for g, v, e in zip(guesses, vals, evals)],
+        # )
+        # print("n tries", len(guesses))
+        # print()
     return evals_guesses[0][1]
 
 
@@ -663,20 +665,20 @@ def find_short_close_qty_bringing_wallet_exposure_to_target(
             )
         except:
             print("debug zero div error find_short_close_qty_bringing_wallet_exposure_to_target")
-            print(
-                "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
-            )
-            print(
-                balance,
-                psize,
-                pprice,
-                wallet_exposure_target,
-                close_price,
-                inverse,
-                qty_step,
-                c_mult,
-            )
-            print("guesses, vals", guesses, vals)
+            # print(
+            #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
+            # )
+            # print(
+            #     balance,
+            #     psize,
+            #     pprice,
+            #     wallet_exposure_target,
+            #     close_price,
+            #     inverse,
+            #     qty_step,
+            #     c_mult,
+            # )
+            # print("guesses, vals", guesses, vals)
             new_guess = round_(abs_psize / 2, qty_step)
         guesses.append(min(abs_psize, max(0.0, round_(new_guess, qty_step))))
         vals.append(
@@ -689,28 +691,30 @@ def find_short_close_qty_bringing_wallet_exposure_to_target(
             break
     evals_guesses = sorted([(e, g) for e, g in zip(evals, guesses)])
     if evals_guesses[0][0] > 0.15:
-        print("debug find_short_close_qty_bringing_wallet_exposure_to_target")
-        print(
-            "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
-        )
-        print(
-            balance,
-            psize,
-            pprice,
-            wallet_exposure_target,
-            close_price,
-            inverse,
-            qty_step,
-            c_mult,
-        )
-        print("wallet_exposure", wallet_exposure)
-        print("wallet_exposure_target", wallet_exposure_target)
-        print(
-            "guess, val, target diff",
-            [(g, round_dynamic(v, 4), round_dynamic(e, 4)) for g, v, e in zip(guesses, vals, evals)],
-        )
-        print("n tries", len(guesses))
-        print()
+        '''
+        '''
+        # print("debug find_short_close_qty_bringing_wallet_exposure_to_target")
+        # print(
+        #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
+        # )
+        # print(
+        #     balance,
+        #     psize,
+        #     pprice,
+        #     wallet_exposure_target,
+        #     close_price,
+        #     inverse,
+        #     qty_step,
+        #     c_mult,
+        # )
+        # print("wallet_exposure", wallet_exposure)
+        # print("wallet_exposure_target", wallet_exposure_target)
+        # print(
+        #     "guess, val, target diff",
+        #     [(g, round_dynamic(v, 4), round_dynamic(e, 4)) for g, v, e in zip(guesses, vals, evals)],
+        # )
+        # print("n tries", len(guesses))
+        # print()
     return evals_guesses[0][1]
 
 
@@ -772,27 +776,29 @@ def find_entry_qty_bringing_wallet_exposure_to_target(
             break
     evals_guesses = sorted([(e, g) for e, g in zip(evals, guesses)])
     if evals_guesses[0][0] > 0.15:
-        print("debug find_entry_qty_bringing_wallet_exposure_to_target")
-        print(
-            "balance, psize, pprice, wallet_exposure_target, entry_price, inverse, qty_step, c_mult,"
-        )
-        print(
-            balance,
-            psize,
-            pprice,
-            wallet_exposure_target,
-            entry_price,
-            inverse,
-            qty_step,
-            c_mult,
-        )
-        print("wallet_exposure", wallet_exposure)
-        print("wallet_exposure_target", wallet_exposure_target)
-        print(
-            "guess, val, target diff",
-            [(g, round_dynamic(v, 4), round_dynamic(e, 4)) for g, v, e in zip(guesses, vals, evals)],
-        )
-        print()
+        '''
+        '''
+        # print("debug find_entry_qty_bringing_wallet_exposure_to_target")
+        # print(
+        #     "balance, psize, pprice, wallet_exposure_target, entry_price, inverse, qty_step, c_mult,"
+        # )
+        # print(
+        #     balance,
+        #     psize,
+        #     pprice,
+        #     wallet_exposure_target,
+        #     entry_price,
+        #     inverse,
+        #     qty_step,
+        #     c_mult,
+        # )
+        # print("wallet_exposure", wallet_exposure)
+        # print("wallet_exposure_target", wallet_exposure_target)
+        # print(
+        #     "guess, val, target diff",
+        #     [(g, round_dynamic(v, 4), round_dynamic(e, 4)) for g, v, e in zip(guesses, vals, evals)],
+        # )
+        # print()
     return evals_guesses[0][1]
 
 

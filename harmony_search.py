@@ -14,8 +14,6 @@ from multiprocessing import Pool, shared_memory
 from njit_funcs import round_dynamic
 from pure_funcs import (
     analyze_fills,
-    pack_config,
-    numpyize,
     denumpyize,
     get_template_live_config,
     ts_to_date,
@@ -34,6 +32,7 @@ from procedures import (
 from time import sleep, time
 import logging
 import logging.config
+from collections import deque
 
 logging.config.dictConfig({"version": 1, "disable_existing_loggers": True})
 
@@ -100,6 +99,9 @@ def backtest_wrap(config_: dict, ticks_caches: dict):
 
 class HarmonySearch:
     def __init__(self, config: dict):
+        self.eta_q_len = 5
+        self.post_process_q = deque([], maxlen=self.eta_q_len)
+        self.start_harmony_q = deque([], maxlen=self.eta_q_len)
         self.config = config
         self.do_long = config["long"]["enabled"]
         self.do_short = config["short"]["enabled"]
@@ -158,9 +160,16 @@ class HarmonySearch:
 
         self.iter_counter = 0
 
+    def print_progress(self, config_no: int, func: str):
+        # self.iter_counter >= self.iters + self.n_harmonies
+        progress = (config_no / (self.iters + self.n_harmonies)) * 100.00
+        print(f'[{config_no}][{func}]: progress -> {progress}% of {self.iters + self.n_harmonies}')
+
     def post_process(self, wi: int):
         # a worker has finished a job; process it
+
         cfg = deepcopy(self.workers[wi]["config"])
+        self.print_progress(cfg['config_no'], 'post_process')
         id_key = self.workers[wi]["id_key"]
         symbol = cfg["symbol"]
         self.unfinished_evals[id_key]["single_results"][symbol] = self.workers[wi]["task"].get()
@@ -218,7 +227,7 @@ class HarmonySearch:
             if self.do_short:
                 line += f"- adg short {adg_mean_short:.6f} pad short {pad_mean_short:.6f} std short "
                 line += f"{pad_std_short:.5f} score short {score_short:.7f}"
-            logging.debug(line)
+            # logging.debug(line)
             # check whether initial eval or new harmony
             if "initial_eval_key" in cfg:
                 self.hm[cfg["initial_eval_key"]]["long"]["score"] = score_long
@@ -350,6 +359,7 @@ class HarmonySearch:
             },
             **{"symbol": self.symbols[0], "config_no": self.iter_counter},
         }
+        self.print_progress(new_harmony['config_no'], 'start_new_harmony')
         new_harmony["long"]["enabled"] = self.do_long
         new_harmony["short"]["enabled"] = self.do_short
         for key in self.long_bounds:
@@ -363,7 +373,7 @@ class HarmonySearch:
                         self.long_bounds[key][0] - self.long_bounds[key][1]
                     )
                     new_note_short = new_note_short + self.bandwidth * (
-                        np.random.random() - 0.5
+                            np.random.random() - 0.5
                     ) * abs(self.short_bounds[key][0] - self.short_bounds[key][1])
                 # ensure note is within bounds
                 new_note_long = max(
@@ -380,14 +390,14 @@ class HarmonySearch:
                 )
             new_harmony["long"][key] = new_note_long
             new_harmony["short"][key] = new_note_short
-        logging.debug(
-            f"starting new harmony {new_harmony['config_no']} - long "
-            + " ".join([str(round_dynamic(e[1], 3)) for e in sorted(new_harmony["long"].items())])
-            + " - short: "
-            + " ".join([str(round_dynamic(e[1], 3)) for e in sorted(new_harmony["short"].items())])
-            + " - "
-            + self.symbols[0]
-        )
+        # logging.debug(
+        #     f"starting new harmony {new_harmony['config_no']} - long "
+        #     + " ".join([str(round_dynamic(e[1], 3)) for e in sorted(new_harmony["long"].items())])
+        #     + " - short: "
+        #     + " ".join([str(round_dynamic(e[1], 3)) for e in sorted(new_harmony["short"].items())])
+        #     + " - "
+        #     + self.symbols[0]
+        # )
 
         new_harmony["market_specific_settings"] = self.market_specific_settings[new_harmony["symbol"]]
         new_harmony[
@@ -419,6 +429,7 @@ class HarmonySearch:
             },
             **{"symbol": self.symbols[0], "initial_eval_key": hm_key, "config_no": self.iter_counter},
         }
+        self.print_progress(config['config_no'], 'start_new_initial_eval')
         line = f"starting new initial eval {config['config_no']} of {self.n_harmonies} "
         if self.do_long:
             line += " - long: " + " ".join(
@@ -435,7 +446,7 @@ class HarmonySearch:
                 ]
             )
         line += " - " + self.symbols[0]
-        logging.info(line)
+        # logging.info(line)
 
         config["market_specific_settings"] = self.market_specific_settings[config["symbol"]]
         config["ticks_cache_fname"] = f"{self.bt_dir}/{config['symbol']}/{self.ticks_cache_fname}"
@@ -539,8 +550,8 @@ class HarmonySearch:
                     for id_key in self.unfinished_evals:
                         # check of unfinished evals
                         missing_symbols = set(self.symbols) - (
-                            set(self.unfinished_evals[id_key]["single_results"])
-                            | self.unfinished_evals[id_key]["in_progress"]
+                                set(self.unfinished_evals[id_key]["single_results"])
+                                | self.unfinished_evals[id_key]["in_progress"]
                         )
                         if missing_symbols:
                             # start eval for missing symbol
@@ -665,7 +676,7 @@ async def main():
     for symbol in config["symbols"]:
         cache_dirpath = f"backtests/{exchange_name}/{symbol}/caches/"
         if not os.path.exists(cache_dirpath + cache_fname) or not os.path.exists(
-            cache_dirpath + "market_specific_settings.json"
+                cache_dirpath + "market_specific_settings.json"
         ):
             logging.info(f"fetching data {symbol}")
             args.symbol = symbol

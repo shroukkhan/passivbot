@@ -5,7 +5,7 @@
   bandwidth: 0.07
   pitch_adjusting_rate: 0.24
 
-  n_cpus: 4
+  n_cpus: 16
   iters: 10000
   cache_ticks: false  # set to true to keep all ticks in RAM
 
@@ -24,7 +24,7 @@
 
   # will override any starting configs' long/short enabled parameter
   do_long: true
-  do_short: false
+  do_short: true
 
   # symbols with min notional < $5 @ 2022-01-22,
   # and at least 250 days of data,
