@@ -100,7 +100,8 @@ def backtest_wrap(config_: dict, ticks_caches: dict):
 
 class HarmonySearch:
     def __init__(self, config: dict):
-        self.eta_q_len = 5
+        self.start = datetime.now()
+        self.eta_q_len = 15
         self.post_process_q = deque([], maxlen=self.eta_q_len)
         self.start_harmony_q = deque([], maxlen=self.eta_q_len)
         self.eval_q = deque([], maxlen=self.eta_q_len)
@@ -162,13 +163,14 @@ class HarmonySearch:
 
         self.iter_counter = 0
 
-    def print_progress(self, config_no: int, func: str, avg: float):
+    def print_progress(self, config_no: int, func: str, avg: float = 0.0):
         total = self.iters + self.n_harmonies
-        progress = (config_no / total) * 100.00
-        seconds_left = (total - config_no) * avg
-        will_finish_at = datetime.now() + timedelta(0, seconds_left)
-        print(
-            f'[{config_no}][{func}]: progress -> {progress}% of {self.iters + self.n_harmonies}, ETA:{will_finish_at}')
+        progress = round((config_no / total) * 100.00, 2)
+        print(f'[{config_no}][{func}]: progress : {progress}% of {total}')
+        if avg > 0.0:
+            ms_left = (total - config_no) * avg
+            will_finish_at = datetime.now() + timedelta(milliseconds=ms_left)
+            print(f'ETA:{will_finish_at} (avg_ms: {avg}, ms_left: {ms_left})')
 
     def post_process(self, wi: int):
         # a worker has finished a job; process it
@@ -349,13 +351,13 @@ class HarmonySearch:
             del self.unfinished_evals[id_key]
         self.workers[wi] = None
         end = datetime.now()
-        time_taken = (end - start).total_seconds()
-        self.post_process_q.append(time_taken)
-        avg = sum(self.post_process_q) / len(self.post_process_q)
-        self.print_progress(cfg['config_no'], 'start_new_harmony', avg)
+        time_taken = (end - self.start).total_seconds() * 1000
+        # self.post_process_q.append(time_taken)
+        avg = time_taken / cfg['config_no']  # sum(self.post_process_q) / len(self.post_process_q)
+        self.print_progress(cfg['config_no'], 'post_process', avg)
 
     def start_new_harmony(self, wi: int):
-        start = datetime.now()
+        # start = datetime.now()
         self.iter_counter += 1  # up iter counter on each new config started
         template = get_template_live_config()
         new_harmony = {
@@ -425,14 +427,10 @@ class HarmonySearch:
             "single_results": {},
             "in_progress": set([self.symbols[0]]),
         }
-        end = datetime.now()
-        time_taken = (end - start).total_seconds()
-        self.start_harmony_q.append(time_taken)
-        avg = sum(self.start_harmony_q) / len(self.start_harmony_q)
-        self.print_progress(new_harmony['config_no'], 'start_new_harmony', avg)
+        self.print_progress(new_harmony['config_no'], 'start_new_harmony')
 
     def start_new_initial_eval(self, wi: int, hm_key: str):
-        start = datetime.now()
+        # start = datetime.now()
         self.iter_counter += 1  # up iter counter on each new config started
         config = {
             **{
@@ -445,7 +443,6 @@ class HarmonySearch:
             },
             **{"symbol": self.symbols[0], "initial_eval_key": hm_key, "config_no": self.iter_counter},
         }
-        # self.print_progress(config['config_no'], 'start_new_initial_eval',0)
         line = f"starting new initial eval {config['config_no']} of {self.n_harmonies} "
         if self.do_long:
             line += " - long: " + " ".join(
@@ -479,11 +476,7 @@ class HarmonySearch:
         }
         self.hm[hm_key]["long"]["score"] = "in_progress"
         self.hm[hm_key]["short"]["score"] = "in_progress"
-        end = datetime.now()
-        time_taken = (end - start).total_seconds()
-        self.eval_q.append(time_taken)
-        avg = sum(self.eval_q) / len(self.eval_q)
-        self.print_progress(config['config_no'], 'start_new_initial_eval', avg)
+        self.print_progress(config['config_no'], 'start_new_initial_eval')
 
     def run(self):
         try:
