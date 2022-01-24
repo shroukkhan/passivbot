@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from dateutil import parser
 
-from njit_funcs import round_dynamic, calc_emas, qty_to_cost
+from njit_funcs import round_dynamic, qty_to_cost
 
 
 def format_float(num):
@@ -35,7 +35,34 @@ def calc_spans(min_span: int, max_span: int, n_spans: int) -> np.ndarray:
     return np.array([min_span, (min_span * max_span) ** 0.5, max_span])
 
 
-def get_xk_keys():
+def get_xk_keys(recursive_grid=False):
+    if recursive_grid:
+        return [
+            "starting_balance",
+            "latency_simulation_ms",
+            "maker_fee",
+            "inverse",
+            "do_long",
+            "do_short",
+            "qty_step",
+            "price_step",
+            "min_qty",
+            "min_cost",
+            "c_mult",
+            "ema_span_0",
+            "ema_span_1",
+            "iqty_pct",
+            "iprice_ema_dist",
+            "wallet_exposure_limit",
+            "ddown_factor",
+            "rentry_pprice_dist",
+            "rentry_pprice_dist_wallet_exposure_weighting",
+            "min_markup",
+            "markup_range",
+            "n_close_orders",
+            "auto_unstuck_wallet_exposure_threshold",
+            "auto_unstuck_ema_dist",
+        ]
     return [
         "spot",
         "hedge_mode",
@@ -66,7 +93,7 @@ def get_xk_keys():
     ]
 
 
-def create_xk(config: dict) -> dict:
+def create_xk(config: dict, recursive_grid=False) -> dict:
     xk = {}
     config_ = config.copy()
     if "spot" in config_["market_type"]:
@@ -75,11 +102,12 @@ def create_xk(config: dict) -> dict:
         config_["spot"] = False
         config_["do_long"] = config["long"]["enabled"]
         config_["do_short"] = config["short"]["enabled"]
-    keys = get_xk_keys()
+    keys = get_xk_keys(recursive_grid)
     config_["long"]["n_close_orders"] = int(round(config_["long"]["n_close_orders"]))
     config_["short"]["n_close_orders"] = int(round(config_["short"]["n_close_orders"]))
-    config_["long"]["max_n_entry_orders"] = int(round(config_["long"]["max_n_entry_orders"]))
-    config_["short"]["max_n_entry_orders"] = int(round(config_["short"]["max_n_entry_orders"]))
+    if not recursive_grid:
+        config_["long"]["max_n_entry_orders"] = int(round(config_["long"]["max_n_entry_orders"]))
+        config_["short"]["max_n_entry_orders"] = int(round(config_["short"]["max_n_entry_orders"]))
     for k in keys:
         if k in config_["long"]:
             xk[k] = (config_["long"][k], config_["short"][k])
@@ -391,6 +419,10 @@ def analyze_fills(fills: list, stats: list, config: dict) -> (pd.DataFrame, pd.D
             "short_pprice",
             "price",
             "closest_bkr",
+            "balance_long",
+            "balance_short",
+            "equity_long",
+            "equity_short",
         ],
     )
     fdf = pd.DataFrame(
@@ -456,12 +488,33 @@ def analyze_fills(fills: list, stats: list, config: dict) -> (pd.DataFrame, pd.D
         if len(spprices) > 0
         else pd.Series([100.0])
     )
-    longs = fdf[fdf.type.str.contains("long")]
-    shorts = fdf[fdf.type.str.contains("short")]
+    longs = fdf[fdf.type.str.contains("long")].set_index("timestamp")
+    shorts = fdf[fdf.type.str.contains("short")].set_index("timestamp")
     gain_long = longs.pnl.sum() / sdf.balance.iloc[0]
     adg_long = (gain_long + 1) ** (1 / n_days) - 1
     gain_short = shorts.pnl.sum() / sdf.balance.iloc[0]
     adg_short = (gain_short + 1) ** (1 / n_days) - 1
+
+    ms2d = 1000 * 60 * 60 * 24
+    if len(longs) > 0:
+        daily_equity_long = sdf.groupby(sdf.timestamp // ms2d).equity_long.last()
+        daily_gains_long = daily_equity_long / daily_equity_long.shift(1) - 1
+        adg_long = daily_gains_long.mean()
+        DGstd_long = daily_gains_long.std()
+        adg_DGstd_ratio_long = adg_long / DGstd_long if len(daily_gains_long) > 0 else 0.0
+    else:
+        adg_long = adg_DGstd_ratio_long = 0.0
+        DGstd_long = 100.0
+
+    if len(shorts) > 0:
+        daily_equity_short = sdf.groupby(sdf.timestamp // ms2d).equity_short.last()
+        daily_gains_short = daily_equity_short / daily_equity_short.shift(1) - 1
+        adg_short = daily_gains_short.mean()
+        DGstd_short = daily_gains_short.std()
+        adg_DGstd_ratio_short = adg_short / DGstd_short if len(daily_gains_short) > 0 else 0.0
+    else:
+        adg_short = adg_DGstd_ratio_short = 0.0
+        DGstd_short = 100.0
 
     pos_costs = fdf.apply(
         lambda x: qty_to_cost(x["psize"], x["pprice"], config["inverse"], config["c_mult"]),
@@ -516,8 +569,18 @@ def analyze_fills(fills: list, stats: list, config: dict) -> (pd.DataFrame, pd.D
         "pa_distance_std_short": pa_distance_short.std(),
         "gain_long": gain_long,
         "adg_long": adg_long if adg_long == adg_long else -1.0,
+        "adg_per_exposure_long": adg_long / config["long"]["wallet_exposure_limit"]
+        if config["long"]["enabled"] and config["long"]["wallet_exposure_limit"] > 0.0
+        else 0.0,
         "gain_short": gain_short,
         "adg_short": adg_short if adg_short == adg_short else -1.0,
+        "adg_per_exposure_short": adg_short / config["short"]["wallet_exposure_limit"]
+        if config["short"]["enabled"] and config["short"]["wallet_exposure_limit"] > 0.0
+        else 0.0,
+        "adg_DGstd_ratio_long": adg_DGstd_ratio_long,
+        "adg_DGstd_ratio_short": adg_DGstd_ratio_short,
+        "DGstd_long": DGstd_long,
+        "DGstd_short": DGstd_short,
         "average_daily_gain": adg,
         "gain": gain,
         "n_days": n_days,
@@ -544,12 +607,10 @@ def analyze_fills(fills: list, stats: list, config: dict) -> (pd.DataFrame, pd.D
         "avg_fills_per_day_short": len(shorts) / n_days,
         "hrs_stuck_max_long": hrs_stuck_max_long,
         "hrs_stuck_avg_long": hrs_stuck_avg_long,
-        "hrs_stuck_max": hrs_stuck_max_long,
-        "hrs_stuck_avg": hrs_stuck_avg_long,
         "hrs_stuck_max_short": hrs_stuck_max_short,
         "hrs_stuck_avg_short": hrs_stuck_avg_short,
-        "hrs_stuck_max": hrs_stuck_max_short,
-        "hrs_stuck_avg": hrs_stuck_avg_short,
+        "hrs_stuck_max": max(hrs_stuck_max_long, hrs_stuck_max_short),
+        "hrs_stuck_avg": max(hrs_stuck_avg_long, hrs_stuck_avg_short),
         "loss_sum": fdf[fdf.pnl < 0.0].pnl.sum(),
         "loss_sum_long": longs[longs.pnl < 0.0].pnl.sum(),
         "loss_sum_short": shorts[shorts.pnl < 0.0].pnl.sum(),

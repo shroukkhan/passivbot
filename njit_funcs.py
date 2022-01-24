@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-import numpy as np
 
+import numpy as np
 
 if "NOJIT" in os.environ and os.environ["NOJIT"] == "true":
     print("not using numba")
@@ -183,7 +183,6 @@ def calc_long_close_grid(
     pprice,
     lowest_ask,
     ema_band_upper,
-    spot,
     inverse,
     qty_step,
     price_step,
@@ -191,7 +190,6 @@ def calc_long_close_grid(
     min_cost,
     c_mult,
     exposure_limit,
-    iqty_pct,
     min_markup,
     markup_range,
     n_close_orders,
@@ -313,7 +311,7 @@ def calc_short_close_grid(
     else:
         short_closes = []
         wallet_exposure = qty_to_cost(short_psize, short_pprice, inverse, c_mult) / balance
-        threshold = wallet_exposure_limit * (1 - auto_unstuck_wallet_exposure_threshold) * 1.01
+        threshold = wallet_exposure_limit * (1 - auto_unstuck_wallet_exposure_threshold)
         if auto_unstuck_wallet_exposure_threshold != 0.0 and wallet_exposure > threshold:
             auto_unstuck_price = min(
                 highest_bid,
@@ -324,7 +322,7 @@ def calc_short_close_grid(
                     balance,
                     short_psize,
                     short_pprice,
-                    threshold,
+                    threshold * 1.01,
                     auto_unstuck_price,
                     inverse,
                     qty_step,
@@ -1846,7 +1844,7 @@ def njit_backtest(
     qtys = ticks[:, 1]
     prices = ticks[:, 2]
 
-    balance = equity = starting_balance
+    balance = balance_long = balance_short = equity = starting_balance
     long_psize, long_pprice, short_psize, short_pprice = 0.0, 0.0, 0.0, 0.0
 
     fills = []
@@ -1901,12 +1899,12 @@ def njit_backtest(
     long_wallet_exposure = 0.0
     short_wallet_exposure = 0.0
     long_wallet_exposure_auto_unstuck_threshold = (
-        (wallet_exposure_limit[0] * (1 - auto_unstuck_wallet_exposure_threshold[0]) * 1.01)
+        (wallet_exposure_limit[0] * (1 - auto_unstuck_wallet_exposure_threshold[0]))
         if auto_unstuck_wallet_exposure_threshold[0] != 0.0
         else wallet_exposure_limit[0] * 10
     )
     short_wallet_exposure_auto_unstuck_threshold = (
-        (wallet_exposure_limit[1] * (1 - auto_unstuck_wallet_exposure_threshold[1]) * 1.01)
+        (wallet_exposure_limit[1] * (1 - auto_unstuck_wallet_exposure_threshold[1]))
         if auto_unstuck_wallet_exposure_threshold[1] != 0.0
         else wallet_exposure_limit[1] * 10
     )
@@ -1931,8 +1929,14 @@ def njit_backtest(
                 inverse,
                 c_mult,
             )
-            if equity / starting_balance < 0.5:
-                # break early when equity is less than half of starting balance
+            equity_long = balance_long + calc_long_pnl(
+                long_pprice, prices[k], long_psize, inverse, c_mult
+            )
+            equity_short = balance_short + calc_short_pnl(
+                short_pprice, prices[k], short_psize, inverse, c_mult
+            )
+            if equity / starting_balance < 0.2:
+                # break early when equity is less than 20% of starting balance
                 return fills, stats
             stats.append(
                 (
@@ -1946,6 +1950,10 @@ def njit_backtest(
                     short_pprice,
                     prices[k],
                     closest_bkr,
+                    balance_long,
+                    balance_short,
+                    equity_long,
+                    equity_short,
                 )
             )
             next_stats_update = timestamps[k] + 60 * 1000
@@ -2019,7 +2027,6 @@ def njit_backtest(
                     long_pprice,
                     prices[k - 1],
                     max(emas_long),
-                    spot,
                     inverse,
                     qty_step,
                     price_step,
@@ -2027,7 +2034,6 @@ def njit_backtest(
                     min_cost,
                     c_mult,
                     wallet_exposure_limit[0],
-                    initial_qty_pct[0],
                     min_markup[0],
                     markup_range[0],
                     n_close_orders[0],
@@ -2129,6 +2135,7 @@ def njit_backtest(
                 -qty_to_cost(long_entries[0][0], long_entries[0][1], inverse, c_mult) * maker_fee
             )
             balance += fee_paid
+            balance_long += fee_paid
             equity = calc_equity(
                 balance,
                 long_psize,
@@ -2183,6 +2190,7 @@ def njit_backtest(
                 -qty_to_cost(short_entries[0][0], short_entries[0][1], inverse, c_mult) * maker_fee
             )
             balance += fee_paid
+            balance_short += fee_paid
             equity = calc_equity(
                 balance,
                 short_psize,
@@ -2244,6 +2252,7 @@ def njit_backtest(
             fee_paid = -qty_to_cost(long_close_qty, long_closes[0][1], inverse, c_mult) * maker_fee
             pnl = calc_long_pnl(long_pprice, long_closes[0][1], long_close_qty, inverse, c_mult)
             balance += fee_paid + pnl
+            balance_long += fee_paid + pnl
             equity = calc_equity(
                 balance,
                 long_psize,
@@ -2305,6 +2314,7 @@ def njit_backtest(
             fee_paid = -qty_to_cost(short_close_qty, short_closes[0][1], inverse, c_mult) * maker_fee
             pnl = calc_short_pnl(short_pprice, short_closes[0][1], short_close_qty, inverse, c_mult)
             balance += fee_paid + pnl
+            balance_short += fee_paid + pnl
             equity = calc_equity(
                 balance,
                 short_psize,
@@ -2347,26 +2357,41 @@ def njit_backtest(
                     next_entry_grid_update_ts_long,
                     timestamps[k] + latency_simulation_ms,
                 )
-            if (
-                prices[k] > long_pprice
-                or long_wallet_exposure >= long_wallet_exposure_auto_unstuck_threshold
-            ):
-                next_close_grid_update_ts_long = min(
-                    next_close_grid_update_ts_long,
-                    timestamps[k] + latency_simulation_ms,
-                )
+            else:
+                if prices[k] > long_pprice:
+                    next_close_grid_update_ts_long = min(
+                        next_close_grid_update_ts_long,
+                        timestamps[k] + latency_simulation_ms + 2500,
+                    )
+                elif long_wallet_exposure >= long_wallet_exposure_auto_unstuck_threshold:
+                    next_close_grid_update_ts_long = min(
+                        next_close_grid_update_ts_long,
+                        timestamps[k] + latency_simulation_ms + 15000,
+                    )
+                    next_entry_grid_update_ts_long = min(
+                        next_entry_grid_update_ts_long,
+                        timestamps[k] + latency_simulation_ms + 15000,
+                    )
         if do_short:
             if short_psize == 0.0:
                 next_entry_grid_update_ts_short = min(
                     next_entry_grid_update_ts_short,
                     timestamps[k] + latency_simulation_ms,
                 )
-            if (
-                prices[k] < short_pprice
-                or short_wallet_exposure >= short_wallet_exposure_auto_unstuck_threshold
-            ):
-                next_close_grid_update_ts_short = min(
-                    next_close_grid_update_ts_short,
-                    timestamps[k] + latency_simulation_ms,
-                )
+            else:
+                if prices[k] < short_pprice:
+                    next_close_grid_update_ts_short = min(
+                        next_close_grid_update_ts_short,
+                        timestamps[k] + latency_simulation_ms + 2500,
+                    )
+                elif short_wallet_exposure >= short_wallet_exposure_auto_unstuck_threshold:
+                    next_close_grid_update_ts_short = min(
+                        next_close_grid_update_ts_short,
+                        timestamps[k] + latency_simulation_ms + 15000,
+                    )
+                    next_entry_grid_update_ts_short = min(
+                        next_entry_grid_update_ts_short,
+                        timestamps[k] + latency_simulation_ms + 15000,
+                    )
+
     return fills, stats

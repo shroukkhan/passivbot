@@ -7,7 +7,6 @@ import traceback
 import argparse
 import asyncio
 import json
-import logging
 import signal
 import pprint
 import numpy as np
@@ -17,17 +16,14 @@ from procedures import (
     make_get_filepath,
     load_exchange_key_secret,
     print_,
-    utc_ms,
     numpyize,
 )
 from pure_funcs import (
     filter_orders,
-    compress_float,
     create_xk,
     round_dynamic,
     denumpyize,
     spotify_config,
-    get_position_fills,
 )
 from njit_funcs import (
     qty_to_cost,
@@ -504,7 +500,6 @@ class Bot:
                 long_pprice,
                 self.ob[1],
                 max(self.emas_long),
-                self.xk["spot"],
                 self.xk["inverse"],
                 self.xk["qty_step"],
                 self.xk["price_step"],
@@ -512,7 +507,6 @@ class Bot:
                 self.xk["min_cost"],
                 self.xk["c_mult"],
                 self.xk["wallet_exposure_limit"][0],
-                self.xk["initial_qty_pct"][0],
                 self.xk["min_markup"][0],
                 self.xk["markup_range"][0],
                 self.xk["n_close_orders"][0],
@@ -803,7 +797,7 @@ class Bot:
             line += f"l {self.position['long']['size']} @ "
             line += f"{round_(self.position['long']['price'], self.price_step)}, "
             line += f"e {leqty} @ {leprice}, c {lcqty} @ {lcprice} "
-            line += f"l.EMAs {[round_dynamic(e, 4) for e in self.emas_long]} "
+            line += f"l.EMAs {[round_dynamic(e, 5) for e in self.emas_long]} "
         short_closes = sorted(
             [o for o in self.open_orders if o["side"] == "buy" and o["position_side"] == "short"],
             key=lambda x: x["price"],
@@ -822,7 +816,7 @@ class Bot:
             line += f"s {self.position['short']['size']} @ "
             line += f"{round_(self.position['short']['price'], self.price_step)}, "
             line += f"e {seqty} @ {seprice}, c {scqty} @ {scprice} "
-            line += f"s.EMAs {[round_dynamic(e, 4) for e in self.emas_short]} "
+            line += f"s.EMAs {[round_dynamic(e, 5) for e in self.emas_short]} "
         if calc_diff(self.position["long"]["liquidation_price"], self.price) < calc_diff(
             self.position["short"]["liquidation_price"], self.price
         ):
