@@ -497,6 +497,7 @@ class HarmonySearch:
 
     def run(self):
         try:
+            self.start = datetime.now()
             self.run_()
         finally:
             for s in self.shms:
