@@ -32,11 +32,26 @@
   # symbols with min notional < $5 @ 2022-01-22,
   # and at least 250 days of data,
   # sorted highest to lowest vol last 250 days
-  symbols: ["ETHUSDT", "XRPUSDT", "1000SHIBUSDT", "DOGEUSDT", "ADAUSDT",
+    symbols: ["ETHUSDT", "XRPUSDT", "1000SHIBUSDT", "DOGEUSDT", "ADAUSDT",
             "BNBUSDT", "MATICUSDT", "DOTUSDT", "SANDUSDT", "FTMUSDT",
             "LTCUSDT", "LINKUSDT", "MANAUSDT", "ETCUSDT", "EOSUSDT",
             "ATOMUSDT", "FILUSDT", "ICPUSDT", "ALICEUSDT", "LRCUSDT",
-            "BCHUSDT"]
+            "BCHUSDT", "SUSHIUSDT", "XTZUSDT", "THETAUSDT", "CRVUSDT",
+            "ALGOUSDT", "CHZUSDT", "TRXUSDT", "VETUSDT", "CHRUSDT",
+            "ONEUSDT", "OMGUSDT", "XLMUSDT", "RUNEUSDT", "ENJUSDT",
+            "CELRUSDT", "SXPUSDT", "1INCHUSDT", "SRMUSDT", "COTIUSDT",
+            "ZECUSDT", "QTUMUSDT", "GRTUSDT", "DENTUSDT", "SFPUSDT",
+            "STORJUSDT", "IOTAUSDT", "HOTUSDT", "NEOUSDT", "COMPUSDT",
+            "LINAUSDT", "KAVAUSDT", "BATUSDT", "WAVESUSDT", "IOSTUSDT",
+            "ALPHAUSDT", "RLCUSDT", "HBARUSDT", "DODOUSDT", "XMRUSDT",
+            "SNXUSDT", "ANKRUSDT", "DASHUSDT", "REEFUSDT", "ZENUSDT",
+            "CVCUSDT", "RENUSDT", "ICXUSDT", "RSRUSDT", "SKLUSDT",
+            "NKNUSDT", "BELUSDT", "ONTUSDT", "OGNUSDT", "BLZUSDT",
+            "MTLUSDT", "CTKUSDT", "RVNUSDT", "LITUSDT", "MKRUSDT",
+            "OCEANUSDT", "ZILUSDT", "UNFIUSDT", "BANDUSDT", "YFIIUSDT",
+            "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
+            "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
+            "BTSUSDT", "DGBUSDT", "DEFIUSDT",]
 
 
   bounds:
