@@ -9,6 +9,7 @@ from time import time
 
 import numpy as np
 import pandas as pd
+from types import SimpleNamespace
 
 from downloader import Downloader
 from njit_funcs import njit_backtest, round_
@@ -53,6 +54,47 @@ def plot_wrap(config, data):
     df = pd.DataFrame({**{"timestamp": data[:, 0], "qty": data[:, 1], "price": data[:, 2]}, **{}})
     print("dumping plots...")
     dump_plots(config, fdf, sdf, df)
+
+
+async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str):
+    args = SimpleNamespace(**{
+        'backtest_config_path': backtest_config_path,
+        'live_config_path': live_config_path,
+        'start_date': start_date,
+        'end_date': end_date,
+        'symbol': symbol,
+        'market_type': None,
+        'nojit': False,
+        'short_wallet_exposure_limit': None,
+        'long_wallet_exposure_limit': None,
+        'user': 'binance_01',
+        'base_dir': 'backtests'
+    })
+    config = await prepare_backtest_config(args)
+    live_config = load_live_config(args.live_config_path)
+    config.update(live_config)
+    downloader = Downloader(config)
+    print()
+    for k in (
+            keys := [
+                "exchange",
+                "spot",
+                "symbol",
+                "market_type",
+                "config_type",
+                "starting_balance",
+                "start_date",
+                "end_date",
+                "latency_simulation_ms",
+            ]
+    ):
+        if k in config:
+            print(f"{k: <{max(map(len, keys)) + 2}} {config[k]}")
+    print()
+    data = await downloader.get_sampled_ticks()
+    config["n_days"] = round_((data[-1][0] - data[0][0]) / (1000 * 60 * 60 * 24), 0.1)
+    pprint.pprint(denumpyize(live_config))
+    plot_wrap(config, data)
 
 
 async def main():
@@ -103,17 +145,17 @@ async def main():
     downloader = Downloader(config)
     print()
     for k in (
-        keys := [
-            "exchange",
-            "spot",
-            "symbol",
-            "market_type",
-            "config_type",
-            "starting_balance",
-            "start_date",
-            "end_date",
-            "latency_simulation_ms",
-        ]
+            keys := [
+                "exchange",
+                "spot",
+                "symbol",
+                "market_type",
+                "config_type",
+                "starting_balance",
+                "start_date",
+                "end_date",
+                "latency_simulation_ms",
+            ]
     ):
         if k in config:
             print(f"{k: <{max(map(len, keys)) + 2}} {config[k]}")

@@ -24,6 +24,7 @@ def dump_plots(result: dict, fdf: pd.DataFrame, sdf: pd.DataFrame, df: pd.DataFr
     table.title = "Summary"
 
     table.add_row(["Exchange", result["exchange"] if "exchange" in result else "unknown"])
+    table.add_row(["Passivbot Version", "5.3"])
     table.add_row(["Market type", result["market_type"] if "market_type" in result else "unknown"])
     table.add_row(["Symbol", result["symbol"] if "symbol" in result else "unknown"])
     table.add_row(["No. days", round_dynamic(result["result"]["n_days"], 6)])
@@ -277,7 +278,7 @@ def dump_plots(result: dict, fdf: pd.DataFrame, sdf: pd.DataFrame, df: pd.DataFr
     plt.savefig(f"{result['plots_dirpath']}pnl_cumsum_short.png")
 
     adg = (sdf.equity / sdf.equity.iloc[0]) ** (
-        1 / ((sdf.timestamp - sdf.timestamp.iloc[0]) / (1000 * 60 * 60 * 24))
+            1 / ((sdf.timestamp - sdf.timestamp.iloc[0]) / (1000 * 60 * 60 * 24))
     )
     plt.clf()
     adg.plot(title="Average daily gain", xlabel="Time", ylabel="Average daily gain")
@@ -291,8 +292,8 @@ def dump_plots(result: dict, fdf: pd.DataFrame, sdf: pd.DataFrame, df: pd.DataFr
         print(f"{z} of {n_parts} {start_ * 100:.2f}% to {end_ * 100:.2f}%")
         fig = plot_fills(
             df,
-            fdf.iloc[int(len(fdf) * start_) : int(len(fdf) * end_)],
-            title=f"Fills {z+1} of {n_parts}",
+            fdf.iloc[int(len(fdf) * start_): int(len(fdf) * end_)],
+            title=f"Fills {z + 1} of {n_parts}",
         )
         if fig is not None:
             fig.savefig(f"{result['plots_dirpath']}backtest_{z + 1}of{n_parts}.png")
@@ -383,7 +384,7 @@ def plot_fills(df, fdf_, side: int = 0, plot_whole_df: bool = False, title=""):
         dfc = dfc.set_index("timestamp")
     if not plot_whole_df:
         dfc = dfc[(dfc.index > fdf.index[0]) & (dfc.index < fdf.index[-1])]
-        dfc = dfc.loc[fdf.index[0] : fdf.index[-1]]
+        dfc = dfc.loc[fdf.index[0]: fdf.index[-1]]
     dfc.price.plot(style="y-", title=title, xlabel="Time", ylabel="Price + Fills")
     if side >= 0:
         longs = fdf[fdf.type.str.contains("long")]
