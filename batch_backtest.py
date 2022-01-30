@@ -19,8 +19,9 @@ def print_progress(total: int, current: int, avg: float = 0.0):
 async def main():
     start = datetime.now()
     ## find latest config files for each symbols
-    dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search/*/', recursive=True)
-
+    dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search\\*ETHUSDT', recursive=True)
+    dirs.sort()
+    # dirs = dirs[40:] #start from bch :)
     total = len(dirs)
     i = 1
 
@@ -46,6 +47,8 @@ async def main():
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
 
     for dir in dirs:
+        if dir[-1] != '\\':
+            dir = dir + '\\'
         files = [f for f in os.listdir(dir) if re.match(r'[0-9]+_best_config_.*', f)]
         symbol = dir.split('\\')[-2]
         symbol = symbol.split('_')[-1]
@@ -63,6 +66,8 @@ async def main():
                 live_config_path=live_config_path,
                 start_date='2021-08-01',
                 end_date='2022-01-20',
+                short_wallet_exposure_limit=0.0,
+                #base_dir='backtests_long_only'
             )
             end = datetime.now()
             time_taken = (end - start).total_seconds() * 1000

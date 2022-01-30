@@ -56,7 +56,9 @@ def plot_wrap(config, data):
     dump_plots(config, fdf, sdf, df)
 
 
-async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str):
+async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str,
+                      short_wallet_exposure_limit: float = None, long_wallet_exposure_limit: float = None,
+                      base_dir: str = 'backtests'):
     args = SimpleNamespace(**{
         'backtest_config_path': backtest_config_path,
         'live_config_path': live_config_path,
@@ -65,10 +67,10 @@ async def do_backtest(backtest_config_path: str, live_config_path: str, start_da
         'symbol': symbol,
         'market_type': None,
         'nojit': False,
-        'short_wallet_exposure_limit': None,
-        'long_wallet_exposure_limit': None,
+        'short_wallet_exposure_limit': short_wallet_exposure_limit,
+        'long_wallet_exposure_limit': long_wallet_exposure_limit,
         'user': 'binance_01',
-        'base_dir': 'backtests'
+        'base_dir': base_dir
     })
     config = await prepare_backtest_config(args)
     live_config = load_live_config(args.live_config_path)
