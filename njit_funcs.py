@@ -554,6 +554,7 @@ def find_long_close_qty_bringing_wallet_exposure_to_target(
             )
         except:
             print("556 debug zero div error find_long_close_qty_bringing_wallet_exposure_to_target")
+            exit(1)
             # print(
             #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
             # )

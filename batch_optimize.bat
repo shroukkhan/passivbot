@@ -1,11 +1,8 @@
 @echo off
 for %%x in (
-        ETHUSDT
-        XRPUSDT
-        DOGEUSDT
-        ADAUSDT
-        BNBUSDT
-        MATICUSDT
+        ::ADAUSDT
+        ::BNBUSDT
+        ::MATICUSDT
         DOTUSDT
         SANDUSDT
         FTMUSDT

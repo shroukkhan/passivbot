@@ -58,7 +58,7 @@ def plot_wrap(config, data):
 
 async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str,
                       short_wallet_exposure_limit: float = None, long_wallet_exposure_limit: float = None,
-                      base_dir: str = 'backtests'):
+                      base_dir: str = 'backtests', enable_shorts: bool = True, enable_longs: bool = True):
     args = SimpleNamespace(**{
         'backtest_config_path': backtest_config_path,
         'live_config_path': live_config_path,
@@ -74,6 +74,10 @@ async def do_backtest(backtest_config_path: str, live_config_path: str, start_da
     })
     config = await prepare_backtest_config(args)
     live_config = load_live_config(args.live_config_path)
+
+    live_config['short']['enabled'] = enable_shorts
+    live_config['long']['enabled'] = enable_longs
+
     config.update(live_config)
     downloader = Downloader(config)
     print()
