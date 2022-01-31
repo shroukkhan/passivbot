@@ -1,10 +1,5 @@
 @echo off
 for %%x in (
-        ::ADAUSDT
-        ::BNBUSDT
-        ::MATICUSDT
-        DOTUSDT
-        SANDUSDT
         FTMUSDT
         LTCUSDT
         LINKUSDT
