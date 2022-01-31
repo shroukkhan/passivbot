@@ -25,7 +25,7 @@ async def main():
     total = len(dirs)
     i = 1
 
-    allowed_symbols = ["ETHUSDT", "XRPUSDT", "1000SHIBUSDT", "DOGEUSDT", "ADAUSDT",
+    allowed_symbols = ["ETHUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT",
                        "BNBUSDT", "MATICUSDT", "DOTUSDT", "SANDUSDT", "FTMUSDT",
                        "LTCUSDT", "LINKUSDT", "MANAUSDT", "ETCUSDT", "EOSUSDT",
                        "ATOMUSDT", "FILUSDT", "ICPUSDT", "ALICEUSDT", "LRCUSDT",
@@ -66,10 +66,30 @@ async def main():
                 live_config_path=live_config_path,
                 start_date='2021-08-01',
                 end_date='2022-01-20',
-                enable_shorts=False
-                #short_wallet_exposure_limit=0.0,
-                #base_dir='backtests_long_only'
+                enable_shorts=False,
+                enable_longs=True
             )
+
+            await do_backtest(
+                backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
+                symbol=symbol,
+                live_config_path=live_config_path,
+                start_date='2021-08-01',
+                end_date='2022-01-30',
+                enable_shorts=True,
+                enable_longs=True
+            )
+
+            await do_backtest(
+                backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
+                symbol=symbol,
+                live_config_path=live_config_path,
+                start_date='2021-08-01',
+                end_date='2022-01-30',
+                enable_shorts=True,
+                enable_longs=False
+            )
+
             end = datetime.now()
             time_taken = (end - start).total_seconds() * 1000
             avg = time_taken / i  # sum(self.post_process_q) / len(self.post_process_q)
