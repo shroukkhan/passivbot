@@ -21,7 +21,7 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search\\*', recursive=True)
     dirs.sort()
-    # dirs = dirs[40:] #start from bch :)
+    dirs = dirs[-5:] # take last 41
     total = len(dirs)
     i = 1
 
@@ -30,7 +30,7 @@ async def main():
                        "LTCUSDT", "LINKUSDT", "MANAUSDT", "ETCUSDT", "EOSUSDT",
                        "ATOMUSDT", "FILUSDT", "ICPUSDT", "ALICEUSDT", "LRCUSDT",
                        "BCHUSDT", "SUSHIUSDT", "XTZUSDT", "THETAUSDT", "CRVUSDT",
-                       "ALGOUSDT", "CHZUSDT", "TRXUSDT", "VETUSDT", "CHRUSDT",
+                       "ALGOUSDT", "CHZUSDT", "TRXUSDT",  "CHRUSDT",  ## "VETUSDT", Vet disabled for now
                        "ONEUSDT", "OMGUSDT", "XLMUSDT", "RUNEUSDT", "ENJUSDT",
                        "CELRUSDT", "SXPUSDT", "1INCHUSDT", "SRMUSDT", "COTIUSDT",
                        "ZECUSDT", "QTUMUSDT", "GRTUSDT", "DENTUSDT", "SFPUSDT",
