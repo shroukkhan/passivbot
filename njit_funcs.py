@@ -554,7 +554,8 @@ def find_long_close_qty_bringing_wallet_exposure_to_target(
                 wallet_exposure_target, np.array(vals[-2:]), np.array(guesses[-2:])
             )
         except:
-            print("556 debug zero div error find_long_close_qty_bringing_wallet_exposure_to_target")
+            #print(".", end='')
+            #print("556 debug zero div error find_long_close_qty_bringing_wallet_exposure_to_target")
             # print(
             #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
             # )
@@ -663,7 +664,8 @@ def find_short_close_qty_bringing_wallet_exposure_to_target(
                 wallet_exposure_target, np.array(vals[-2:]), np.array(guesses[-2:])
             )
         except:
-            print("665 debug zero div error find_short_close_qty_bringing_wallet_exposure_to_target")
+            #print(".", end='')
+            #print("665 debug zero div error find_short_close_qty_bringing_wallet_exposure_to_target")
             # print(
             #     "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
             # )

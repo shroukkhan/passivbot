@@ -30,7 +30,7 @@ async def main():
                        "LTCUSDT", "LINKUSDT", "MANAUSDT", "ETCUSDT", "EOSUSDT",
                        "ATOMUSDT", "FILUSDT", "ICPUSDT", "ALICEUSDT", "LRCUSDT",
                        "BCHUSDT", "SUSHIUSDT", "XTZUSDT", "THETAUSDT", "CRVUSDT",
-                       "ALGOUSDT", "CHZUSDT", "TRXUSDT",  "CHRUSDT",  ## "VETUSDT", Vet disabled for now
+                       "ALGOUSDT", "CHZUSDT", "TRXUSDT",  "CHRUSDT",  "VETUSDT",
                        "ONEUSDT", "OMGUSDT", "XLMUSDT", "RUNEUSDT", "ENJUSDT",
                        "CELRUSDT", "SXPUSDT", "1INCHUSDT", "SRMUSDT", "COTIUSDT",
                        "ZECUSDT", "QTUMUSDT", "GRTUSDT", "DENTUSDT", "SFPUSDT",
