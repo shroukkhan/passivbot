@@ -71,7 +71,7 @@ def plot_wrap(config, data):
     sdf.to_csv(config["plots_dirpath"] + "stats.csv")
     df = pd.DataFrame({**{"timestamp": data[:, 0], "qty": data[:, 1], "price": data[:, 2]}, **{}})
     print("dumping plots...")
-    dump_plots(config, longs, shorts, sdf, df, n_parts=config["n_parts"])
+    dump_plots(config, longs, shorts, sdf, df , n_parts=10)
 
 
 async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str,
@@ -88,6 +88,7 @@ async def do_backtest(backtest_config_path: str, live_config_path: str, start_da
         'short_wallet_exposure_limit': short_wallet_exposure_limit,
         'long_wallet_exposure_limit': long_wallet_exposure_limit,
         'user': 'binance_01',
+        'n_parts': 10,
         'base_dir': base_dir
     })
     config = await prepare_backtest_config(args)
@@ -207,18 +208,18 @@ async def main():
         downloader = Downloader(config)
         print()
         for k in (
-            keys := [
-                "exchange",
-                "spot",
-                "symbol",
-                "market_type",
-                "passivbot_mode",
-                "config_type",
-                "starting_balance",
-                "start_date",
-                "end_date",
-                "latency_simulation_ms",
-            ]
+                keys := [
+                    "exchange",
+                    "spot",
+                    "symbol",
+                    "market_type",
+                    "passivbot_mode",
+                    "config_type",
+                    "starting_balance",
+                    "start_date",
+                    "end_date",
+                    "latency_simulation_ms",
+                ]
         ):
             if k in config:
                 print(f"{k: <{max(map(len, keys)) + 2}} {config[k]}")

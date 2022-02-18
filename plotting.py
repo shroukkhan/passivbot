@@ -31,7 +31,7 @@ def dump_plots(
     table.title = "Summary"
 
     table.add_row(["Exchange", result["exchange"] if "exchange" in result else "unknown"])
-    table.add_row(["Passivbot Version", "5.3"])
+    table.add_row(["Passivbot Version", "5.4"])
     table.add_row(["Market type", result["market_type"] if "market_type" in result else "unknown"])
     table.add_row(["Symbol", result["symbol"] if "symbol" in result else "unknown"])
     table.add_row(["No. days", round_dynamic(result["result"]["n_days"], 6)])
@@ -177,6 +177,9 @@ def dump_plots(
         if result[side]["enabled"]:
             plt.clf()
             fig = plot_fills(df, fdf, plot_whole_df=True, title=f"Overview Fills {side.capitalize()}")
+            if fig is None:
+                print(f"!Skipping {result['plots_dirpath']}whole_backtest_{side}.png, because fig is NONE? ...\n")
+                continue
             fig.savefig(f"{result['plots_dirpath']}whole_backtest_{side}.png")
             print(f"\nplotting balance and equity {side}...")
             plt.clf()

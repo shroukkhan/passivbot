@@ -19,9 +19,9 @@ def print_progress(total: int, current: int, avg: float = 0.0):
 async def main():
     start = datetime.now()
     ## find latest config files for each symbols
-    dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search\\*', recursive=True)
+    dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-10:] # take last 41
+    #dirs = dirs[-10:] # take last 41
     total = len(dirs)
     i = 1
 
@@ -45,6 +45,7 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
+    allowed_symbols = ["DOGEUSDT"]
 
     for dir in dirs:
         if dir[-1] != '\\':
@@ -61,7 +62,7 @@ async def main():
             live_config_path = f'{dir}{file}'
 
             start_date = '2021-08-01'
-            end_date = '2022-02-02'
+            end_date = '2022-02-15'
 
             await do_backtest(
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
