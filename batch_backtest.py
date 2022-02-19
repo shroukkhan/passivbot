@@ -21,7 +21,7 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    #dirs = dirs[-10:] # take last 41
+    dirs = dirs[-3:] # take last 41
     total = len(dirs)
     i = 1
 
@@ -45,7 +45,7 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    allowed_symbols = ["DOGEUSDT"]
+    #allowed_symbols = ["DOGEUSDT"]
 
     for dir in dirs:
         if dir[-1] != '\\':
