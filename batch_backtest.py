@@ -21,7 +21,7 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-3:] # take last 41
+    dirs = dirs[-16:] # take last 41
     total = len(dirs)
     i = 1
 
@@ -64,15 +64,15 @@ async def main():
             start_date = '2021-08-01'
             end_date = '2022-02-15'
 
-            await do_backtest(
-                backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
-                symbol=symbol,
-                live_config_path=live_config_path,
-                start_date=start_date,
-                end_date=end_date,
-                enable_shorts=False,
-                enable_longs=True
-            )
+            # await do_backtest(
+            #     backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
+            #     symbol=symbol,
+            #     live_config_path=live_config_path,
+            #     start_date=start_date,
+            #     end_date=end_date,
+            #     enable_shorts=False,
+            #     enable_longs=True
+            # )
 
             await do_backtest(
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
@@ -84,15 +84,15 @@ async def main():
                 enable_longs=True
             )
 
-            await do_backtest(
-                backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
-                symbol=symbol,
-                live_config_path=live_config_path,
-                start_date=start_date,
-                end_date=end_date,
-                enable_shorts=True,
-                enable_longs=False
-            )
+            # await do_backtest(
+            #     backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
+            #     symbol=symbol,
+            #     live_config_path=live_config_path,
+            #     start_date=start_date,
+            #     end_date=end_date,
+            #     enable_shorts=True,
+            #     enable_longs=False
+            # )
 
             end = datetime.now()
             time_taken = (end - start).total_seconds() * 1000

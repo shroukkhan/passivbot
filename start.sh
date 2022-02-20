@@ -29,3 +29,35 @@ screen -dmS MATIC_5_4 ./run.sh MATIC
 screen -X -S ONE kill
 screen -X -S ONE_5_4 kill
 screen -dmS ONE_5_4 ./run.sh ONE
+
+screen -X -S SUSHI kill
+screen -X -S SUSHI_5_4 kill
+screen -dmS SUSHI_5_4 ./run.sh SUSHI
+
+screen -X -S ALGO kill
+screen -X -S ALGO_5_4 kill
+screen -dmS ALGO_5_4 ./run.sh ALGO
+
+screen -X -S ATOM kill
+screen -X -S ATOM_5_4 kill
+screen -dmS ATOM_5_4 ./run.sh ATOM
+
+screen -X -S CHZ kill
+screen -X -S CHZ_5_4 kill
+screen -dmS CHZ_5_4 ./run.sh CHZ
+
+screen -X -S ENJ kill
+screen -X -S ENJ_5_4 kill
+screen -dmS ENJ_5_4 ./run.sh ENJ
+
+
+screen -X -S ETC kill
+screen -X -S ETC_5_4 kill
+screen -dmS ETC_5_4 ./run.sh ETC
+
+screen -X -S OMG kill
+screen -X -S OMG_5_4 kill
+screen -dmS OMG_5_4 ./run.sh OMG
+
+
+
