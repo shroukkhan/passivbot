@@ -59,5 +59,21 @@ screen -X -S OMG kill
 screen -X -S OMG_5_4 kill
 screen -dmS OMG_5_4 ./run.sh OMG
 
+screen -X -S LTC kill
+screen -X -S LTC_5_4 kill
+screen -dmS LTC_5_4 ./run.sh LTC
+
+screen -X -S RUNE kill
+screen -X -S RUNE_5_4 kill
+screen -dmS RUNE_5_4 ./run.sh RUNE
+
+screen -X -S XLM kill
+screen -X -S XLM_5_4 kill
+screen -dmS XLM_5_4 ./run.sh XLM
+
+screen -X -S XRP kill
+screen -X -S XRP_5_4 kill
+screen -dmS XRP_5_4 ./run.sh XRP
+
 
 
