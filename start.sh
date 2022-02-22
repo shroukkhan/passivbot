@@ -92,5 +92,6 @@ screen -X -S VET kill
 screen -X -S VET_5_4 kill
 screen -dmS VET_5_4 ./run.sh VET
 
-
-
+screen -X -S FTM kill
+screen -X -S FTM_5_4 kill
+screen -dmS FTM_5_4 ./run.sh FTM
