@@ -76,4 +76,21 @@ screen -X -S XRP_5_4 kill
 screen -dmS XRP_5_4 ./run.sh XRP
 
 
+screen -X -S 1INCH kill
+screen -X -S 1INCH_5_4 kill
+screen -dmS 1INCH_5_4 ./run.sh 1INCH
+
+screen -X -S COTI kill
+screen -X -S COTI_5_4 kill
+screen -dmS COTI_5_4 ./run.sh COTI
+
+screen -X -S SXP kill
+screen -X -S SXP_5_4 kill
+screen -dmS SXP_5_4 ./run.sh SXP
+
+screen -X -S VET kill
+screen -X -S VET_5_4 kill
+screen -dmS VET_5_4 ./run.sh VET
+
+
 
