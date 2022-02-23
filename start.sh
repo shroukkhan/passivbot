@@ -95,3 +95,40 @@ screen -dmS VET_5_4 ./run.sh VET
 screen -X -S FTM kill
 screen -X -S FTM_5_4 kill
 screen -dmS FTM_5_4 ./run.sh FTM
+
+screen -X -S COMP kill
+screen -X -S COMP_5_4 kill
+screen -dmS COMP_5_4 ./run.sh COMP
+
+screen -X -S DENT kill
+screen -X -S DENT_5_4 kill
+screen -dmS DENT_5_4 ./run.sh DENT
+
+screen -X -S GRT kill
+screen -X -S GRT_5_4 kill
+screen -dmS GRT_5_4 ./run.sh GRT
+
+screen -X -S HOT kill
+screen -X -S HOT_5_4 kill
+screen -dmS HOT_5_4 ./run.sh HOT
+
+screen -X -S IOTA kill
+screen -X -S IOTA_5_4 kill
+screen -dmS IOTA_5_4 ./run.sh IOTA
+
+screen -X -S NEO kill
+screen -X -S NEO_5_4 kill
+screen -dmS NEO_5_4 ./run.sh NEO
+
+screen -X -S QTUM kill
+screen -X -S QTUM_5_4 kill
+screen -dmS QTUM_5_4 ./run.sh QTUM
+
+screen -X -S SFP kill
+screen -X -S SFP_5_4 kill
+screen -dmS SFP_5_4 ./run.sh SFP
+
+screen -X -S STOR kill
+screen -X -S STOR_5_4 kill
+screen -dmS STOR_5_4 ./run.sh STOR
+
