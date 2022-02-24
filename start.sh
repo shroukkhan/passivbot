@@ -132,3 +132,20 @@ screen -X -S STOR kill
 screen -X -S STOR_5_4 kill
 screen -dmS STOR_5_4 ./run.sh STOR
 
+screen -X -S IOST kill
+screen -X -S IOST_5_4 kill
+screen -dmS IOST_5_4 ./run.sh IOST
+
+screen -X -S KAVA kill
+screen -X -S KAVA_5_4 kill
+screen -dmS KAVA_5_4 ./run.sh KAVA
+
+screen -X -S LINA kill
+screen -X -S LINA_5_4 kill
+screen -dmS LINA_5_4 ./run.sh LINA
+
+screen -X -S WAVE kill
+screen -X -S WAVE_5_4 kill
+screen -dmS WAVE_5_4 ./run.sh WAVE
+
+

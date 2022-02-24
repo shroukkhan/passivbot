@@ -1,10 +1,5 @@
 @echo off
 for %%x in (
-         LINAUSDT
-         KAVAUSDT
-         BATUSDT
-         WAVESUSDT
-         IOSTUSDT
          ALPHAUSDT
          RLCUSDT
          HBARUSDT
