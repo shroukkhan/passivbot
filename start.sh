@@ -144,8 +144,8 @@ screen -X -S LINA kill
 screen -X -S LINA_5_4 kill
 screen -dmS LINA_5_4 ./run.sh LINA
 
-screen -X -S WAVE kill
-screen -X -S WAVE_5_4 kill
-screen -dmS WAVE_5_4 ./run.sh WAVE
+screen -X -S WAVES kill
+screen -X -S WAVES_5_4 kill
+screen -dmS WAVES_5_4 ./run.sh WAVES
 
 
