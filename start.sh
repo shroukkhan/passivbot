@@ -149,3 +149,15 @@ screen -X -S WAVES_5_4 kill
 screen -dmS WAVES_5_4 ./run.sh WAVES
 
 
+screen -X -S ALPHA kill
+screen -X -S ALPHA_5_4 kill
+screen -dmS ALPHA_5_4 ./run.sh ALPHA
+
+screen -X -S HBAR kill
+screen -X -S HBAR_5_4 kill
+screen -dmS HBAR_5_4 ./run.sh HBAR
+
+screen -X -S RLC kill
+screen -X -S RLC_5_4 kill
+screen -dmS RLC_5_4 ./run.sh RLC
+
