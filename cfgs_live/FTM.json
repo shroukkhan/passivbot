@@ -5,7 +5,7 @@
           "ddown_factor": 2.367434798707374,
           "ema_span_0": 3205.8008286066647,
           "ema_span_1": 3045.3077976016125,
-          "enabled": false,
+          "enabled": true,
           "initial_eprice_ema_dist": 0.06072236808616847,
           "initial_qty_pct": 0.0751994184747276,
           "markup_range": 0.009962554759195299,
