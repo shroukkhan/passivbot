@@ -21,7 +21,7 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-3:] # take last 41
+    #dirs = dirs[-3:]  # take last 41
     total = len(dirs)
     i = 1
 
@@ -30,7 +30,7 @@ async def main():
                        "LTCUSDT", "LINKUSDT", "MANAUSDT", "ETCUSDT", "EOSUSDT",
                        "ATOMUSDT", "FILUSDT", "ICPUSDT", "ALICEUSDT", "LRCUSDT",
                        "BCHUSDT", "SUSHIUSDT", "XTZUSDT", "THETAUSDT", "CRVUSDT",
-                       "ALGOUSDT", "CHZUSDT", "TRXUSDT",  "CHRUSDT",  "VETUSDT",
+                       "ALGOUSDT", "CHZUSDT", "TRXUSDT", "CHRUSDT", "VETUSDT",
                        "ONEUSDT", "OMGUSDT", "XLMUSDT", "RUNEUSDT", "ENJUSDT",
                        "CELRUSDT", "SXPUSDT", "1INCHUSDT", "SRMUSDT", "COTIUSDT",
                        "ZECUSDT", "QTUMUSDT", "GRTUSDT", "DENTUSDT", "SFPUSDT",
@@ -45,7 +45,7 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    #allowed_symbols = ["DOGEUSDT"]
+    #allowed_symbols = ["NEOUSDT",""]
 
     for dir in dirs:
         if dir[-1] != '\\':
@@ -78,6 +78,8 @@ async def main():
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
                 symbol=symbol,
                 live_config_path=live_config_path,
+                short_wallet_exposure_limit=0.15,
+                long_wallet_exposure_limit=0.2,
                 start_date=start_date,
                 end_date=end_date,
                 enable_shorts=True,

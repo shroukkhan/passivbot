@@ -31,7 +31,7 @@ def dump_plots(
     table.title = "Summary"
 
     table.add_row(["Exchange", result["exchange"] if "exchange" in result else "unknown"])
-    table.add_row(["Passivbot Version", "5.4"])
+    table.add_row(["Passivbot Version", "5.5"])
     table.add_row(["Market type", result["market_type"] if "market_type" in result else "unknown"])
     table.add_row(["Symbol", result["symbol"] if "symbol" in result else "unknown"])
     table.add_row(["No. days", round_dynamic(result["result"]["n_days"], 6)])
