@@ -517,8 +517,8 @@ def find_close_qty_long_bringing_wallet_exposure_to_target(
                 np.array([egv[0][1], egv[1][1]]),
             )
         except:
-            """
             print("debug zero div error find_close_qty_long_bringing_wallet_exposure_to_target")
+            """
             print(
                 "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
             )
@@ -627,8 +627,8 @@ def find_close_qty_short_bringing_wallet_exposure_to_target(
                 np.array([egv[0][1], egv[1][1]]),
             )
         except:
-            """
             print("debug zero div error find_close_qty_short_bringing_wallet_exposure_to_target")
+            """
             print(
                 "balance, psize, pprice, wallet_exposure_target, close_price, inverse, qty_step, c_mult,"
             )

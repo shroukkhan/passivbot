@@ -21,7 +21,12 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    #dirs = dirs[-3:]  # take last 41
+    dirs = dirs[-9:]  # take last 41
+
+    dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
+    dirs2.sort()
+
+    dirs.extend(dirs2)
     total = len(dirs)
     i = 1
 
