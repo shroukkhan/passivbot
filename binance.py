@@ -192,7 +192,7 @@ class BinanceBot(Bot):
         await self.update_position()
 
     async def execute_leverage_change(self):
-        lev = 9  # arbitrary
+        lev = 12  # arbitrary
         return await self.private_post(
             self.endpoints["leverage"], {"symbol": self.symbol, "leverage": lev}
         )
