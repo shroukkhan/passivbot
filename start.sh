@@ -3,10 +3,7 @@ screen -X -S ALICE_5_4 kill
 screen -X -S ALICE_5_5 kill
 screen -dmS ALICE_5_5 ./run.sh ALICE
 
-screen -X -S COTI kill
-screen -X -S COTI_5_4 kill
-screen -X -S COTI_5_5 kill
-screen -dmS COTI_5_5 ./run.sh COTI
+
 
 screen -X -S GRT kill
 screen -X -S GRT_5_4 kill
@@ -38,3 +35,18 @@ screen -X -S KAVA kill
 screen -X -S KAVA_5_4 kill
 screen -X -S KAVA_5_5 kill
 screen -dmS KAVA_5_5 ./run.sh KAVA
+
+screen -X -S COTI kill
+screen -X -S COTI_5_4 kill
+screen -X -S COTI_5_5 kill
+screen -dmS COTI_5_5 ./run.sh COTI
+
+screen -X -S LTC kill
+screen -X -S LTC_5_4 kill
+screen -X -S LTC_5_5 kill
+screen -dmS LTC_5_5 ./run.sh LTC
+
+screen -X -S ONE kill
+screen -X -S ONE_5_4 kill
+screen -X -S ONE_5_5 kill
+screen -dmS ONE_5_5 ./run.sh ONE
