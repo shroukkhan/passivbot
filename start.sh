@@ -3,13 +3,10 @@ screen -X -S ALICE_5_4 kill
 screen -X -S ALICE_5_5 kill
 screen -dmS ALICE_5_5 ./run.sh ALICE
 
-
-
 screen -X -S GRT kill
 screen -X -S GRT_5_4 kill
 screen -X -S GRT_5_5 kill
 screen -dmS GRT_5_5 ./run.sh GRT
-
 
 screen -X -S IOST kill
 screen -X -S IOST_5_4 kill
