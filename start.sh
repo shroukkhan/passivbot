@@ -47,3 +47,8 @@ screen -X -S ONE kill
 screen -X -S ONE_5_4 kill
 screen -X -S ONE_5_5 kill
 screen -dmS ONE_5_5 ./run.sh ONE
+
+screen -X -S CHZ kill
+screen -X -S CHZ_5_4 kill
+screen -X -S CHZ_5_5 kill
+screen -dmS CHZ_5_5 ./run.sh CHZ
