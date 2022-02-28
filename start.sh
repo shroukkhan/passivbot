@@ -52,3 +52,9 @@ screen -X -S CHZ kill
 screen -X -S CHZ_5_4 kill
 screen -X -S CHZ_5_5 kill
 screen -dmS CHZ_5_5 ./run.sh CHZ
+
+screen -X -S NEO kill
+screen -X -S NEO_5_4 kill
+screen -X -S NEO_5_5 kill
+screen -dmS NEO_5_5 ./run.sh NEO
+

@@ -51,7 +51,7 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    #allowed_symbols = ["NEOUSDT",""]
+    allowed_symbols = ["NEOUSDT",""]
 
     for dir in dirs:
         if dir[-1] != '\\':
