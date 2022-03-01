@@ -58,3 +58,34 @@ screen -X -S NEO_5_4 kill
 screen -X -S NEO_5_5 kill
 screen -dmS NEO_5_5 ./run.sh NEO
 
+screen -X -S ADA kill
+screen -X -S ADA_5_4 kill
+screen -X -S ADA_5_5 kill
+screen -dmS ADA_5_5 ./run.sh ADA
+
+screen -X -S DOGE kill
+screen -X -S DOGE_5_4 kill
+screen -X -S DOGE_5_5 kill
+screen -dmS DOGE_5_5 ./run.sh DOGE
+
+screen -X -S HBAR kill
+screen -X -S HBAR_5_4 kill
+screen -X -S HBAR_5_5 kill
+screen -dmS HBAR_5_5 ./run.sh HBAR
+
+screen -X -S SXP kill
+screen -X -S SXP_5_4 kill
+screen -X -S SXP_5_5 kill
+screen -dmS SXP_5_5 ./run.sh SXP
+
+screen -X -S XLM kill
+screen -X -S XLM_5_4 kill
+screen -X -S XLM_5_5 kill
+screen -dmS XLM_5_5 ./run.sh XLM
+
+screen -X -S XRP kill
+screen -X -S XRP_5_4 kill
+screen -X -S XRP_5_5 kill
+screen -dmS XRP_5_5 ./run.sh XRP
+
+
