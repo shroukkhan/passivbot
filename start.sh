@@ -88,6 +88,10 @@ screen -X -S XRP_5_4 kill
 screen -X -S XRP_5_5 kill
 screen -dmS XRP_5_5 ./run.sh XRP
 
+screen -X -S FTM kill
+screen -X -S FTM_5_4 kill
+screen -X -S FTM_5_5 kill
+
 screen -X -S 1INCH kill
 screen -X -S 1INCH_5_4 kill
 screen -X -S 1INCH_5_5 kill
