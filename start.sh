@@ -117,5 +117,19 @@ screen -X -S ALPHA_5_4 kill
 screen -X -S ALPHA_5_5 kill
 screen -dmS ALPHA_5_5 ./run.sh ALPHA
 
+screen -X -S COMP kill
+screen -X -S COMP_5_4 kill
+screen -X -S COMP_5_5 kill
+screen -dmS COMP_5_5 ./run.sh COMP
+
+screen -X -S LINA kill
+screen -X -S LINA_5_4 kill
+screen -X -S LINA_5_5 kill
+screen -dmS LINA_5_5 ./run.sh LINA
+
+screen -X -S QTUM kill
+screen -X -S QTUM_5_4 kill
+screen -X -S QTUM_5_5 kill
+screen -dmS QTUM_5_5 ./run.sh QTUM
 
 
