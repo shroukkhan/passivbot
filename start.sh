@@ -97,3 +97,20 @@ screen -X -S 1INCH_5_4 kill
 screen -X -S 1INCH_5_5 kill
 screen -dmS 1INCH_5_5 ./run.sh 1INCH
 
+screen -X -S RLC kill
+screen -X -S RLC_5_4 kill
+screen -X -S RLC_5_5 kill
+screen -dmS RLC_5_5 ./run.sh RLC
+
+screen -X -S SUSHI kill
+screen -X -S SUSHI_5_4 kill
+screen -X -S SUSHI_5_5 kill
+screen -dmS SUSHI_5_5 ./run.sh SUSHI
+
+screen -X -S WAVES kill
+screen -X -S WAVES_5_4 kill
+screen -X -S WAVES_5_5 kill
+screen -dmS WAVES_5_5 ./run.sh WAVES
+
+
+
