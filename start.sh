@@ -112,5 +112,10 @@ screen -X -S WAVES_5_4 kill
 screen -X -S WAVES_5_5 kill
 screen -dmS WAVES_5_5 ./run.sh WAVES
 
+screen -X -S ALPHA kill
+screen -X -S ALPHA_5_4 kill
+screen -X -S ALPHA_5_5 kill
+screen -dmS ALPHA_5_5 ./run.sh ALPHA
+
 
 
