@@ -132,4 +132,28 @@ screen -X -S QTUM_5_4 kill
 screen -X -S QTUM_5_5 kill
 screen -dmS QTUM_5_5 ./run.sh QTUM
 
+screen -X -S ALGO kill
+screen -X -S ALGO_5_4 kill
+screen -X -S ALGO_5_5 kill
+screen -dmS ALGO_5_5 ./run.sh ALGO
+
+screen -X -S CRV kill
+screen -X -S CRV_5_4 kill
+screen -X -S CRV_5_5 kill
+screen -dmS CRV_5_5 ./run.sh CRV
+
+screen -X -S ENJ kill
+screen -X -S ENJ_5_4 kill
+screen -X -S ENJ_5_5 kill
+screen -dmS ENJ_5_5 ./run.sh ENJ
+
+screen -X -S LINK kill
+screen -X -S LINK_5_4 kill
+screen -X -S LINK_5_5 kill
+screen -dmS LINK_5_5 ./run.sh LINK
+
+screen -X -S MATIC kill
+screen -X -S MATIC_5_4 kill
+screen -X -S MATIC_5_5 kill
+screen -dmS MATIC_5_5 ./run.sh MATIC
 

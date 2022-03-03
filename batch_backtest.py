@@ -25,7 +25,7 @@ async def main():
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-3:]  # take last xx
+    dirs2 = dirs2[-9:]  # take last xx
 
     dirs.extend(dirs2)
     total = len(dirs)
@@ -66,6 +66,7 @@ async def main():
             files.sort(reverse=True)
             file = files[0]
             live_config_path = f'{dir}{file}'
+            print(f'using file : {live_config_path}')
 
             start_date = '2021-08-01'
             end_date = '2022-03-02'
