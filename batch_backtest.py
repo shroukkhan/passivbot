@@ -25,7 +25,7 @@ async def main():
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-9:]  # take last xx
+    dirs2 = dirs2[-6:]  # take last xx
 
     dirs.extend(dirs2)
     total = len(dirs)

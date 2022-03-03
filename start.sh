@@ -157,3 +157,22 @@ screen -X -S MATIC_5_4 kill
 screen -X -S MATIC_5_5 kill
 screen -dmS MATIC_5_5 ./run.sh MATIC
 
+screen -X -S DENT kill
+screen -X -S DENT_5_4 kill
+screen -X -S DENT_5_5 kill
+screen -dmS DENT_5_5 ./run.sh DENT
+
+screen -X -S RUNE kill
+screen -X -S RUNE_5_4 kill
+screen -X -S RUNE_5_5 kill
+screen -dmS RUNE_5_5 ./run.sh RUNE
+
+screen -X -S SFP kill
+screen -X -S SFP_5_4 kill
+screen -X -S SFP_5_5 kill
+screen -dmS SFP_5_5 ./run.sh SFP
+
+screen -X -S VET kill
+screen -X -S VET_5_4 kill
+screen -X -S VET_5_5 kill
+screen -dmS VET_5_5 ./run.sh VET
