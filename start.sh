@@ -227,3 +227,8 @@ screen -X -S SNX kill
 screen -X -S SNX_5_4 kill
 screen -X -S SNX_5_5 kill
 screen -dmS SNX_5_5 ./run.sh SNX
+
+screen -X -S ANKR kill
+screen -X -S ANKR_5_4 kill
+screen -X -S ANKR_5_5 kill
+screen -dmS ANKR_5_5 ./run.sh ANKR
