@@ -157,10 +157,6 @@ screen -X -S MATIC_5_4 kill
 screen -X -S MATIC_5_5 kill
 screen -dmS MATIC_5_5 ./run.sh MATIC
 
-screen -X -S DENT kill
-screen -X -S DENT_5_4 kill
-screen -X -S DENT_5_5 kill
-screen -dmS DENT_5_5 ./run.sh DENT
 
 screen -X -S RUNE kill
 screen -X -S RUNE_5_4 kill
@@ -176,3 +172,38 @@ screen -X -S VET kill
 screen -X -S VET_5_4 kill
 screen -X -S VET_5_5 kill
 screen -dmS VET_5_5 ./run.sh VET
+
+screen -X -S XMR kill
+screen -X -S XMR_5_4 kill
+screen -X -S XMR_5_5 kill
+screen -dmS XMR_5_5 ./run.sh XMR
+
+
+screen -X -S REN kill
+screen -X -S REN_5_4 kill
+screen -X -S REN_5_5 kill
+screen -dmS REN_5_5 ./run.sh REN
+
+
+screen -X -S ICX kill
+screen -X -S ICX_5_4 kill
+screen -X -S ICX_5_5 kill
+screen -dmS ICX_5_5 ./run.sh ICX
+
+
+screen -X -S HBAR kill
+screen -X -S HBAR_5_4 kill
+screen -X -S HBAR_5_5 kill
+screen -dmS HBAR_5_5 ./run.sh HBAR
+
+
+screen -X -S DODO kill
+screen -X -S DODO_5_4 kill
+screen -X -S DODO_5_5 kill
+screen -dmS DODO_5_5 ./run.sh DODO
+
+
+screen -X -S DENT kill
+screen -X -S DENT_5_4 kill
+screen -X -S DENT_5_5 kill
+screen -dmS DENT_5_5 ./run.sh DENT
