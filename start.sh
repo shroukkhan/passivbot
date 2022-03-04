@@ -207,3 +207,23 @@ screen -X -S DENT kill
 screen -X -S DENT_5_4 kill
 screen -X -S DENT_5_5 kill
 screen -dmS DENT_5_5 ./run.sh DENT
+
+screen -X -S HOT kill
+screen -X -S HOT_5_4 kill
+screen -X -S HOT_5_5 kill
+screen -dmS HOT_5_5 ./run.sh HOT
+
+screen -X -S ICP kill
+screen -X -S ICP_5_4 kill
+screen -X -S ICP_5_5 kill
+screen -dmS ICP_5_5 ./run.sh ICP
+
+screen -X -S IOTA kill
+screen -X -S IOTA_5_4 kill
+screen -X -S IOTA_5_5 kill
+screen -dmS IOTA_5_5 ./run.sh IOTA
+
+screen -X -S SNX kill
+screen -X -S SNX_5_4 kill
+screen -X -S SNX_5_5 kill
+screen -dmS SNX_5_5 ./run.sh SNX

@@ -1,23 +1,14 @@
 @echo off
 for %%x in (
-           LINAUSDT
+           IOTAUSDT
+           HOTUSDT
            ICPUSDT
-           CRVUSDT
-           LINKUSDT
-           MATICUSDT
-           ALGOUSDT
-           ENJUSDT
-           RUNEUSDT
-           VETUSDT
-           SFPUSDT
-           DENTUSDT
-           ALICEUSDT
-           CVCUSDT
-           RENUSDT
-           ICXUSDT
-           DODOUSDT
-           HBARUSDT
-           XMRUSDT
+           SNXUSDT
+           ANKRUSDT
+           DASHUSDT
+           REEFUSDT
+           ZENUSDT
+
        ) do (
          ::echo harmony_search.py  -oh --symbol %%x -pm r --start_date 2021-08-01 --end_date 2022-02-25 --n_cpus 12
          ::python harmony_search.py --symbol %%x -pm r --start_date 2021-08-01 --end_date 2022-02-25 --n_cpus 6
