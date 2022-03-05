@@ -268,7 +268,8 @@ screen -X -S OGN_5_4 kill
 screen -X -S OGN_5_5 kill
 screen -dmS OGN_5_5 ./run.sh OGN
 
-screen -X -S MLT kill
-screen -X -S MLT_5_4 kill
-screen -X -S MLT_5_5 kill
-screen -dmS MLT_5_5 ./run.sh MLT
+screen -X -S MTL kill
+screen -X -S MTL_5_4 kill
+screen -X -S MTL_5_5 kill
+screen -dmS MTL_5_5 ./run.sh MTL
+
