@@ -232,3 +232,29 @@ screen -X -S ANKR kill
 screen -X -S ANKR_5_4 kill
 screen -X -S ANKR_5_5 kill
 screen -dmS ANKR_5_5 ./run.sh ANKR
+
+screen -X -S BEL kill
+screen -X -S BEL_5_4 kill
+screen -X -S BEL_5_5 kill
+screen -dmS BEL_5_5 ./run.sh BEL
+
+screen -X -S NKN kill
+screen -X -S NKN_5_4 kill
+screen -X -S NKN_5_5 kill
+screen -dmS NKN_5_5 ./run.sh NKN
+
+screen -X -S ONT kill
+screen -X -S ONT_5_4 kill
+screen -X -S ONT_5_5 kill
+screen -dmS ONT_5_5 ./run.sh ONT
+
+screen -X -S REEF kill
+screen -X -S REEF_5_4 kill
+screen -X -S REEF_5_5 kill
+screen -dmS REEF_5_5 ./run.sh REEF
+
+screen -X -S ZEN kill
+screen -X -S ZEN_5_4 kill
+screen -X -S ZEN_5_5 kill
+screen -dmS ZEN_5_5 ./run.sh ZEN
+
