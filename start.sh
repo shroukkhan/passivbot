@@ -273,3 +273,15 @@ screen -X -S MTL_5_4 kill
 screen -X -S MTL_5_5 kill
 screen -dmS MTL_5_5 ./run.sh MTL
 
+screen -X -S LIT kill
+screen -X -S LIT_5_4 kill
+screen -X -S LIT_5_5 kill
+screen -dmS LIT_5_5 ./run.sh LIT
+
+
+screen -X -S RVN kill
+screen -X -S RVN_5_4 kill
+screen -X -S RVN_5_5 kill
+screen -dmS RVN_5_5 ./run.sh RVN
+
+
