@@ -258,3 +258,14 @@ screen -X -S ZEN_5_4 kill
 screen -X -S ZEN_5_5 kill
 screen -dmS ZEN_5_5 ./run.sh ZEN
 
+screen -X -S BLZ kill
+screen -X -S BLZ_5_4 kill
+screen -X -S BLZ_5_5 kill
+screen -dmS BLZ_5_5 ./run.sh BLZ
+
+screen -X -S OGN kill
+screen -X -S OGN_5_4 kill
+screen -X -S OGN_5_5 kill
+screen -dmS OGN_5_5 ./run.sh OGN
+
+
