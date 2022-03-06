@@ -278,10 +278,31 @@ screen -X -S LIT_5_4 kill
 screen -X -S LIT_5_5 kill
 screen -dmS LIT_5_5 ./run.sh LIT
 
-
 screen -X -S RVN kill
 screen -X -S RVN_5_4 kill
 screen -X -S RVN_5_5 kill
 screen -dmS RVN_5_5 ./run.sh RVN
+
+screen -X -S MKR kill
+screen -X -S MKR_5_4 kill
+screen -X -S MKR_5_5 kill
+screen -dmS MKR_5_5 ./run.sh MKR
+
+screen -X -S OCEAN kill
+screen -X -S OCEAN_5_4 kill
+screen -X -S OCEAN_5_5 kill
+screen -dmS OCEAN_5_5 ./run.sh OCEAN
+
+screen -X -S UNFI kill
+screen -X -S UNFI_5_4 kill
+screen -X -S UNFI_5_5 kill
+screen -dmS UNFI_5_5 ./run.sh UNFI
+
+
+screen -X -S ZIL kill
+screen -X -S ZIL_5_4 kill
+screen -X -S ZIL_5_5 kill
+screen -dmS ZIL_5_5 ./run.sh ZIL
+
 
 
