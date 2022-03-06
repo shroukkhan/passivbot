@@ -293,16 +293,19 @@ screen -X -S OCEAN_5_4 kill
 screen -X -S OCEAN_5_5 kill
 screen -dmS OCEAN_5_5 ./run.sh OCEAN
 
-screen -X -S UNFI kill
-screen -X -S UNFI_5_4 kill
-screen -X -S UNFI_5_5 kill
-screen -dmS UNFI_5_5 ./run.sh UNFI
-
-
 screen -X -S ZIL kill
 screen -X -S ZIL_5_4 kill
 screen -X -S ZIL_5_5 kill
 screen -dmS ZIL_5_5 ./run.sh ZIL
 
+screen -X -S UNFI kill
+screen -X -S UNFI_5_4 kill
+screen -X -S UNFI_5_5 kill
+screen -dmS UNFI_5_5 ./run.sh UNFI
+
+screen -X -S BAND kill
+screen -X -S BAND_5_4 kill
+screen -X -S BAND_5_5 kill
+screen -dmS BAND_5_5 ./run.sh BAND
 
 
