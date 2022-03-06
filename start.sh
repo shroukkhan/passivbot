@@ -308,4 +308,25 @@ screen -X -S BAND_5_4 kill
 screen -X -S BAND_5_5 kill
 screen -dmS BAND_5_5 ./run.sh BAND
 
+screen -X -S KNC kill
+screen -X -S KNC_5_4 kill
+screen -X -S KNC_5_5 kill
+screen -dmS KNC_5_5 ./run.sh KNC
+
+screen -X -S STMX kill
+screen -X -S STMX_5_4 kill
+screen -X -S STMX_5_5 kill
+screen -dmS STMX_5_5 ./run.sh STMX
+
+screen -X -S TOMO kill
+screen -X -S TOMO_5_4 kill
+screen -X -S TOMO_5_5 kill
+screen -dmS TOMO_5_5 ./run.sh TOMO
+
+screen -X -S TRB kill
+screen -X -S TRB_5_4 kill
+screen -X -S TRB_5_5 kill
+screen -dmS TRB_5_5 ./run.sh TRB
+
+
 
