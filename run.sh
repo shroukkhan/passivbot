@@ -2,5 +2,5 @@
 cd /home/skhan/passivbot_5_5/
 source /home/skhan/passivbot_5_5/bin/activate
 echo Runing : $1 ...
-python3 passivbot.py -lw 0.1 -sw 0.1 binance_01 $1USDT cfgs_live/$1.json
+python3 passivbot.py binance_01 $1USDT cfgs_live/$1.json
 #sleep 100
