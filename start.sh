@@ -343,4 +343,18 @@ screen -X -S ZRX_5_4 kill
 screen -X -S ZRX_5_5 kill
 screen -dmS ZRX_5_5 ./run.sh ZRX
 
+screen -X -S BTS kill
+screen -X -S BTS_5_4 kill
+screen -X -S BTS_5_5 kill
+screen -dmS BTS_5_5 ./run.sh BTS
+
+screen -X -S DGB kill
+screen -X -S DGB_5_4 kill
+screen -X -S DGB_5_5 kill
+screen -dmS DGB_5_5 ./run.sh DGB
+
+screen -X -S FLM kill
+screen -X -S FLM_5_4 kill
+screen -X -S FLM_5_5 kill
+screen -dmS FLM_5_5 ./run.sh FLM
 

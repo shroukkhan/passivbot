@@ -25,7 +25,7 @@ async def main():
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-5:]  # take last xx
+    dirs2 = dirs2[-6:]  # take last xx
 
     dirs.extend(dirs2)
     total = len(dirs)
@@ -51,7 +51,8 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    #allowed_symbols = ["MTLUSDT"]
+    allowed_symbols = ["XEMUSDT", "FLMUSDT", "BALUSDT",
+                       "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
 
     for dir in dirs:
         if dir[-1] != '\\':
