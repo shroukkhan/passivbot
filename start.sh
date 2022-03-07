@@ -328,5 +328,19 @@ screen -X -S TRB_5_4 kill
 screen -X -S TRB_5_5 kill
 screen -dmS TRB_5_5 ./run.sh TRB
 
+screen -X -S AKRO kill
+screen -X -S AKRO_5_4 kill
+screen -X -S AKRO_5_5 kill
+screen -dmS AKRO_5_5 ./run.sh AKRO
+
+screen -X -S SC kill
+screen -X -S SC_5_4 kill
+screen -X -S SC_5_5 kill
+screen -dmS SC_5_5 ./run.sh SC
+
+screen -X -S ZRX kill
+screen -X -S ZRX_5_4 kill
+screen -X -S ZRX_5_5 kill
+screen -dmS ZRX_5_5 ./run.sh ZRX
 
 
