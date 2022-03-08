@@ -362,6 +362,8 @@ screen -X -S AXS kill
 screen -X -S AXS_bybit kill
 screen -dmS AXS_bybit ./run_bybit.sh AXS
 
-screen -X -S BNB kill
-screen -X -S BNB_bybit kill
-screen -dmS BNB_bybit ./run_bybit.sh BNB
+screen -X -S ATOM kill
+screen -X -S ATOM_bybit kill
+screen -dmS ATOM_bybit ./run_bybit.sh ATOM
+
+
