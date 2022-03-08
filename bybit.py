@@ -549,7 +549,7 @@ class Bybit(Bot):
                         "symbol": self.symbol,
                         "is_isolated": False,
                         "buy_leverage": 12,
-                        "sell_leverage": 12,change
+                        "sell_leverage": 12,
                     },
                 )
                 print(res)
