@@ -363,3 +363,7 @@ screen -X -S AXS_5_4 kill
 screen -X -S AXS_5_5 kill
 screen -dmS AXS_bybit ./run_bybit.sh AXS
 
+screen -X -S BNB kill
+screen -X -S BNB_5_4 kill
+screen -X -S BNB_5_5 kill
+screen -dmS BNB_bybit ./run_bybit.sh BNB
