@@ -33,7 +33,7 @@ for i in symboldata['result']:
         else:
             bin_listed = "No"
 
-        if min_notional <= 6 and float(volm) > 10:
+        if min_notional <= 6 and float(volm) > 4:
             resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
             resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
 # list1: sort on volM
@@ -44,8 +44,10 @@ for i in resultlist:
 
 print("\n")
 
-# list2: sort on notional
-resultlistnotional.sort(reverse=True)
-print("notional\tvolM$\t\tsymbol\t\tBinance Listed")
-for i in resultlistnotional:
-    print(i)
+# # list2: sort on notional
+# resultlistnotional.sort(reverse=True)
+# print("notional\tvolM$\t\tsymbol\t\tBinance Listed")
+#
+# c = []
+# for i in resultlistnotional:
+#     print(i)
