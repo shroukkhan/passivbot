@@ -25,7 +25,7 @@ async def main():
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-6:]  # take last xx
+    dirs2 = dirs2[-2:]  # take last xx
 
     dirs.extend(dirs2)
     total = len(dirs)
@@ -51,8 +51,7 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    allowed_symbols = ["XEMUSDT", "FLMUSDT", "BALUSDT",
-                       "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
+    allowed_symbols = ["AXSUSDT"]
 
     for dir in dirs:
         if dir[-1] != '\\':
@@ -70,7 +69,7 @@ async def main():
             print(f'using file : {live_config_path}')
 
             start_date = '2021-08-01'
-            end_date = '2022-03-02'
+            end_date = '2022-03-07'
 
             # await do_backtest(
             #     backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
@@ -90,6 +89,7 @@ async def main():
                 long_wallet_exposure_limit=0.2,
                 start_date=start_date,
                 end_date=end_date,
+                user='bybit_01',
                 enable_shorts=True,
                 enable_longs=True
             )

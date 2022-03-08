@@ -72,12 +72,12 @@ def plot_wrap(config, data):
     sdf.to_csv(config["plots_dirpath"] + "stats.csv")
     df = pd.DataFrame({**{"timestamp": data[:, 0], "qty": data[:, 1], "price": data[:, 2]}, **{}})
     print("dumping plots...")
-    dump_plots(config, longs, shorts, sdf, df , n_parts=10)
+    dump_plots(config, longs, shorts, sdf, df, n_parts=10)
 
 
 async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str,
                       short_wallet_exposure_limit: float = None, long_wallet_exposure_limit: float = None,
-                      base_dir: str = 'backtests', enable_shorts: bool = True, enable_longs: bool = True):
+                      base_dir: str = 'backtests', enable_shorts: bool = True, enable_longs: bool = True, user=None):
     args = SimpleNamespace(**{
         'backtest_config_path': backtest_config_path,
         'live_config_path': live_config_path,
@@ -88,7 +88,7 @@ async def do_backtest(backtest_config_path: str, live_config_path: str, start_da
         'nojit': False,
         'short_wallet_exposure_limit': short_wallet_exposure_limit,
         'long_wallet_exposure_limit': long_wallet_exposure_limit,
-        'user': 'binance_01',
+        'user': user,
         'n_parts': 10,
         'base_dir': base_dir
     })
@@ -232,8 +232,8 @@ async def main():
                     "start_date",
                     "end_date",
                     "latency_simulation_ms",
-                "base_dir",
-            ]
+                    "base_dir",
+                ]
         ):
             if k in config:
                 print(f"{k: <{max(map(len, keys)) + 2}} {config[k]}")

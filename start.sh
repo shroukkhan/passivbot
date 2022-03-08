@@ -358,3 +358,7 @@ screen -X -S FLM_5_4 kill
 screen -X -S FLM_5_5 kill
 screen -dmS FLM_5_5 ./run.sh FLM
 
+screen -X -S AXS kill
+screen -X -S AXS_5_4 kill
+screen -X -S AXS_5_5 kill
+screen -dmS AXS_5_5 ./run_bybit.sh AXS
