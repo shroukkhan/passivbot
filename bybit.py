@@ -548,14 +548,14 @@ class Bybit(Bot):
                     {
                         "symbol": self.symbol,
                         "is_isolated": False,
-                        "buy_leverage": 7,
-                        "sell_leverage": 7,
+                        "buy_leverage": 12,
+                        "sell_leverage": 12,change
                     },
                 )
                 print(res)
                 res = await self.private_post(
                     "/private/linear/position/set-leverage",
-                    {"symbol": self.symbol, "buy_leverage": 7, "sell_leverage": 7},
+                    {"symbol": self.symbol, "buy_leverage": 12, "sell_leverage": 12},
                 )
                 print(res)
             elif "inverse_perpetual" in self.market_type:
