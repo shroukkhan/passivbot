@@ -386,4 +386,8 @@ screen -X -S MATIC kill
 screen -X -S MATIC_bybit kill
 screen -dmS MATIC_bybit ./run_bybit.sh MATIC
 
+screen -X -S LINK kill
+screen -X -S LINK_bybit kill
+screen -dmS LINK_bybit ./run_bybit.sh LINK
+
 
