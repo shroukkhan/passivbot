@@ -378,4 +378,12 @@ screen -X -S WAVES kill
 screen -X -S WAVES_bybit kill
 screen -dmS WAVES_bybit ./run_bybit.sh WAVES
 
+screen -X -S DOT kill
+screen -X -S DOT_bybit kill
+screen -dmS DOT_bybit ./run_bybit.sh DOT
+
+screen -X -S MATIC kill
+screen -X -S MATIC_bybit kill
+screen -dmS MATIC_bybit ./run_bybit.sh MATIC
+
 
