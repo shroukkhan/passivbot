@@ -370,4 +370,12 @@ screen -X -S ATOM kill
 screen -X -S ATOM_bybit kill
 screen -dmS ATOM_bybit ./run_bybit.sh ATOM
 
+screen -X -S SAND kill
+screen -X -S SAND_bybit kill
+screen -dmS SAND_bybit ./run_bybit.sh SAND
+
+screen -X -S WAVES kill
+screen -X -S WAVES_bybit kill
+screen -dmS WAVES_bybit ./run_bybit.sh WAVES
+
 
