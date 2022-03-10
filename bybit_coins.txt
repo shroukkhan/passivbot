@@ -30,3 +30,5 @@ volM$		notional	symbol		Binance Listed
 0005		2.08		YFIUSDT      	Yes
 0005		1.21		AAVEUSDT     	Yes
 0005		0.20		EOSUSDT      	Yes
+
+change click dblclick auxclick mousedown mouseup pointerdown pointerup notificationclick reset submit touchend contextmenu

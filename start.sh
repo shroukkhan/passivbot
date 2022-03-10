@@ -307,3 +307,6 @@ screen -X -S LINK_bybit kill
 screen -dmS LINK_bybit ./run_bybit.sh LINK
 
 
+screen -X -S ADA_bybit kill
+screen -dmS ADA_bybit ./run_bybit.sh ADA
+
