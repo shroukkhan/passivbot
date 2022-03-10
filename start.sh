@@ -310,3 +310,5 @@ screen -dmS LINK_bybit ./run_bybit.sh LINK
 screen -X -S ADA_bybit kill
 screen -dmS ADA_bybit ./run_bybit.sh ADA
 
+screen -X -S XRP_bybit kill
+screen -dmS XRP_bybit ./run_bybit.sh XRP
