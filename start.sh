@@ -290,22 +290,17 @@ screen -dmS ATOM_bybit ./run_bybit.sh ATOM
 screen -X -S SAND_bybit kill
 screen -dmS SAND_bybit ./run_bybit.sh SAND
 
-
 screen -X -S WAVES_bybit kill
 screen -dmS WAVES_bybit ./run_bybit.sh WAVES
-
 
 screen -X -S DOT_bybit kill
 screen -dmS DOT_bybit ./run_bybit.sh DOT
 
-
 screen -X -S MATIC_bybit kill
 screen -dmS MATIC_bybit ./run_bybit.sh MATIC
 
-
 screen -X -S LINK_bybit kill
 screen -dmS LINK_bybit ./run_bybit.sh LINK
-
 
 screen -X -S ADA_bybit kill
 screen -dmS ADA_bybit ./run_bybit.sh ADA
@@ -327,3 +322,6 @@ screen -dmS THETA_bybit ./run_bybit.sh THETA
 
 screen -X -S DOGE_bybit kill
 screen -dmS DOGE_bybit ./run_bybit.sh DOGE
+
+screen -X -S UNI_bybit kill
+screen -dmS UNI_bybit ./run_bybit.sh UNI
