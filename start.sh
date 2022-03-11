@@ -312,3 +312,15 @@ screen -dmS ADA_bybit ./run_bybit.sh ADA
 
 screen -X -S XRP_bybit kill
 screen -dmS XRP_bybit ./run_bybit.sh XRP
+
+screen -X -S CHZ_bybit kill
+screen -dmS CHZ_bybit ./run_bybit.sh CHZ
+
+screen -X -S IMX_bybit kill
+screen -dmS IMX_bybit ./run_bybit.sh IMX
+
+screen -X -S RUNE_bybit kill
+screen -dmS RUNE_bybit ./run_bybit.sh RUNE
+
+screen -X -S THETA_bybit kill
+screen -dmS THETA_bybit ./run_bybit.sh THETA

@@ -21,11 +21,11 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = [] #dirs[-5:]  # take last xxx
+    dirs = []  # dirs[-5:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-2:]  # take last xx
+    dirs2 = dirs2[-4:]  # take last xx
 
     dirs.extend(dirs2)
     total = len(dirs)
@@ -51,7 +51,7 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    #allowed_symbols = ["ADAUSD"]
+    allowed_symbols = ["GALAUSDT", "IMXUSDT", "RUNEUSDT", "THETAUSDT", "CHZUSDT"]
 
     for dir in dirs:
         if dir[-1] != '\\':
