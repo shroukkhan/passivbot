@@ -324,3 +324,6 @@ screen -dmS RUNE_bybit ./run_bybit.sh RUNE
 
 screen -X -S THETA_bybit kill
 screen -dmS THETA_bybit ./run_bybit.sh THETA
+
+screen -X -S DOGE_bybit kill
+screen -dmS DOGE_bybit ./run_bybit.sh DOGE

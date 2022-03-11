@@ -34,7 +34,7 @@ try:
             else:
                 min_notional = min_notional_calc
 
-            if min_notional <= 6 and float(volm) > 5:
+            if min_notional <= 10 and float(volm) > 5:
                 resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}")
                 resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}")
 
