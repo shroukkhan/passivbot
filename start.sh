@@ -338,3 +338,6 @@ screen -dmS PEOPLE_bybit ./run_bybit.sh PEOPLE
 screen -X -S YFI_bybit kill
 screen -dmS YFI_bybit ./run_bybit.sh YFI
 
+screen -X -S EOS_bybit kill
+screen -dmS EOS_bybit ./run_bybit.sh EOS
+
