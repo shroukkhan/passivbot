@@ -33,7 +33,7 @@ for i in symboldata['result']:
         else:
             bin_listed = "No"
 
-        if min_notional <= 6 and float(volm) > 4:
+        if min_notional <= 20 and float(volm) > 2:
             resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
             resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
 # list1: sort on volM

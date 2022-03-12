@@ -31,4 +31,17 @@ volM$		notional	symbol		Binance Listed
 0005		1.21		AAVEUSDT     	Yes
 0005		0.20		EOSUSDT      	Yes
 
+
+volM$		notional	symbol		Binance Listed
+0474		9.01		LUNAUSDT     	Yes
+0378		0.82		XRPUSDT      	Yes
+0120		8.16		SOLUSDT      	Yes
+0093		1.05		NEARUSDT     	Yes
+0075		7.23		AVAXUSDT     	Yes
+0072		1.24		FTMUSDT      	Yes
+0063		2.55		WAVESUSDT    	Yes
+0060		0.57		RUNEUSDT     	Yes
+0049		0.22		GALAUSDT     	Yes
+0044		2.82		SANDUSDT     	Yes
+
 change click dblclick auxclick mousedown mouseup pointerdown pointerup notificationclick reset submit touchend contextmenu
