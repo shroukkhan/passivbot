@@ -325,3 +325,15 @@ screen -dmS DOGE_bybit ./run_bybit.sh DOGE
 
 screen -X -S UNI_bybit kill
 screen -dmS UNI_bybit ./run_bybit.sh UNI
+
+screen -X -S AAVE_bybit kill
+screen -dmS AAVE_bybit ./run_bybit.sh AAVE
+
+screen -X -S ONE_bybit kill
+screen -dmS ONE_bybit ./run_bybit.sh ONE
+
+screen -X -S PEOPLE_bybit kill
+screen -dmS PEOPLE_bybit ./run_bybit.sh PEOPLE
+
+screen -X -S YFI_bybit kill
+screen -dmS YFI_bybit ./run_bybit.sh YFI
