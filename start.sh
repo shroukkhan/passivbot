@@ -341,3 +341,5 @@ screen -dmS YFI_bybit ./run_bybit.sh YFI
 screen -X -S EOS_bybit kill
 screen -dmS EOS_bybit ./run_bybit.sh EOS
 
+screen -X -S LUNA_bybit kill
+screen -dmS LUNA_bybit ./run_bybit.sh LUNA
