@@ -21,7 +21,7 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-2:]  # dirs[-5:]  # take last xxx
+    dirs = [] # dirs[-2:]  # dirs[-5:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
@@ -52,8 +52,12 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
 
-    allowed_symbols = ["LUNA"]
-    allowed_symbols = [s + "USDT" for s in allowed_symbols]
+    allowed_symbols = ["NEARUSDT",
+"AAVEUSDT",
+"UNIUSDT",
+"EGLDUSDT",
+"TLMUSDT",]
+    #allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
         if dir[-1] != '\\':
@@ -91,7 +95,7 @@ async def main():
                 long_wallet_exposure_limit=0.2,
                 start_date=start_date,
                 end_date=end_date,
-                user='bybit_01',
+                user='binance_01',
                 enable_shorts=True,
                 enable_longs=True
             )

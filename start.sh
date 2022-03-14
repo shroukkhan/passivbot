@@ -343,3 +343,9 @@ screen -dmS EOS_bybit ./run_bybit.sh EOS
 
 screen -X -S LUNA_bybit kill
 screen -dmS LUNA_bybit ./run_bybit.sh LUNA
+
+screen -X -S TLM_binance kill
+screen -dmS TLM_binance  ./run.sh TLM
+
+screen -X -S UNI_binance kill
+screen -dmS UNI_binance  ./run.sh UNI

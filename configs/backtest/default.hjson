@@ -3,7 +3,7 @@
   market_type: futures
 
   # exchange from api-keys.json is used
-  user: bybit_01
+  user: binance_01
 
   symbol: BTCUSDT
   latency_simulation_ms: 250
