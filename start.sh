@@ -352,3 +352,10 @@ screen -dmS UNI_binance  ./run.sh UNI
 
 screen -X -S GTC_binance kill
 screen -dmS GTC_binance  ./run.sh GTC
+
+screen -X -S API3_binance kill
+screen -dmS API3_binance  ./run.sh API3
+
+screen -X -S BAKE_binance kill
+screen -dmS BAKE_binance  ./run.sh BAKE
+
