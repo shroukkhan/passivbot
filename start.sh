@@ -349,3 +349,6 @@ screen -dmS TLM_binance  ./run.sh TLM
 
 screen -X -S UNI_binance kill
 screen -dmS UNI_binance  ./run.sh UNI
+
+screen -X -S GTC_binance kill
+screen -dmS GTC_binance  ./run.sh GTC

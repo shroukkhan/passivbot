@@ -52,12 +52,8 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
 
-    allowed_symbols = ["NEARUSDT",
-"AAVEUSDT",
-"UNIUSDT",
-"EGLDUSDT",
-"TLMUSDT",]
-    #allowed_symbols = [s + "USDT" for s in allowed_symbols]
+    allowed_symbols = ["GTC"]
+    allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
         if dir[-1] != '\\':
