@@ -1,6 +1,5 @@
 @echo off
 for %%x in (
-            FLOWUSDT
             1000XECUSDT
             1000BTTCUSDT
             ROSEUSDT

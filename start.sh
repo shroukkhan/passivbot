@@ -361,3 +361,13 @@ screen -dmS BAKE_binance  ./run.sh BAKE
 
 screen -X -S FLOW_binance kill
 screen -dmS FLOW_binance  ./run.sh FLOW
+
+screen -X -S 1000XEC_binance kill
+screen -dmS 1000XEC_binance  ./run.sh 1000XEC
+
+screen -X -S AR_binance kill
+screen -dmS AR_binance  ./run.sh AR
+
+screen -X -S ROSE_binance kill
+screen -dmS ROSE_binance  ./run.sh ROSE
+
