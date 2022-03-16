@@ -371,3 +371,11 @@ screen -dmS AR_binance  ./run.sh AR
 screen -X -S ROSE_binance kill
 screen -dmS ROSE_binance  ./run.sh ROSE
 
+screen -X -S C98_binance kill
+screen -dmS C98_binance  ./run.sh C98
+
+screen -X -S DUSK_binance kill
+screen -dmS DUSK_binance  ./run.sh DUSK
+
+screen -X -S KLAY_binance kill
+screen -dmS KLAY_binance  ./run.sh KLAY
