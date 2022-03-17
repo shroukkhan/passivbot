@@ -15,6 +15,7 @@ for k in binsymbols['symbols']:
 
 resultlist = []
 resultlistnotional = []
+coins = []
 for i in symboldata['result']:
     if 'USDT' in i['name']:
         symbol = i['name']
@@ -34,6 +35,7 @@ for i in symboldata['result']:
             bin_listed = "No"
 
         if min_notional <= 20 and float(volm) > 2:
+            coins.append(symbol)
             resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
             resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
 # list1: sort on volM
@@ -42,7 +44,9 @@ print("volM$\t\tnotional\tsymbol\t\tBinance Listed")
 for i in resultlist:
     print(i)
 
-print("\n")
+print("\n------------------------------------------------")
+for i in coins:
+    print(i)
 
 # # list2: sort on notional
 # resultlistnotional.sort(reverse=True)
