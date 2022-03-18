@@ -484,6 +484,8 @@ def find_close_qty_long_bringing_wallet_exposure_to_target(
             balance + calc_pnl_long(pprice, close_price, guess_, inverse, c_mult)
         )
 
+    if wallet_exposure_target == 0.0:
+        return psize
     wallet_exposure = qty_to_cost(psize, pprice, inverse, c_mult) / balance
     if wallet_exposure <= wallet_exposure_target * 1.001:
         # wallet_exposure within 0.1% of target: return zero
@@ -593,6 +595,8 @@ def find_close_qty_short_bringing_wallet_exposure_to_target(
             balance + calc_pnl_short(pprice, close_price, guess_, inverse, c_mult)
         )
 
+    if wallet_exposure_target == 0.0:
+        return abs(psize)
     wallet_exposure = qty_to_cost(psize, pprice, inverse, c_mult) / balance
     if wallet_exposure <= wallet_exposure_target * 1.001:
         # wallet_exposure within 0.1% of target: return zero
@@ -698,6 +702,8 @@ def find_entry_qty_bringing_wallet_exposure_to_target(
     qty_step,
     c_mult,
 ) -> float:
+    if wallet_exposure_target == 0.0:
+        return 0.0
     wallet_exposure = qty_to_cost(psize, pprice, inverse, c_mult) / balance
     if wallet_exposure >= wallet_exposure_target * 0.99:
         # return zero if wallet_exposure already is within 1% of target
@@ -1881,7 +1887,7 @@ def backtest_static_grid(
                     if psize_long != 0.0:
                         fee_paid = -qty_to_cost(psize_long, pprice_long, inverse, c_mult) * maker_fee
                         pnl = calc_pnl_long(pprice_long, closes[k], -psize_long, inverse, c_mult)
-                        balance_long = 0.0
+                        balance_long = starting_balance * 1e-6
                         equity_long = 0.0
                         psize_long, pprice_long = 0.0, 0.0
                         fills_long.append(
@@ -1991,7 +1997,8 @@ def backtest_static_grid(
                         -qty_to_cost(entries_long[0][0], entries_long[0][1], inverse, c_mult)
                         * maker_fee
                     )
-                    balance_long += fee_paid
+                    balance_long = max(starting_balance * 1e-6, balance_long + fee_paid)
+
                     equity_long = balance_long + calc_pnl_long(
                         pprice_long, closes[k], psize_long, inverse, c_mult
                     )
@@ -2053,7 +2060,8 @@ def backtest_static_grid(
                     pnl = calc_pnl_long(
                         pprice_long, closes_long[0][1], close_qty_long, inverse, c_mult
                     )
-                    balance_long += fee_paid + pnl
+                    balance_long = max(starting_balance * 1e-6, balance_long + fee_paid + pnl)
+
                     equity_long = balance_long + calc_pnl_long(
                         pprice_long, closes[k], psize_long, inverse, c_mult
                     )
@@ -2123,7 +2131,7 @@ def backtest_static_grid(
                             -qty_to_cost(psize_short, pprice_short, inverse, c_mult) * maker_fee
                         )
                         pnl = calc_pnl_short(pprice_short, closes[k], -psize_short, inverse, c_mult)
-                        balance_short = 0.0
+                        balance_short = starting_balance * 1e-6
                         equity_short = 0.0
                         psize_short, pprice_short = 0.0, 0.0
                         fills_short.append(
@@ -2233,7 +2241,7 @@ def backtest_static_grid(
                         -qty_to_cost(entries_short[0][0], entries_short[0][1], inverse, c_mult)
                         * maker_fee
                     )
-                    balance_short += fee_paid
+                    balance_short = max(starting_balance * 1e-6, balance_short + fee_paid)
                     equity_short = balance_short + calc_pnl_short(
                         pprice_short, closes[k], psize_short, inverse, c_mult
                     )
@@ -2295,7 +2303,7 @@ def backtest_static_grid(
                     pnl = calc_pnl_short(
                         pprice_short, closes_short[0][1], close_qty_short, inverse, c_mult
                     )
-                    balance_short += fee_paid + pnl
+                    balance_short = max(starting_balance * 1e-6, balance_short + fee_paid + pnl)
                     equity_short = balance_short + calc_pnl_short(
                         pprice_short, closes[k], psize_short, inverse, c_mult
                     )
