@@ -200,8 +200,8 @@ screen -X -S BLZ_binance kill
 screen -dmS BLZ_binance  ./run.sh BLZ
 
 
-screen -X -S OGN_binance kill
-screen -dmS OGN_binance  ./run.sh OGN
+#screen -X -S OGN_binance kill
+#screen -dmS OGN_binance  ./run.sh OGN
 
 
 screen -X -S MTL_binance kill
@@ -343,6 +343,9 @@ screen -dmS EOS_bybit ./run_bybit.sh EOS
 
 screen -X -S LUNA_bybit kill
 screen -dmS LUNA_bybit ./run_bybit.sh LUNA
+
+screen -X -S BCH_bybit kill
+screen -dmS BCH_bybit ./run_bybit.sh BCH
 
 screen -X -S TLM_binance kill
 screen -dmS TLM_binance  ./run.sh TLM

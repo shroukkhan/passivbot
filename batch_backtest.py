@@ -56,7 +56,7 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
 
-    allowed_symbols = ["EOS", "XRP", "BCH"]
+    allowed_symbols = ["BCH"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
