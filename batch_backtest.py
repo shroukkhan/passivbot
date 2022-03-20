@@ -21,13 +21,17 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = []  # dirs[-2:]  # dirs[-5:]  # take last xxx
+    dirs = dirs[-5:]  # dirs[-5:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
     dirs2 = dirs2[-5:]  # take last xx
 
+    dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live_bybit\\*', recursive=True)
+    dirs3.sort()
+
     dirs.extend(dirs2)
+    dirs.extend(dirs3)
     total = len(dirs)
     i = 1
 
@@ -52,15 +56,22 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
 
-    allowed_symbols = ["DUSK", "C98", "KLAY"]
+    allowed_symbols = ["EOS", "XRP", "BCH"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
-        if dir[-1] != '\\':
-            dir = dir + '\\'
-        files = [f for f in os.listdir(dir) if re.match(r'[0-9]+_best_config_.*', f)]
-        symbol = dir.split('\\')[-2]
-        symbol = symbol.split('_')[-1]
+        if dir.endswith(".json"):
+            json_file = dir
+            files = [json_file.split("\\")[-1]]
+            dir = os.path.dirname(json_file)+"\\"
+            symbol = json_file.split("\\")[-1].replace(".json", "USDT")
+        else:
+            if dir[-1] != '\\':
+                dir = dir + '\\'
+            files = [f for f in os.listdir(dir) if re.match(r'[0-9]+_best_config_.*', f)]
+            symbol = dir.split('\\')[-2]
+            symbol = symbol.split('_')[-1]
+
         if symbol not in allowed_symbols:
             print(f'Skipping {dir}')
             continue
@@ -73,16 +84,6 @@ async def main():
             start_date = '2021-08-01'
             end_date = '2022-03-07'
 
-            # await do_backtest(
-            #     backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
-            #     symbol=symbol,
-            #     live_config_path=live_config_path,
-            #     start_date=start_date,
-            #     end_date=end_date,
-            #     enable_shorts=False,
-            #     enable_longs=True
-            # )
-
             await do_backtest(
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
                 symbol=symbol,
@@ -91,20 +92,10 @@ async def main():
                 long_wallet_exposure_limit=0.2,
                 start_date=start_date,
                 end_date=end_date,
-                user='binance_01',
+                user='bybit_01',
                 enable_shorts=True,
                 enable_longs=True
             )
-
-            # await do_backtest(
-            #     backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
-            #     symbol=symbol,
-            #     live_config_path=live_config_path,
-            #     start_date=start_date,
-            #     end_date=end_date,
-            #     enable_shorts=True,
-            #     enable_longs=False
-            # )
 
             end = datetime.now()
             time_taken = (end - start).total_seconds() * 1000
