@@ -302,6 +302,12 @@ screen -dmS MATIC_bybit ./run_bybit.sh MATIC
 screen -X -S LINK_bybit kill
 screen -dmS LINK_bybit ./run_bybit.sh LINK
 
+screen -X -S LTC_bybit kill
+screen -dmS LTC_bybit ./run_bybit.sh LTC
+
+screen -X -S XTZ_bybit kill
+screen -dmS XTZ_bybit ./run_bybit.sh XTZ
+
 screen -X -S ADA_bybit kill
 screen -dmS ADA_bybit ./run_bybit.sh ADA
 
