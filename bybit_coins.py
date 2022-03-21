@@ -1,6 +1,16 @@
 # --------------------------------------------------------------
 # bybit volM and notional and symbol and binance listed check
+import glob
+
 import requests
+
+files = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live_bybit\\*', recursive=True)
+files.sort()
+existing_symbols = []
+for file in files:
+    symbol = file.split('\\')[-1]
+    symbol = symbol.replace('.json', 'USDT')
+    existing_symbols.append(symbol)
 
 symboldata_url = "https://api.bybit.com/v2/public/symbols"
 symboldata = requests.get(symboldata_url).json()
@@ -19,6 +29,9 @@ coins = []
 for i in symboldata['result']:
     if 'USDT' in i['name']:
         symbol = i['name']
+        if symbol not in existing_symbols:
+            continue
+
         # print (f"symbol:{symbol}")
         min_qty = float(i['lot_size_filter']['min_trading_qty'])
 
@@ -34,19 +47,19 @@ for i in symboldata['result']:
         else:
             bin_listed = "No"
 
-        if min_notional <= 20 and float(volm) > 2:
-            coins.append(symbol)
-            resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
-            resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
+        #if min_notional <= 20 and float(volm) > 2:
+        coins.append(symbol)
+        resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
+        resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
 # list1: sort on volM
 resultlist.sort(reverse=True)
 print("volM$\t\tnotional\tsymbol\t\tBinance Listed")
 for i in resultlist:
     print(i)
 
-print("\n------------------------------------------------")
-for i in coins:
-    print(i)
+# print("\n------------------------------------------------")
+# for i in coins:
+#     print(i)
 
 # # list2: sort on notional
 # resultlistnotional.sort(reverse=True)

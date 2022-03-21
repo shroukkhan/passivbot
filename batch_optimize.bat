@@ -1,6 +1,5 @@
 @echo off
 for %%x in (
-        LTCUSDT
         XTZUSDT
         LINKUSDT
         ADAUSDT

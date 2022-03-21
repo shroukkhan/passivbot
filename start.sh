@@ -200,8 +200,8 @@ screen -X -S BLZ_binance kill
 screen -dmS BLZ_binance  ./run.sh BLZ
 
 
-#screen -X -S OGN_binance kill
-#screen -dmS OGN_binance  ./run.sh OGN
+screen -X -S OGN_binance kill
+screen -dmS OGN_binance  ./run.sh OGN
 
 
 screen -X -S MTL_binance kill
