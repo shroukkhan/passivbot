@@ -1,9 +1,5 @@
 @echo off
 for %%x in (
-        XTZUSDT
-        LINKUSDT
-        ADAUSDT
-        DOTUSDT
         UNIUSDT
         SUSHIUSDT
         AAVEUSDT
@@ -51,15 +47,15 @@ for %%x in (
         JASMYUSDT
         XRPUSDT
        ) do (
-         echo harmony_search.py -oh --symbol %%x -pm r   --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
-         python harmony_search.py -oh --symbol %%x -pm r  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
+         echo harmony_search.py -oh --symbol %%x -pm r   --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 14 -u bybit_01
+         python harmony_search.py -oh --symbol %%x -pm r  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 14 -u bybit_01
 
          echo =-=-=-=-=-=
 
-         echo  python harmony_search.py --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
-         python harmony_search.py --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
+         :: echo  python harmony_search.py  -oh --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
+         :: python harmony_search.py -oh --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
 
-         echo.
-         echo =-=-=-xxxxxxxxxxx=-=-=
-         echo.
+         :: echo.
+         :: echo =-=-=-xxxxxxxxxxx=-=-=
+          echo.
        )
