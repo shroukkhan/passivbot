@@ -1,9 +1,5 @@
 @echo off
-for %%x in (
-        UNIUSDT
-        SUSHIUSDT
-        AAVEUSDT
-        DOGEUSDT
+for %%x in (     
         MATICUSDT
         BNBUSDT
         SOLUSDT
