@@ -1,57 +1,28 @@
 @echo off
-for %%x in (     
-        MATICUSDT
-        BNBUSDT
-        SOLUSDT
-        THETAUSDT
-        COMPUSDT
-        AXSUSDT
-        LUNAUSDT
-        SANDUSDT
-        MANAUSDT
-        ATOMUSDT
-        AVAXUSDT
-        CHZUSDT
-        CRVUSDT
-        ENJUSDT
-        GRTUSDT
-        SHIB1000USDT
-        ICPUSDT
-        FTMUSDT
-        ALGOUSDT
-        DYDXUSDT
-        NEARUSDT
-        BITUSDT
-        GALAUSDT
-        ONEUSDT
-        ALICEUSDT
-        EGLDUSDT
-        RUNEUSDT
-        WOOUSDT
-        ENSUSDT
-        IOTXUSDT
-        BATUSDT
-        SLPUSDT
-        ZECUSDT
-        1INCHUSDT
-        ARUSDT
-        PEOPLEUSDT
-        CELOUSDT
-        WAVESUSDT
-        KNCUSDT
-        LOOKSUSDT
-        JASMYUSDT
-        XRPUSDT
+for %%x in (
+            LINKUSDT
+            ADAUSDT
+            DOTUSDT
+            DOGEUSDT
+            MATICUSDT
+            BNBUSDT
+            THETAUSDT
+            AXSUSDT
+            LUNAUSDT
+            SANDUSDT
+            ATOMUSDT
+            RUNEUSDT
+            WAVESUSDT
        ) do (
-         echo harmony_search.py -oh --symbol %%x -pm r   --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 14 -u bybit_01
-         python harmony_search.py -oh --symbol %%x -pm r  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 14 -u bybit_01
+
+         ::echo harmony_search.py -oh --symbol %%x -pm r   --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 14 -u bybit_01
+         ::python harmony_search.py -oh --symbol %%x -pm r  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 14 -u bybit_01
 
          echo =-=-=-=-=-=
 
-         :: echo  python harmony_search.py  -oh --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
-         :: python harmony_search.py -oh --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 8 -u bybit_01
+         echo python harmony_search.py -oh --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-15 --n_cpus 13 -u bybit_01
+         python harmony_search.py -oh --symbol %%x -pm s  --start_date 2021-08-01 --end_date 2022-03-22 --n_cpus 13 -u bybit_01
 
-         :: echo.
-         :: echo =-=-=-xxxxxxxxxxx=-=-=
-          echo.
+         echo =-=-=-xxxxxxxxxxx=-=-=
+         echo.
        )

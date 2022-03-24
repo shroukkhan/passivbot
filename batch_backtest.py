@@ -21,14 +21,15 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-15:]  # dirs[-5:]  # take last xxx
+    dirs = [] # dirs[-5:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-15:]  # take last xx
+    dirs2 = dirs2[-8:]  # take last xx
 
     dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live_bybit\\*', recursive=True)
     dirs3.sort()
+    dirs3 = []
 
     dirs.extend(dirs2)
     dirs.extend(dirs3)
@@ -56,7 +57,7 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
     # "LINK","ADA","DOT","UNI","SUSHI","AAVE",
-    allowed_symbols = ["DOGE","MATIC"]
+    allowed_symbols = ["MATIC"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
@@ -82,14 +83,14 @@ async def main():
             print(f'using file : {live_config_path}')
 
             start_date = '2021-08-01'
-            end_date = '2022-03-07'
+            end_date = '2022-03-23'
 
             await do_backtest(
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
                 symbol=symbol,
                 live_config_path=live_config_path,
-                short_wallet_exposure_limit=0.15,
-                long_wallet_exposure_limit=0.2,
+                # short_wallet_exposure_limit=0.1,
+                # long_wallet_exposure_limit=0.1,
                 start_date=start_date,
                 end_date=end_date,
                 user='bybit_01',
