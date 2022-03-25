@@ -351,7 +351,7 @@ class Bybit(Bot):
         return trades
 
     async def fetch_ohlcvs(
-        self, symbol: str = None, start_time: int = None, interval="1m", limit=200
+            self, symbol: str = None, start_time: int = None, interval="1m", limit=200
     ):
         # m -> minutes; h -> hours; d -> days; w -> weeks; M -> months
         interval_map = {
@@ -394,11 +394,11 @@ class Bybit(Bot):
         ]
 
     async def get_all_income(
-        self,
-        symbol: str = None,
-        start_time: int = None,
-        income_type: str = "Trade",
-        end_time: int = None,
+            self,
+            symbol: str = None,
+            start_time: int = None,
+            income_type: str = "Trade",
+            end_time: int = None,
     ):
         limit = 50
         income = []
@@ -414,7 +414,7 @@ class Bybit(Bot):
             if len(fetched) == 0:
                 break
             print_(["fetched income", ts_to_date(fetched[0]["timestamp"])])
-            if fetched == income[-len(fetched) :]:
+            if fetched == income[-len(fetched):]:
                 break
             income += fetched
             if len(fetched) < limit:
@@ -424,13 +424,13 @@ class Bybit(Bot):
         return sorted(income_d.values(), key=lambda x: x["timestamp"])
 
     async def fetch_income(
-        self,
-        symbol: str = None,
-        income_type: str = None,
-        limit: int = 50,
-        start_time: int = None,
-        end_time: int = None,
-        page=None,
+            self,
+            symbol: str = None,
+            income_type: str = None,
+            limit: int = 50,
+            start_time: int = None,
+            end_time: int = None,
+            page=None,
     ):
         params = {"limit": limit, "symbol": self.symbol if symbol is None else symbol}
         if start_time is not None:
@@ -469,11 +469,11 @@ class Bybit(Bot):
             return []
 
     async def fetch_fills(
-        self,
-        limit: int = 200,
-        from_id: int = None,
-        start_time: int = None,
-        end_time: int = None,
+            self,
+            limit: int = 200,
+            from_id: int = None,
+            start_time: int = None,
+            end_time: int = None,
     ):
         return []
         ffills, fpnls = await asyncio.gather(
@@ -548,14 +548,14 @@ class Bybit(Bot):
                     {
                         "symbol": self.symbol,
                         "is_isolated": False,
-                        "buy_leverage": 12,
-                        "sell_leverage": 12,
+                        "buy_leverage": 9,  # arbitrary
+                        "sell_leverage": 9,  # arbitrary
                     },
                 )
                 print(res)
                 res = await self.private_post(
                     "/private/linear/position/set-leverage",
-                    {"symbol": self.symbol, "buy_leverage": 12, "sell_leverage": 12},
+                    {"symbol": self.symbol, "buy_leverage": 9, "sell_leverage": 9},  # arbitrary
                 )
                 print(res)
             elif "inverse_perpetual" in self.market_type:
@@ -620,7 +620,7 @@ class Bybit(Bot):
         return {"code": "-1", "msg": "Transferring funds not supported for Bybit"}
 
     def standardize_user_stream_event(
-        self, event: Union[List[Dict], Dict]
+            self, event: Union[List[Dict], Dict]
     ) -> Union[List[Dict], Dict]:
         events = []
         if "topic" in event:
@@ -659,14 +659,14 @@ class Bybit(Bot):
                                 new_open_order["position_side"] = (
                                     "long"
                                     if (
-                                        (
-                                            new_open_order["side"] == "buy"
-                                            and elm["create_type"] == "CreateByUser"
-                                        )
-                                        or (
-                                            new_open_order["side"] == "sell"
-                                            and elm["create_type"] == "CreateByClosing"
-                                        )
+                                            (
+                                                    new_open_order["side"] == "buy"
+                                                    and elm["create_type"] == "CreateByUser"
+                                            )
+                                            or (
+                                                    new_open_order["side"] == "sell"
+                                                    and elm["create_type"] == "CreateByClosing"
+                                            )
                                     )
                                     else "short"
                                 )
