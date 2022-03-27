@@ -12,3 +12,9 @@ screen -dmS MATIC_bybit ./run_bybit.sh MATIC
 
 screen -X -S XRP_bybit kill
 screen -dmS XRP_bybit ./run_bybit.sh XRP
+
+screen -X -S LUNA_bybit kill
+screen -dmS LUNA_bybit ./run_bybit.sh LUNA
+
+screen -X -S WAVES_bybit kill
+screen -dmS WAVES_bybit ./run_bybit.sh WAVES
