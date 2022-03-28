@@ -14,8 +14,7 @@ screen -dmS IOST_binance  ./run.sh IOST
 screen -X -S OMG_binance kill
 screen -dmS OMG_binance  ./run.sh OMG
 
-screen -X -S ETC_binance kill
-screen -dmS ETC_binance  ./run.sh ETC
+
 
 screen -X -S ATOM_binance kill
 screen -dmS ATOM_binance  ./run.sh ATOM
@@ -82,9 +81,6 @@ screen -X -S SUSHI_binance kill
 screen -dmS SUSHI_binance  ./run.sh SUSHI
 
 
-screen -X -S WAVES_binance kill
-screen -dmS WAVES_binance  ./run.sh WAVES
-
 
 screen -X -S ALPHA_binance kill
 screen -dmS ALPHA_binance  ./run.sh ALPHA
@@ -120,9 +116,6 @@ screen -dmS LINK_binance  ./run.sh LINK
 screen -X -S MATIC_binance kill
 screen -dmS MATIC_binance  ./run.sh MATIC
 
-
-screen -X -S RUNE_binance kill
-screen -dmS RUNE_binance  ./run.sh RUNE
 
 screen -X -S SFP_binance kill
 screen -dmS SFP_binance  ./run.sh SFP
@@ -308,3 +301,15 @@ screen -dmS DUSK_binance  ./run.sh DUSK
 
 screen -X -S KLAY_binance kill
 screen -dmS KLAY_binance  ./run.sh KLAY
+
+
+screen -X -S ETC_binance kill
+screen -dmS ETC_binance  ./run.sh ETC
+
+
+screen -X -S RUNE_binance kill
+screen -dmS RUNE_binance  ./run.sh RUNE
+
+screen -X -S WAVES_binance kill
+screen -dmS WAVES_binance  ./run.sh WAVES
+

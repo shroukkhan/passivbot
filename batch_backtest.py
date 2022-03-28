@@ -21,15 +21,15 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = [] # dirs[-5:]  # take last xxx
+    dirs = dirs[-5:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-10:]  # take last xx
+    dirs2 = dirs2[-5:]  # take last xx
 
-    dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live_bybit\\*', recursive=True)
+    dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live\\*', recursive=True)
     dirs3.sort()
-    dirs3 = []
+    # dirs3 = []
 
     dirs.extend(dirs2)
     dirs.extend(dirs3)
@@ -57,14 +57,14 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
     # "LINK","ADA","DOT","UNI","SUSHI","AAVE","MATIC","BNB","THETA","AXS","LUNA","SAND","ATOM"
-    allowed_symbols = ["WAVES"]
+    allowed_symbols = ["RUNE", "WAVES", "ETC"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
         if dir.endswith(".json"):
             json_file = dir
             files = [json_file.split("\\")[-1]]
-            dir = os.path.dirname(json_file)+"\\"
+            dir = os.path.dirname(json_file) + "\\"
             symbol = json_file.split("\\")[-1].replace(".json", "USDT")
         else:
             if dir[-1] != '\\':
@@ -83,17 +83,17 @@ async def main():
             print(f'using file : {live_config_path}')
 
             start_date = '2021-08-01'
-            end_date = '2022-03-23'
+            end_date = '2022-03-28'
 
             await do_backtest(
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
                 symbol=symbol,
                 live_config_path=live_config_path,
-                short_wallet_exposure_limit=0.1,
-                long_wallet_exposure_limit=0.1,
+                # short_wallet_exposure_limit=0.1,
+                # long_wallet_exposure_limit=0.1,
                 start_date=start_date,
                 end_date=end_date,
-                user='bybit_01',
+                user='binance_01',
                 enable_shorts=True,
                 enable_longs=True
             )
