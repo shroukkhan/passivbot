@@ -313,3 +313,4 @@ screen -dmS RUNE_binance  ./run.sh RUNE
 screen -X -S WAVES_binance kill
 screen -dmS WAVES_binance  ./run.sh WAVES
 
+

@@ -1,0 +1,9 @@
+skhan@docker-home-khan:~/passivbot_5_5$  screen -X -S ETC_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$  screen -X -S RUNE_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$ screen -X -S WAVES_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$ screen -X -S ZIL_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$ screen -X -S OCEAN_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$ screen -X -S DGB_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$ screen -X -S HOT_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$ screen -X -S DOGE_binance kill
+skhan@docker-home-khan:~/passivbot_5_5$
