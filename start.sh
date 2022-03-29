@@ -269,8 +269,6 @@ screen -dmS FLM_binance  ./run.sh FLM
 screen -X -S TLM_binance kill
 screen -dmS TLM_binance  ./run.sh TLM
 
-screen -X -S UNI_binance kill
-screen -dmS UNI_binance  ./run.sh UNI
 
 screen -X -S GTC_binance kill
 screen -dmS GTC_binance  ./run.sh GTC
@@ -302,15 +300,8 @@ screen -dmS DUSK_binance  ./run.sh DUSK
 screen -X -S KLAY_binance kill
 screen -dmS KLAY_binance  ./run.sh KLAY
 
-
 screen -X -S ETC_binance kill
 screen -dmS ETC_binance  ./run.sh ETC
 
-
-screen -X -S RUNE_binance kill
-screen -dmS RUNE_binance  ./run.sh RUNE
-
 screen -X -S WAVES_binance kill
 screen -dmS WAVES_binance  ./run.sh WAVES
-
-
