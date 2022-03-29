@@ -3,7 +3,7 @@ cd /home/skhan/passivbot_5_5/
 source /home/skhan/passivbot_5_5/bin/activate
 echo Runing : $1 ...
 while true; do
-  python3 passivbot.py -sm p -lm n -sw 0 -lw 0.1 bybit_01 $1USDT cfgs_live_bybit/$1.json
+  python3 passivbot.py -sm p -lm p -sw 0 -lw 0.0 bybit_01 $1USDT cfgs_live_bybit/$1.json
   echo died..restarting in 5
   sleep 1
   echo died..restarting in 4
