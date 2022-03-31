@@ -9,7 +9,7 @@
   latency_simulation_ms: 250
 
   # specify starting balance in terms of margin token (i.e. usdt for usdt-m, coin for inverse coin-m)
-  starting_balance: 60.0
+  starting_balance: 25
 
   # format YYYY-MM-DDTHH:mm:ss
   # format YYYY-MM-DDTHH:mm:ss

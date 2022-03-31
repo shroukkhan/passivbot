@@ -1,5 +1,6 @@
 import asyncio
 import glob
+import os
 import shutil
 from datetime import datetime, timedelta
 
@@ -22,9 +23,9 @@ async def main():
     files.sort()
     total = len(files)
     i = 1
-    start_from = "REN.json"
-    should_start = True
-    allowed_symbols = ['ALICEUSDT', 'XRPUSDT', 'HOTUSDT']
+    # start_from = "REN.json"
+    #should_start = True
+    # allowed_symbols = ['ALICEUSDT', 'XRPUSDT', 'HOTUSDT']
     for file in files:
         symbol = file.split('\\')[-1]
         # if not should_start:
@@ -32,25 +33,25 @@ async def main():
         #     path = f"C:\\AgodaGit\\passivbot\\backtests\\binance\\{symbol.replace('.json', 'USDT')}\\caches"
         #     if os.path.isdir(path):
         #         shutil.rmtree(path)
-        #     if symbol == start_from:
-        #         should_start = True
         #     continue
 
         symbol = symbol.replace('.json', 'USDT')
 
-        if symbol not in allowed_symbols:
-            continue
+        # if symbol not in allowed_symbols:
+        #     continue
 
         live_config_path = file
         print(f'using file : {live_config_path}')
 
-        start_date = '2021-05-01'
-        end_date = '2022-03-15'
+        start_date = '2021-07-01'
+        end_date = '2022-03-29'
 
         await do_backtest(
             backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
             symbol=symbol,
             live_config_path=live_config_path,
+            long_wallet_exposure_limit=0.25,
+            short_wallet_exposure_limit=0.25,
             start_date=start_date,
             end_date=end_date,
             user='binance_01',
