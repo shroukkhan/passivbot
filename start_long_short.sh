@@ -1,6 +1,9 @@
 screen -X -S API3_binance kill
 screen -dmS API3_binance  ./run_long_short.sh API3
 
+screen -X -S DUSK_binance kill
+screen -dmS DUSK_binance  ./run_long_short.sh DUSK
+
 screen -X -S FLOW_binance kill
 screen -dmS FLOW_binance  ./run_long_short.sh FLOW
 
