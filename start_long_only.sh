@@ -68,7 +68,6 @@ screen -X -S ALPHA_binance kill
 screen -dmS ALPHA_binance  ./run_long_only.sh ALPHA
 
 
-
 screen -X -S LINA_binance kill
 screen -dmS LINA_binance  ./run_long_only.sh LINA
 
@@ -79,9 +78,6 @@ screen -dmS QTUM_binance  ./run_long_only.sh QTUM
 
 screen -X -S ALGO_binance kill
 screen -dmS ALGO_binance  ./run_long_only.sh ALGO
-
-
-
 
 
 screen -X -S ENJ_binance kill
