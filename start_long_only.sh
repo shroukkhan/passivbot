@@ -36,19 +36,12 @@ screen -X -S ONE_binance kill
 screen -dmS ONE_binance  ./run_long_only.sh ONE
 
 
-screen -X -S CHZ_binance kill
-screen -dmS CHZ_binance  ./run_long_only.sh CHZ
-
 screen -X -S NEO_binance kill
 screen -dmS NEO_binance  ./run_long_only.sh NEO
 
 
 screen -X -S ADA_binance kill
 screen -dmS ADA_binance  ./run_long_only.sh ADA
-
-
-screen -X -S DOGE_binance kill
-screen -dmS DOGE_binance  ./run_long_only.sh DOGE
 
 
 screen -X -S HBAR_binance kill
@@ -67,27 +60,13 @@ screen -X -S XRP_binance kill
 screen -dmS XRP_binance  ./run_long_only.sh XRP
 
 
-screen -X -S FTM_binance kill
-
-screen -X -S 1INCH_binance kill
-screen -dmS 1INCH_binance  ./run_long_only.sh 1INCH
-
-
 screen -X -S RLC_binance kill
 screen -dmS RLC_binance  ./run_long_only.sh RLC
-
-
-screen -X -S SUSHI_binance kill
-screen -dmS SUSHI_binance  ./run_long_only.sh SUSHI
-
 
 
 screen -X -S ALPHA_binance kill
 screen -dmS ALPHA_binance  ./run_long_only.sh ALPHA
 
-
-screen -X -S COMP_binance kill
-screen -dmS COMP_binance  ./run_long_only.sh COMP
 
 
 screen -X -S LINA_binance kill
@@ -102,8 +81,7 @@ screen -X -S ALGO_binance kill
 screen -dmS ALGO_binance  ./run_long_only.sh ALGO
 
 
-screen -X -S CRV_binance kill
-screen -dmS CRV_binance  ./run_long_only.sh CRV
+
 
 
 screen -X -S ENJ_binance kill
@@ -151,8 +129,6 @@ screen -dmS DENT_binance  ./run_long_only.sh DENT
 screen -X -S HOT_binance kill
 screen -dmS HOT_binance  ./run_long_only.sh HOT
 
-screen -X -S ICP_binance kill
-screen -dmS ICP_binance  ./run_long_only.sh ICP
 
 screen -X -S IOTA_binance kill
 screen -dmS IOTA_binance  ./run_long_only.sh IOTA
@@ -265,14 +241,11 @@ screen -dmS GTC_binance  ./run_long_only.sh GTC
 screen -X -S BAKE_binance kill
 screen -dmS BAKE_binance  ./run_long_only.sh BAKE
 
-screen -X -S 1000XEC_binance kill
-screen -dmS 1000XEC_binance  ./run_long_only.sh 1000XEC
+
 
 screen -X -S AR_binance kill
 screen -dmS AR_binance  ./run_long_only.sh AR
 
-screen -X -S ROSE_binance kill
-screen -dmS ROSE_binance  ./run_long_only.sh ROSE
 
 screen -X -S C98_binance kill
 screen -dmS C98_binance  ./run_long_only.sh C98
