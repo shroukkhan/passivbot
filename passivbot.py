@@ -156,7 +156,9 @@ class Bot:
     def dump_log(self, data) -> None:
         if self.config["logging_level"] > 0:
             with open(self.log_filepath, "a") as f:
-                f.write(json.dumps({**{"log_timestamp": time()}, **data}) + "\n")
+                f.write(
+                    json.dumps({**{"log_timestamp": time(), "symbol": self.symbol}, **data}) + "\n"
+                )
 
     async def init_emas(self) -> None:
         ohlcvs1m = await self.fetch_ohlcvs(interval="1m")
@@ -748,9 +750,15 @@ class Bot:
             logging.info(f"heartbeat {self.symbol}")
             self.log_position_long()
             self.log_position_short()
+            liq_price = self.position["long"]["liquidation_price"]
+            if calc_diff(self.position["short"]["liquidation_price"], self.price) < calc_diff(
+                liq_price, self.price
+            ):
+                liq_price = self.position["short"]["liquidation_price"]
             logging.info(
                 f'balance: {round_dynamic(self.position["wallet_balance"], 6)}'
                 + f' equity: {round_dynamic(self.position["equity"], 6)} last price: {self.price}'
+                + f" liq: {round_(liq_price, self.price_step)}"
             )
             self.heartbeat_ts = time()
         await self.cancel_and_create()
@@ -821,9 +829,15 @@ class Bot:
             if "wallet_balance" in event:
                 new_wallet_balance = self.adjust_wallet_balance(event["wallet_balance"])
                 if new_wallet_balance != self.position["wallet_balance"]:
+                    liq_price = self.position["long"]["liquidation_price"]
+                    if calc_diff(self.position["short"]["liquidation_price"], self.price) < calc_diff(
+                        liq_price, self.price
+                    ):
+                        liq_price = self.position["short"]["liquidation_price"]
                     logging.info(
                         f"balance: {round_dynamic(new_wallet_balance, 6)}"
                         + f' equity: {round_dynamic(self.position["equity"], 6)} last price: {self.price}'
+                        + f" liq: {round_(liq_price, self.price_step)}"
                     )
                 self.position["wallet_balance"] = new_wallet_balance
                 pos_change = True
@@ -1051,9 +1065,20 @@ async def main() -> None:
         default=0.5,
         help="only create limit orders closer to price than threshold; default=0.5",
     )
+    parser.add_argument(
+        "-ak",
+        "--api-keys",
+        "--api_keys",
+        type=open,
+        required=False,
+        dest="api_keys",
+        default="api-keys.json",
+        help="File containing users/accounts and api-keys for each exchanges",
+    )
+
     args = parser.parse_args()
     try:
-        accounts = json.load(open("api-keys.json"))
+        accounts = json.load(args.api_keys)
     except Exception as e:
         logging.error(f"{e} failed to load api-keys.json file")
         return
