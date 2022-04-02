@@ -57,13 +57,8 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
     # "LINK","ADA","DOT","UNI","SUSHI","AAVE","MATIC","BNB","THETA","AXS","LUNA","SAND","ATOM"
-    allowed_symbols = ["WAVES", "DGB",
-                       "ZIL",
-                       "HOT",
-                       "OCEAN",
-                       "ALPHA",
-                       "ADA",
-                       "SXP", ]
+    allowed_symbols = ["ETH", "GALA",
+                       "XRP"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
@@ -89,7 +84,7 @@ async def main():
             print(f'using file : {live_config_path}')
 
             start_date = '2021-08-01'
-            end_date = '2022-03-28'
+            end_date = '2022-04-01'
 
             await do_backtest(
                 backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
