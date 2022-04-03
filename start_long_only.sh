@@ -252,3 +252,7 @@ screen -dmS ETC_binance  ./run_long_only.sh ETC
 
 screen -X -S WAVES_binance kill
 screen -dmS WAVES_binance  ./run_long_only.sh WAVES
+
+
+screen -X -S DOT_binance kill
+screen -dmS DOT_binance  ./run_long_only.sh DOT
