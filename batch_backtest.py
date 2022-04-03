@@ -29,7 +29,7 @@ async def main():
 
     dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live\\*', recursive=True)
     dirs3.sort()
-    # dirs3 = []
+    dirs3 = []
 
     dirs.extend(dirs2)
     dirs.extend(dirs3)
@@ -56,9 +56,8 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    # "LINK","ADA","DOT","UNI","SUSHI","AAVE","MATIC","BNB","THETA","AXS","LUNA","SAND","ATOM"
-    allowed_symbols = ["ETH", "GALA",
-                       "XRP"]
+    #"ETH", "GALA",
+    allowed_symbols = ["XRP", "WAVES","RUNE","FTM","IMX","DOT"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
