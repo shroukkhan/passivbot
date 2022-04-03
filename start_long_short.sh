@@ -36,3 +36,4 @@ screen -dmS ICP_binance  ./run_long_short.sh ICP
 
 screen -X -S 1INCH_binance kill
 screen -dmS 1INCH_binance  ./run_long_short.sh 1INCH
+

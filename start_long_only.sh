@@ -56,7 +56,8 @@ screen -X -S XLM_binance kill
 screen -dmS XLM_binance  ./run_long_only.sh XLM
 
 
-
+screen -X -S XRP_binance kill
+screen -dmS XRP_binance  ./run_long_only.sh XRP
 
 
 screen -X -S RLC_binance kill
