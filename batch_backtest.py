@@ -56,8 +56,11 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    #"ETH", "GALA",
-    allowed_symbols = ["XRP", "WAVES","RUNE","FTM","IMX","DOT"]
+    #"ETH", "GALA","1000SHIB","SAND","ADA","CHZ","BNB",
+    # "ZEC","MANA","XMR","ATOM","MATIC","LINK","DOGE",
+    # "LTC","KNC","PEOPLE","ALICE","ICX","API3","GRT",
+    # "BAT","REN","FIL","ENJ","DYDX","CRV"
+    allowed_symbols = ["BAT","REN","FIL","ENJ","DYDX","CRV"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:

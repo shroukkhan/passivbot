@@ -3,8 +3,6 @@ screen -X -S ALICE_binance kill
 screen -dmS ALICE_binance  ./run_long_only.sh ALICE
 
 
-screen -X -S GRT_binance kill
-screen -dmS GRT_binance  ./run_long_only.sh GRT
 
 
 screen -X -S IOST_binance kill
@@ -28,8 +26,6 @@ screen -X -S COTI_binance kill
 screen -dmS COTI_binance  ./run_long_only.sh COTI
 
 
-screen -X -S LTC_binance kill
-screen -dmS LTC_binance  ./run_long_only.sh LTC
 
 
 screen -X -S ONE_binance kill
@@ -40,8 +36,7 @@ screen -X -S NEO_binance kill
 screen -dmS NEO_binance  ./run_long_only.sh NEO
 
 
-screen -X -S ADA_binance kill
-screen -dmS ADA_binance  ./run_long_only.sh ADA
+
 
 
 screen -X -S HBAR_binance kill
@@ -84,11 +79,6 @@ screen -X -S ENJ_binance kill
 screen -dmS ENJ_binance  ./run_long_only.sh ENJ
 
 
-screen -X -S LINK_binance kill
-screen -dmS LINK_binance  ./run_long_only.sh LINK
-
-screen -X -S MATIC_binance kill
-screen -dmS MATIC_binance  ./run_long_only.sh MATIC
 
 
 screen -X -S SFP_binance kill
@@ -96,11 +86,6 @@ screen -dmS SFP_binance  ./run_long_only.sh SFP
 
 screen -X -S VET_binance kill
 screen -dmS VET_binance  ./run_long_only.sh VET
-
-
-screen -X -S XMR_binance kill
-screen -dmS XMR_binance  ./run_long_only.sh XMR
-
 
 
 screen -X -S REN_binance kill
@@ -238,7 +223,6 @@ screen -X -S BAKE_binance kill
 screen -dmS BAKE_binance  ./run_long_only.sh BAKE
 
 
-
 screen -X -S AR_binance kill
 screen -dmS AR_binance  ./run_long_only.sh AR
 
@@ -256,3 +240,12 @@ screen -dmS WAVES_binance  ./run_long_only.sh WAVES
 
 screen -X -S DOT_binance kill
 screen -dmS DOT_binance  ./run_long_only.sh DOT
+
+screen -X -S 100SHIB_binance kill
+screen -dmS 100SHIB_binance  ./run_long_only.sh 100SHIB
+
+screen -X -S BNB_binance kill
+screen -dmS BNB_binance  ./run_long_only.sh BNB
+
+screen -X -S ZEC_binance kill
+screen -dmS ZEC_binance  ./run_long_only.sh ZEC

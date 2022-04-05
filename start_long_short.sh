@@ -43,3 +43,25 @@ screen -dmS 1INCH_binance  ./run_long_short.sh 1INCH
 
 screen -X -S ETH_binance kill
 screen -dmS ETH_binance  ./run_long_short.sh ETH
+
+screen -X -S ADA_binance kill
+screen -dmS ADA_binance  ./run_long_short.sh ADA
+
+screen -X -S XMR_binance kill
+screen -dmS XMR_binance  ./run_long_short.sh XMR
+
+screen -X -S MATIC_binance kill
+screen -dmS MATIC_binance  ./run_long_short.sh MATIC
+
+
+screen -X -S LTC_binance kill
+screen -dmS LTC_binance  ./run_long_short.sh LTC
+
+screen -X -S LINK_binance kill
+screen -dmS LINK_binance  ./run_long_short.sh LINK
+
+screen -X -S GRT_binance kill
+screen -dmS GRT_binance  ./run_long_short.sh GRT
+
+screen -X -S DYDX_binance kill
+screen -dmS DYDX_binance  ./run_long_short.sh DYDX
