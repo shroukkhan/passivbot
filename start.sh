@@ -242,9 +242,9 @@ screen -X -S DOT_binance kill
 chmod +x cfgs_runtime/DOT.sh
 screen -dmS DOT_binance ./cfgs_runtime/DOT.sh DOT
 
-screen -X -S 100SHIB_binance kill
-chmod +x cfgs_runtime/100SHIB.sh
-screen -dmS 100SHIB_binance ./cfgs_runtime/100SHIB.sh 100SHIB
+screen -X -S 1000SHIB_binance kill
+chmod +x cfgs_runtime/1000SHIB.sh
+screen -dmS 1000SHIB_binance ./cfgs_runtime/1000SHIB.sh 1000SHIB
 
 screen -X -S BNB_binance kill
 chmod +x cfgs_runtime/BNB.sh

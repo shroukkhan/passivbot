@@ -77,13 +77,16 @@ def plot_wrap(config, data):
 
 async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str,
                       short_wallet_exposure_limit: float = None, long_wallet_exposure_limit: float = None,
-                      base_dir: str = 'backtests', enable_shorts: bool = True, enable_longs: bool = True, user=None):
+                      starting_balance=25,
+                      base_dir: str = 'backtests', enable_shorts: bool = True, enable_longs: bool = True, user=None,
+                      production_backtest=False):
     args = SimpleNamespace(**{
         'backtest_config_path': backtest_config_path,
         'live_config_path': live_config_path,
         'start_date': start_date,
         'end_date': end_date,
         'symbol': symbol,
+        'starting_balance': starting_balance,
         'market_type': None,
         'nojit': False,
         'short_wallet_exposure_limit': short_wallet_exposure_limit,
@@ -95,6 +98,7 @@ async def do_backtest(backtest_config_path: str, live_config_path: str, start_da
     config = await prepare_backtest_config(args)
     live_config = load_live_config(args.live_config_path)
 
+    config['production_backtest'] = production_backtest
     live_config['short']['enabled'] = enable_shorts
     live_config['long']['enabled'] = enable_longs
 

@@ -44,19 +44,23 @@ async def main():
         print(f'using file : {live_config_path}')
 
         start_date = '2021-07-01'
-        end_date = '2022-03-29'
+        end_date = '2022-04-05'
+        starting_balance = 15.0
+
 
         await do_backtest(
             backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
             symbol=symbol,
+            starting_balance=starting_balance,
             live_config_path=live_config_path,
-            long_wallet_exposure_limit=0.25,
-            short_wallet_exposure_limit=0.25,
+            long_wallet_exposure_limit=6.0/starting_balance,
+            short_wallet_exposure_limit=5.0/starting_balance,
             start_date=start_date,
             end_date=end_date,
             user='binance_01',
             enable_shorts=True,
-            enable_longs=True
+            enable_longs=True,
+            production_backtest=True
         )
 
         end = datetime.now()
@@ -68,4 +72,5 @@ async def main():
 
 
 if __name__ == '__main__':
+    is_production_backtest = True
     asyncio.run(main())
