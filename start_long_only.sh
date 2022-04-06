@@ -36,13 +36,6 @@ screen -X -S NEO_binance kill
 screen -dmS NEO_binance  ./run_long_only.sh NEO
 
 
-
-
-
-screen -X -S HBAR_binance kill
-screen -dmS HBAR_binance  ./run_long_only.sh HBAR
-
-
 screen -X -S SXP_binance kill
 screen -dmS SXP_binance  ./run_long_only.sh SXP
 
@@ -222,14 +215,11 @@ screen -dmS GTC_binance  ./run_long_only.sh GTC
 screen -X -S BAKE_binance kill
 screen -dmS BAKE_binance  ./run_long_only.sh BAKE
 
-
 screen -X -S AR_binance kill
 screen -dmS AR_binance  ./run_long_only.sh AR
 
-
 screen -X -S C98_binance kill
 screen -dmS C98_binance  ./run_long_only.sh C98
-
 
 screen -X -S ETC_binance kill
 screen -dmS ETC_binance  ./run_long_only.sh ETC
