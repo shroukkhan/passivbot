@@ -337,3 +337,43 @@ screen -dmS GRT_binance ./cfgs_runtime/GRT.sh GRT
 screen -X -S DYDX_binance kill
 chmod +x cfgs_runtime/DYDX.sh
 screen -dmS DYDX_binance ./cfgs_runtime/DYDX.sh DYDX
+
+screen -X -S ANC_binance kill
+chmod +x cfgs_runtime/ANC.sh
+screen -dmS ANC_binance ./cfgs_runtime/ANC.sh ANC
+
+screen -X -S BCH_binance kill
+chmod +x cfgs_runtime/BCH.sh
+screen -dmS BCH_binance ./cfgs_runtime/BCH.sh BCH
+
+screen -X -S XTZ_binance kill
+chmod +x cfgs_runtime/XTZ.sh
+screen -dmS XTZ_binance ./cfgs_runtime/XTZ.sh XTZ
+
+screen -X -S TRX_binance kill
+chmod +x cfgs_runtime/TRX.sh
+screen -dmS TRX_binance ./cfgs_runtime/TRX.sh TRX
+
+screen -X -S THETA_binance kill
+chmod +x cfgs_runtime/THETA.sh
+screen -dmS THETA_binance ./cfgs_runtime/THETA.sh THETA
+
+screen -X -S STOR_binance kill
+chmod +x cfgs_runtime/STOR.sh
+screen -dmS STOR_binance ./cfgs_runtime/STOR.sh STOR
+
+screen -X -S EOS_binance kill
+chmod +x cfgs_runtime/EOS.sh
+screen -dmS EOS_binance ./cfgs_runtime/EOS.sh EOS
+
+screen -X -S DASH_binance kill
+chmod +x cfgs_runtime/DASH.sh
+screen -dmS DASH_binance ./cfgs_runtime/DASH.sh DASH
+
+screen -X -S CHR_binance kill
+chmod +x cfgs_runtime/CHR.sh
+screen -dmS CHR_binance ./cfgs_runtime/CHR.sh CHR
+
+screen -X -S CELR_binance kill
+chmod +x cfgs_runtime/CELR.sh
+screen -dmS CELR_binance ./cfgs_runtime/CELR.sh CELR

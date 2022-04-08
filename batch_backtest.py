@@ -21,11 +21,11 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-10:]  # take last xxx
+    dirs = dirs[-25:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = dirs2[-10:]  # take last xx
+    dirs2 = dirs2[-25:]  # take last xx
 
     dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live\\*', recursive=True)
     dirs3.sort()
@@ -56,11 +56,35 @@ async def main():
                        "TOMOUSDT", "TRBUSDT", "KNCUSDT", "STMXUSDT", "ZRXUSDT",
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
-    #"ETH", "GALA","1000SHIB","SAND","ADA","CHZ","BNB",
-    # "ZEC","MANA","XMR","ATOM","MATIC","LINK","DOGE",
-    # "LTC","KNC","PEOPLE","ALICE","ICX","API3","GRT",
-    # "BAT","REN","FIL","ENJ","DYDX","CRV"
-    allowed_symbols = ["BAT","REN","FIL","ENJ","DYDX","CRV"]
+    '''
+    "XLM",
+    "EOS",
+    "BCH",
+    "STORJ",
+    "ETC",
+    "THETA",
+    "1INCH",
+    "DASH",
+    "SUSHI",
+    "ONE",
+    "VET",
+    "ICP",
+    "AR",
+    "TLM",
+    "ANC",
+    "XTZ",
+    "TRX",
+    "ZEN","CHR","ALGO","CELR","BLZ"
+    '''
+    allowed_symbols = ["XLM",
+                       "EOS",
+                       "BCH",
+                       "STORJ",
+                       "ETC",
+                       "THETA",
+                       "1INCH",
+                       "DASH",
+                       "SUSHI", ]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
@@ -85,27 +109,30 @@ async def main():
             live_config_path = f'{dir}{file}'
             print(f'using file : {live_config_path}')
 
-            start_date = '2021-08-01'
-            end_date = '2022-04-01'
+        start_date = '2021-07-01'
+        end_date = '2022-04-05'
+        starting_balance = 15.0
 
-            await do_backtest(
-                backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
-                symbol=symbol,
-                live_config_path=live_config_path,
-                # short_wallet_exposure_limit=0.1,
-                # long_wallet_exposure_limit=0.1,
-                start_date=start_date,
-                end_date=end_date,
-                user='binance_01',
-                enable_shorts=True,
-                enable_longs=True
-            )
+        await do_backtest(
+            backtest_config_path='C:\\AgodaGit\\passivbot\\configs\\backtest\\default.hjson',
+            symbol=symbol,
+            starting_balance=starting_balance,
+            live_config_path=live_config_path,
+            long_wallet_exposure_limit=6.0 / starting_balance,
+            short_wallet_exposure_limit=5.0 / starting_balance,
+            start_date=start_date,
+            end_date=end_date,
+            user='binance_01',
+            enable_shorts=True,
+            enable_longs=True,
+            production_backtest=False
+        )
 
-            end = datetime.now()
-            time_taken = (end - start).total_seconds() * 1000
-            avg = time_taken / i  # sum(self.post_process_q) / len(self.post_process_q)
-            print_progress(total, i, avg)
-            i = i + 1
+        end = datetime.now()
+        time_taken = (end - start).total_seconds() * 1000
+        avg = time_taken / i  # sum(self.post_process_q) / len(self.post_process_q)
+        print_progress(total, i, avg)
+        i = i + 1
 
 
 if __name__ == '__main__':
