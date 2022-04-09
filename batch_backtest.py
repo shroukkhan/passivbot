@@ -57,34 +57,10 @@ async def main():
                        "SCUSDT", "AKROUSDT", "XEMUSDT", "FLMUSDT", "BALUSDT",
                        "BTSUSDT", "DGBUSDT", "DEFIUSDT"]
     '''
-    "XLM",
-    "EOS",
-    "BCH",
-    "STORJ",
-    "ETC",
-    "THETA",
-    "1INCH",
-    "DASH",
-    "SUSHI",
-    "ONE",
-    "VET",
-    "ICP",
-    "AR",
-    "TLM",
-    "ANC",
-    "XTZ",
-    "TRX",
-    "ZEN","CHR","ALGO","CELR","BLZ"
+    "OMG",
+    "DUSK",
     '''
-    allowed_symbols = ["XLM",
-                       "EOS",
-                       "BCH",
-                       "STORJ",
-                       "ETC",
-                       "THETA",
-                       "1INCH",
-                       "DASH",
-                       "SUSHI", ]
+    allowed_symbols = [ "GTC"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
