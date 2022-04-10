@@ -59,8 +59,14 @@ async def main():
     '''
     "OMG",
     "DUSK",
+    "GTC",
+    "LRC", 
+    "--------------------------"
+    "SNX", "RSR",
+    "--------------------------",
+    "CELO", "ROSE", "OCEAN","SXP","DENT"
     '''
-    allowed_symbols = [ "GTC"]
+    allowed_symbols = ["CELO", "ROSE", "OCEAN","SXP","DENT"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:

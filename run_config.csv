@@ -22,10 +22,10 @@
 20,ICX,long,n,p,0.035,0
 21,HBAR,long,n,p,0.035,0
 22,DODO,long,n,p,0.035,0
-23,DENT,long,n,p,0.035,0
+23,DENT,long,gs,p,0.035,0
 24,HOT,long,n,p,0.035,0
 25,IOTA,long,n,p,0.035,0
-26,SNX,long_short,n,n,0.035,0.02
+26,SNX,long,n,p,0.035,0.02
 27,ANKR,long,n,p,0.035,0
 28,BEL,long,n,p,0.035,0
 29,NKN,long,n,p,0.035,0
@@ -94,3 +94,4 @@
 92,DASH,long,n,p,0.03,0
 93,CHR,long,n,p,0.03,0
 94,CELR,long,n,p,0.03,0
+95,RSR,long,n,p,0.03,0
