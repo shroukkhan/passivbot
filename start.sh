@@ -381,3 +381,7 @@ screen -dmS CELR_binance ./cfgs_runtime/CELR.sh CELR
 screen -X -S RSR_binance kill
 chmod +x cfgs_runtime/RSR.sh
 screen -dmS RSR_binance ./cfgs_runtime/RSR.sh RSR
+
+screen -X -S ENS_binance kill
+chmod +x cfgs_runtime/ENS.sh
+screen -dmS ENS_binance ./cfgs_runtime/ENS.sh ENS
