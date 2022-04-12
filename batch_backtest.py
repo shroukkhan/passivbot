@@ -69,10 +69,13 @@ async def main():
     "SFP","ENS","DODO","AKRO","REEF","NEO",
     "----------------------------------------",
     "1000XEC","AKRO","ALPHA","ANKR","BAKE","BAND","BEL","BTS","C98","COMP",
-    
+    "-----------------------------------",
+    "DGB","DOGO","FLM","FLOW","HBAR",
+    "-----------------------------------",
+    "HOT","ICX","IOST","IOTA","KAVA","KLAY","LINA","LIT","MKR","MTL","NEO","NKN","OGN","ONT"
     
     '''
-    allowed_symbols = ["DGB","DOGO","FLM","FLOW","HBAR"]
+    allowed_symbols = ["HOT","ICX","IOST","IOTA","KAVA","KLAY","LINA","LIT","MKR","MTL","NEO","NKN","OGN","ONT"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
