@@ -21,15 +21,15 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    dirs = dirs[-25:]  # take last xxx
+    #dirs = dirs[-25:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = []  # dirs2[-25:]  # take last xx
+    #dirs2 = []  # dirs2[-25:]  # take last xx
 
     dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live\\*', recursive=True)
     dirs3.sort()
-    dirs3 = []
+    #dirs3 = []
 
     dirs.extend(dirs2)
     dirs.extend(dirs3)
@@ -77,7 +77,7 @@ async def main():
    "QTUM","REEF","RLC","RVN","SC","SFP","STMX","TOMO","TRB","UNFI","WAVES", "ZIL", "ZRX"
     
     '''
-    allowed_symbols = ["WAVES", "ZIL", "ZRX"]
+    allowed_symbols = ["COTI"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
