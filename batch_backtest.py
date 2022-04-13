@@ -25,7 +25,7 @@ async def main():
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    dirs2 = [] #dirs2[-25:]  # take last xx
+    dirs2 = []  # dirs2[-25:]  # take last xx
 
     dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live\\*', recursive=True)
     dirs3.sort()
@@ -73,9 +73,11 @@ async def main():
     "DGB","DOGO","FLM","FLOW","HBAR",
     "-----------------------------------",
     "HOT","ICX","IOST","IOTA","KAVA","KLAY","LINA","LIT","MKR","MTL","NEO","NKN","OGN","ONT"
+    --------------------------
+   "QTUM","REEF","RLC","RVN","SC","SFP","STMX","TOMO","TRB","UNFI","WAVES", "ZIL", "ZRX"
     
     '''
-    allowed_symbols = ["HOT","ICX","IOST","IOTA","KAVA","KLAY","LINA","LIT","MKR","MTL","NEO","NKN","OGN","ONT"]
+    allowed_symbols = ["WAVES", "ZIL", "ZRX"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:

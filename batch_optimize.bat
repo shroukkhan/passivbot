@@ -42,6 +42,7 @@ for %%x in (
             WAVESUSDT
             ZILUSDT
             ZRXUSDT
+
        ) do (
 
          echo harmony_search.py -oh --symbol %%x -pm r  --start_date 2021-08-01 --end_date 2022-03-28 --n_cpus 13 -u binance_01
