@@ -77,7 +77,7 @@ async def main():
    "QTUM","REEF","RLC","RVN","SC","SFP","STMX","TOMO","TRB","UNFI","WAVES", "ZIL", "ZRX"
     
     '''
-    allowed_symbols = ["COTI"]
+    allowed_symbols = ["1000SHIB"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
@@ -103,7 +103,7 @@ async def main():
             print(f'using file : {live_config_path}')
 
         start_date = '2021-07-01'
-        end_date = '2022-04-05'
+        end_date = '2022-04-14'
         starting_balance = 15.0
 
         await do_backtest(
