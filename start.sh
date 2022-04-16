@@ -385,3 +385,27 @@ screen -dmS RSR_binance ./cfgs_runtime/RSR.sh RSR
 screen -X -S ENS_binance kill
 chmod +x cfgs_runtime/ENS.sh
 screen -dmS ENS_binance ./cfgs_runtime/ENS.sh ENS
+
+screen -X -S BAT_binance kill
+chmod +x cfgs_runtime/BAT.sh
+screen -dmS BAT_binance ./cfgs_runtime/BAT.sh BAT
+
+screen -X -S STORJ_binance kill
+chmod +x cfgs_runtime/STORJ.sh
+screen -dmS STORJ_binance ./cfgs_runtime/STORJ.sh STORJ
+
+screen -X -S SAND_binance kill
+chmod +x cfgs_runtime/SAND.sh
+screen -dmS SAND_binance ./cfgs_runtime/SAND.sh SAND
+
+screen -X -S FTM_binance kill
+chmod +x cfgs_runtime/FTM.sh
+screen -dmS FTM_binance ./cfgs_runtime/FTM.sh FTM
+
+screen -X -S CVC_binance kill
+chmod +x cfgs_runtime/CVC.sh
+screen -dmS CVC_binance ./cfgs_runtime/CVC.sh CVC
+
+screen -X -S CTK_binance kill
+chmod +x cfgs_runtime/CTK.sh
+screen -dmS CTK_binance ./cfgs_runtime/CTK.sh CTK

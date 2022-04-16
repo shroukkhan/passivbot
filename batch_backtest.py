@@ -21,15 +21,15 @@ async def main():
     ## find latest config files for each symbols
     dirs = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_recursive_grid\\*', recursive=True)
     dirs.sort()
-    #dirs = dirs[-25:]  # take last xxx
+    dirs = dirs[-30:]  # take last xxx
 
     dirs2 = glob.glob('C:\\AgodaGit\\passivbot\\results_harmony_search_static_grid\\*', recursive=True)
     dirs2.sort()
-    #dirs2 = []  # dirs2[-25:]  # take last xx
+    dirs2 = []  # dirs2[-25:]  # take last xx
 
     dirs3 = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live\\*', recursive=True)
     dirs3.sort()
-    #dirs3 = []
+    dirs3 = []
 
     dirs.extend(dirs2)
     dirs.extend(dirs3)
@@ -74,10 +74,13 @@ async def main():
     "-----------------------------------",
     "HOT","ICX","IOST","IOTA","KAVA","KLAY","LINA","LIT","MKR","MTL","NEO","NKN","OGN","ONT"
     --------------------------
-   "QTUM","REEF","RLC","RVN","SC","SFP","STMX","TOMO","TRB","UNFI","WAVES", "ZIL", "ZRX"
-    
+    "QTUM","REEF","RLC","RVN","SC","SFP","STMX","TOMO","TRB","UNFI","WAVES", "ZIL", "ZRX"
+    "1000SHIB",
+    "RUNE","UNI",
+    --------------------------
+    "BAT", "BAL", "SRM", "RUNE" , 'STORJ','UNI','FTM','FIL','LRC','CVC',"CTK","SKL","SAND","XEM" <-----------not done config YET!
     '''
-    allowed_symbols = ["1000SHIB"]
+    allowed_symbols = ["FTM"]
     allowed_symbols = [s + "USDT" for s in allowed_symbols]
 
     for dir in dirs:
@@ -103,7 +106,7 @@ async def main():
             print(f'using file : {live_config_path}')
 
         start_date = '2021-07-01'
-        end_date = '2022-04-14'
+        end_date = '2022-04-15'
         starting_balance = 15.0
 
         await do_backtest(
