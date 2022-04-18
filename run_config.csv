@@ -2,7 +2,7 @@
 0,0,ALICE,long,n,m,0.02,0.0
 1,1,IOST,long,n,m,0.02,0.0
 2,2,OMG,long,n,m,0.02,0.0
-3,3,ATOM,long_short,m,gs,0.02,0.01
+3,3,ATOM,long_short,n,gs,0.02,0.01
 4,4,KAVA,long_short,n,n,0.02,0.01
 5,5,COTI,long,n,m,0.02,0.0
 6,6,ONE,long,n,m,0.02,0.0
@@ -27,7 +27,7 @@
 25,25,IOTA,long,n,m,0.02,0.0
 26,26,SNX,long,n,m,0.02,0.02
 27,27,ANKR,long_short,n,n,0.02,0.01
-28,28,BEL,long_short,m,n,0.02,0.01
+28,28,BEL,long_short,n,n,0.02,0.01
 29,29,NKN,long,n,m,0.02,0.0
 30,30,ONT,long,n,m,0.02,0.0
 31,31,REEF,long,n,m,0.02,0.0
@@ -40,7 +40,7 @@
 38,38,MKR,long_short,n,n,0.02,0.01
 39,39,OCEAN,long,n,m,0.02,0.0
 40,40,ZIL,long,n,m,0.02,0.0
-41,41,UNFI,long,m,m,0.02,0.0
+41,41,UNFI,long,n,m,0.02,0.0
 42,42,BAND,long,n,m,0.02,0.0
 43,43,KNC,long_short,n,n,0.02,0.01
 44,44,STMX,long,n,m,0.02,0.0
