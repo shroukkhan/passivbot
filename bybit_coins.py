@@ -6,11 +6,11 @@ import requests
 
 files = glob.glob('C:\\AgodaGit\\passivbot\\cfgs_live_bybit\\*', recursive=True)
 files.sort()
-existing_symbols = []
-for file in files:
-    symbol = file.split('\\')[-1]
-    symbol = symbol.replace('.json', 'USDT')
-    existing_symbols.append(symbol)
+# existing_symbols = []
+# for file in files:
+#     symbol = file.split('\\')[-1]
+#     symbol = symbol.replace('.json', 'USDT')
+#     existing_symbols.append(symbol)
 
 symboldata_url = "https://api.bybit.com/v2/public/symbols"
 symboldata = requests.get(symboldata_url).json()
@@ -29,8 +29,8 @@ coins = []
 for i in symboldata['result']:
     if 'USDT' in i['name']:
         symbol = i['name']
-        if symbol not in existing_symbols:
-            continue
+        # if symbol not in existing_symbols:
+        #     continue
 
         # print (f"symbol:{symbol}")
         min_qty = float(i['lot_size_filter']['min_trading_qty'])
@@ -47,7 +47,7 @@ for i in symboldata['result']:
         else:
             bin_listed = "No"
 
-        if min_notional <= 10 and float(volm) > 10:
+        if min_notional <= 20 and float(volm) > 30:
             coins.append(symbol)
             resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
             resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t{bin_listed}")
