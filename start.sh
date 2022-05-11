@@ -409,3 +409,23 @@ screen -dmS CVC_binance ./cfgs_runtime/CVC.sh CVC
 screen -X -S CTK_binance kill
 chmod +x cfgs_runtime/CTK.sh
 screen -dmS CTK_binance ./cfgs_runtime/CTK.sh CTK
+
+screen -X -S FTM_binance kill
+chmod +x cfgs_runtime/FTM.sh
+screen -dmS FTM_binance ./cfgs_runtime/FTM.sh FTM
+
+screen -X -S KNC_binance kill
+chmod +x cfgs_runtime/KNC.sh
+screen -dmS KNC_binance ./cfgs_runtime/KNC.sh KNC
+
+screen -X -S NEAR_binance kill
+chmod +x cfgs_runtime/NEAR.sh
+screen -dmS NEAR_binance ./cfgs_runtime/NEAR.sh NEAR
+
+screen -X -S SAND_binance kill
+chmod +x cfgs_runtime/SAND.sh
+screen -dmS SAND_binance ./cfgs_runtime/SAND.sh SAND
+
+screen -X -S SOL_binance kill
+chmod +x cfgs_runtime/SOL.sh
+screen -dmS SOL_binance ./cfgs_runtime/SOL.sh SOL
