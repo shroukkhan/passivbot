@@ -1,4 +1,9 @@
 {
+    "referrals": {
+        "binance": "https://accounts.binance.me/en/register?ref=TII4B07C",
+        "bybit": "https://www.bybit.com/en-US/register?affiliate_id=16464",
+        "bitget": "https://partner.bitget.com/bg/Y8FU1W"
+    },
     "binance_01" : {
         "exchange": "binance",
         "key": "key",
@@ -13,5 +18,11 @@
         "exchange": "bybit",
         "key": "key",
         "secret": "secret"
+    },
+    "bitget_01" : {
+        "exchange": "bitget",
+        "key": "key",
+        "secret": "secret",
+        "passphrase": "passphrase"
     }
 }

@@ -326,13 +326,24 @@ def calc_close_grid_backwards_long(
     if psize == 0.0:
         return [(0.0, 0.0, "")]
     minm = pprice * (1 + min_markup)
-    n_close_orders = int(round(n_close_orders))
+    if inverse:
+        full_psize = (wallet_exposure_limit * balance / c_mult) * pprice
+    else:
+        full_psize = (wallet_exposure_limit * balance) / pprice
+    n_close_orders = min(
+        n_close_orders,
+        full_psize / calc_min_entry_qty(pprice, inverse, qty_step, min_qty, min_cost),
+    )
+    n_close_orders = max(1, int(round(n_close_orders)))
     raw_close_prices = np.linspace(minm, pprice * (1 + min_markup + markup_range), n_close_orders)
     close_prices = []
+    close_prices_all = []
     for p_ in raw_close_prices:
         price = round_up(p_, price_step)
-        if price >= lowest_ask and price not in close_prices:
-            close_prices.append(price)
+        if price not in close_prices_all:
+            close_prices_all.append(price)
+            if price >= lowest_ask:
+                close_prices.append(price)
     if len(close_prices) == 0:
         return [(-psize, lowest_ask, "long_nclose")]
     wallet_exposure = qty_to_cost(psize, pprice, inverse, c_mult) / balance
@@ -366,11 +377,7 @@ def calc_close_grid_backwards_long(
         if psize_ >= calc_min_entry_qty(close_prices[0], inverse, qty_step, min_qty, min_cost):
             closes.append((-psize_, close_prices[0], "long_nclose"))
         return closes
-    if inverse:
-        full_psize = (wallet_exposure_limit * balance / c_mult) * pprice
-    else:
-        full_psize = (wallet_exposure_limit * balance) / pprice
-    qty_per_close = max(min_qty, round_up(full_psize / len(close_prices), qty_step))
+    qty_per_close = max(min_qty, round_up(full_psize / len(close_prices_all), qty_step))
     for price in close_prices[::-1]:
         min_entry_qty = calc_min_entry_qty(price, inverse, qty_step, min_qty, min_cost)
         qty = min(psize_, max(qty_per_close, min_entry_qty))
@@ -495,13 +502,24 @@ def calc_close_grid_backwards_short(
     if psize == 0.0:
         return [(0.0, 0.0, "")]
     minm = pprice * (1 - min_markup)
-    n_close_orders = int(round(n_close_orders))
+    if inverse:
+        full_psize = (wallet_exposure_limit * balance / c_mult) * pprice
+    else:
+        full_psize = (wallet_exposure_limit * balance) / pprice
+    n_close_orders = min(
+        n_close_orders,
+        full_psize / calc_min_entry_qty(pprice, inverse, qty_step, min_qty, min_cost),
+    )
+    n_close_orders = max(1, int(round(n_close_orders)))
     raw_close_prices = np.linspace(minm, pprice * (1 - min_markup - markup_range), n_close_orders)
     close_prices = []
+    close_prices_all = []
     for p_ in raw_close_prices:
         price = round_dn(p_, price_step)
-        if price <= highest_bid and price not in close_prices:
-            close_prices.append(price)
+        if price not in close_prices_all:
+            close_prices_all.append(price)
+            if price <= highest_bid:
+                close_prices.append(price)
     if len(close_prices) == 0:
         return [(psize, highest_bid, "short_nclose")]
     wallet_exposure = qty_to_cost(psize, pprice, inverse, c_mult) / balance
@@ -533,13 +551,9 @@ def calc_close_grid_backwards_short(
             closes.append((unstuck_close_qty, unstuck_close_price, "short_unstuck_close"))
     if len(close_prices) == 1:
         if psize_ >= calc_min_entry_qty(close_prices[0], inverse, qty_step, min_qty, min_cost):
-            closes.append((-psize_, close_prices[0], "short_nclose"))
+            closes.append((psize_, close_prices[0], "short_nclose"))
         return closes
-    if inverse:
-        full_psize = (wallet_exposure_limit * balance / c_mult) * pprice
-    else:
-        full_psize = (wallet_exposure_limit * balance) / pprice
-    qty_per_close = max(min_qty, round_up(full_psize / len(close_prices), qty_step))
+    qty_per_close = max(min_qty, round_up(full_psize / len(close_prices_all), qty_step))
     for price in close_prices[::-1]:
         min_entry_qty = calc_min_entry_qty(price, inverse, qty_step, min_qty, min_cost)
         qty = min(psize_, max(qty_per_close, min_entry_qty))
@@ -686,7 +700,12 @@ def calc_bankruptcy_price(
 def basespace(start, end, base, n):
     if base == 1.0:
         return np.linspace(start, end, n)
-    a = np.array([base ** i for i in range(n)])
+    elif base <= 0.0:
+        raise Exception("not defined for base <= 0.0")
+    elif base < 1.0:
+        a = -np.array([base ** i for i in range(n)])
+    else:
+        a = np.array([base ** i for i in range(n)])
     a = (a - a.min()) / (a.max() - a.min())
     return a * (end - start) + start
 
@@ -1554,6 +1573,8 @@ def calc_entry_grid_long(
     auto_unstuck_wallet_exposure_threshold,
     auto_unstuck_ema_dist,
 ) -> [(float, float, str)]:
+    if wallet_exposure_limit == 0.0:
+        return [(0.0, 0.0, "")]
     min_entry_qty = calc_min_entry_qty(highest_bid, inverse, qty_step, min_qty, min_cost)
     if do_long or psize > min_entry_qty:
         if psize == 0.0:
@@ -1723,6 +1744,8 @@ def calc_entry_grid_short(
     auto_unstuck_wallet_exposure_threshold,
     auto_unstuck_ema_dist,
 ) -> [(float, float, str)]:
+    if wallet_exposure_limit == 0.0:
+        return [(0.0, 0.0, "")]
     min_entry_qty = calc_min_entry_qty(lowest_ask, inverse, qty_step, min_qty, min_cost)
     abs_psize = abs(psize)
     if do_short or abs_psize > min_entry_qty:

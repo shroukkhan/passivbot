@@ -1,7 +1,4 @@
 import os
-
-# os.environ["NOJIT"] = "true"
-
 import numpy as np
 
 from njit_funcs import (
@@ -66,6 +63,8 @@ def calc_recursive_entry_long(
     auto_unstuck_ema_dist,
     auto_unstuck_wallet_exposure_threshold,
 ):
+    if wallet_exposure_limit == 0.0:
+        return 0.0, 0.0, ""
     ientry_price = max(
         price_step,
         min(highest_bid, round_dn(ema_band_lower * (1 - initial_eprice_ema_dist), price_step)),
@@ -157,6 +156,8 @@ def calc_recursive_entry_short(
     auto_unstuck_ema_dist,
     auto_unstuck_wallet_exposure_threshold,
 ):
+    if wallet_exposure_limit == 0.0:
+        return 0.0, 0.0, ""
     abs_psize = abs(psize)
     ientry_price = max(
         lowest_ask, round_up(ema_band_upper * (1 + initial_eprice_ema_dist), price_step)

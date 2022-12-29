@@ -6,35 +6,49 @@ if "NOJIT" not in os.environ:
 import json
 import pprint
 import numpy as np
+from prettytable import PrettyTable
 import argparse
+import hjson
 from procedures import load_live_config, dump_live_config, make_get_filepath
-from pure_funcs import config_pretty_str, candidate_to_live_config
+from pure_funcs import config_pretty_str, candidate_to_live_config, calc_scores
+from njit_funcs import round_dynamic
 
 
 def main():
 
     parser = argparse.ArgumentParser(prog="view conf", description="inspect conf")
     parser.add_argument("results_fpath", type=str, help="path to results file")
+    weights_keys = [
+        ("psl", "maximum_pa_distance_std_long"),
+        ("pss", "maximum_pa_distance_std_short"),
+        ("pml", "maximum_pa_distance_mean_long"),
+        ("pms", "maximum_pa_distance_mean_short"),
+        ("pll", "maximum_loss_profit_ratio_long"),
+        ("pls", "maximum_loss_profit_ratio_short"),
+        ("hsl", "maximum_hrs_stuck_max_long"),
+        ("hss", "maximum_hrs_stuck_max_short"),
+        ("erl", "minimum_eqbal_ratio_min_long"),
+        ("ers", "minimum_eqbal_ratio_min_short"),
+        ("ct", "clip_threshold"),
+    ]
+    for k0, k1 in weights_keys:
+        parser.add_argument(
+            f"-{k0}",
+            f"--{k1}",
+            dest=k1,
+            type=float,
+            required=False,
+            default=None,
+            help=f"max {k1}",
+        )
     parser.add_argument(
-        "-p",
-        "--PAD",
-        "--pad",
-        dest="PAD_max",
-        type=float,
+        "-i",
+        "--index",
+        dest="index",
+        type=int,
         required=False,
-        default=0.035,
-        help="max pa dist",
-    )
-    parser.add_argument(
-        "-i", "--index", dest="index", type=int, required=False, default=1, help="best conf index"
-    )
-    parser.add_argument(
-        "-sf",
-        dest="score_formula",
-        type=str,
-        required=False,
-        default="adgPADstd",
-        help="choices: [adgPADstd, adg_mean, adg_min, adgPADmean, adgDGstd, adgDGstdstd]",
+        default=0,
+        help="best conf index, default=0",
     )
     parser.add_argument(
         "-d",
@@ -45,80 +59,89 @@ def main():
 
     args = parser.parse_args()
 
-    PAD_max = args.PAD_max
+    # attempt guessing whether harmony search or particle swarm
+    opt_config_path = (
+        "configs/optimize/harmony_search.hjson"
+        if "harmony" in args.results_fpath
+        else "configs/optimize/particle_swarm_optimization.hjson"
+    )
+
+    opt_config = hjson.load(open(opt_config_path))
+    minsmaxs = {}
+    for _, k1 in weights_keys:
+        minsmaxs[k1] = opt_config[k1] if getattr(args, k1) is None else getattr(args, k1)
+    klen = max([len(k) for k in minsmaxs])
+    for k, v in minsmaxs.items():
+        print(f"{k: <{klen}} {v}")
 
     with open(args.results_fpath) as f:
         results = [json.loads(x) for x in f.readlines()]
+    print(f"{'n results': <{klen}} {len(results)}")
 
-    print("n results", len(results), "score formula: adg / PADstd, PAD max:", PAD_max)
-    best_config = {}
-    for side in ["long", "short"]:
-        stats = []
-        for r in results:
-            adgs, PAD_stds, PAD_means, adg_DGstd_ratios = [], [], [], []
-            for s in (rs := r["results"]):
-                try:
-                    adgs.append(rs[s][f"adg_{side}"])
-                    PAD_stds.append(rs[s][f"pa_distance_std_{side}"])
-                    PAD_means.append(rs[s][f"pa_distance_mean_{side}"])
-                    adg_DGstd_ratios.append(rs[s][f"adg_DGstd_ratio_{side}"])
-                except Exception as e:
-                    pass
-            adg_mean = np.mean(adgs)
-            PAD_std_mean_raw = np.mean(PAD_stds)
-            PAD_std_mean = np.mean([max(PAD_max, x) for x in PAD_stds])
-            PAD_mean_mean_raw = np.mean(PAD_means)
-            PAD_mean_mean = np.mean([max(PAD_max, x) for x in PAD_means])
-            adg_DGstd_ratios_mean = np.mean(adg_DGstd_ratios)
-            adg_DGstd_ratios_std = np.std(adg_DGstd_ratios)
-            if args.score_formula.lower() == "adgpadstd":
-                score = adg_mean / max(PAD_max, PAD_std_mean)
-            elif args.score_formula.lower() == "adg_mean":
-                score = adg_mean
-            elif args.score_formula.lower() == "adg_min":
-                score = min(adgs)
-            elif args.score_formula.lower() == "adgpadmean":
-                score = adg_mean * min(1, PAD_max / PAD_mean_mean)
-            elif args.score_formula.lower() == "adgdgstd":
-                score = adg_DGstd_ratios_mean
-            elif args.score_formula.lower() == "adgdgstdstd":
-                score = adg_DGstd_ratios_mean / adg_DGstd_ratios_std
-            else:
-                raise Exception("unknown score formula")
-            stats.append(
-                {
-                    "config": r["config"],
-                    "adg_mean": adg_mean,
-                    "PAD_std_mean": PAD_std_mean,
-                    "PAD_std_mean_raw": PAD_std_mean_raw,
-                    "PAD_mean_mean": PAD_mean_mean,
-                    "PAD_mean_mean_raw": PAD_mean_mean_raw,
-                    "score": score,
-                    "adg_DGstd_ratios_mean": adg_DGstd_ratios_mean,
-                    "adg_DGstd_ratios_std": adg_DGstd_ratios_std,
-                    "config_no": r["results"]["config_no"],
-                }
+    sides = ["long", "short"]
+    all_scores = []
+    symbols = [s for s in results[0]["results"] if s != "config_no"]
+    for r in results:
+        cfg = r["config"].copy()
+        cfg.update(minsmaxs)
+        ress = r["results"]
+        all_scores.append({})
+        scores_res = calc_scores(cfg, {s: r["results"][s] for s in symbols})
+        scores, individual_scores, keys = (
+            scores_res["scores"],
+            scores_res["individual_scores"],
+            scores_res["keys"],
+        )
+        for side in sides:
+            all_scores[-1][side] = {
+                "config": cfg[side],
+                "score": scores[side],
+                "individual_scores": individual_scores[side],
+                "symbols_to_include": scores_res["symbols_to_include"][side],
+                "stats": {sym: {k: v for k, v in ress[sym].items() if side in k} for sym in symbols},
+                "config_no": ress["config_no"],
+            }
+    best_candidate = {}
+    for side in sides:
+        scoress = sorted([sc[side] for sc in all_scores], key=lambda x: x["score"])
+        best_candidate[side] = scoress[args.index]
+    best_config = {
+        "long": best_candidate["long"]["config"],
+        "short": best_candidate["short"]["config"],
+    }
+    for side in sides:
+        row_headers = ["symbol"] + [k[0] for k in keys] + ["score"]
+        table = PrettyTable(row_headers)
+        for rh in row_headers:
+            table.align[rh] = "l"
+        table.title = (
+            f"{side} (config no. {best_candidate[side]['config_no']},"
+            + f" score {round_dynamic(best_candidate[side]['score'], 6)})"
+        )
+        for sym in sorted(
+            symbols,
+            key=lambda x: best_candidate[side]["individual_scores"][x],
+            reverse=True,
+        ):
+            xs = [best_candidate[side]["stats"][sym][f"{k[0]}_{side}"] for k in keys]
+            table.add_row(
+                [("-> " if sym in best_candidate[side]["symbols_to_include"] else "") + sym]
+                + [round_dynamic(x, 4) for x in xs]
+                + [best_candidate[side]["individual_scores"][sym]]
             )
-        ss = sorted(stats, key=lambda x: x["score"])
-        bc = ss[-args.index]
-        best_config[side] = bc["config"][side]
-        for r in results:
-            if r["results"]["config_no"] == bc["config_no"]:
-                rs = r["results"]
-                syms = [s for s in rs if "config" not in s]
-                print(f"results {side} best config no {bc['config_no']}")
-                print("symbol               adg      PADmean  PADstd   adg/DGstd")
-                for s in sorted(syms, key=lambda x: rs[x][f"adg_{side}"]):
-                    print(
-                        f"{s: <20} {rs[s][f'adg_{side}'] / bc['config'][side]['wallet_exposure_limit']:.6f} "
-                        + f"{rs[s][f'pa_distance_std_{side}']:.6f} {rs[s][f'pa_distance_mean_{side}']:.6f} "
-                        + f"{rs[s][f'adg_DGstd_ratio_{side}']:.6f} "
-                    )
-                print(
-                    f"{'means': <20} {bc['adg_mean'] / bc['config'][side]['wallet_exposure_limit']:.6f} "
-                    + f"{bc['PAD_std_mean_raw']:.6f} "
-                    + f"{bc['PAD_mean_mean_raw']:.6f} {bc['adg_DGstd_ratios_mean']:.6f}"
-                )
+        means = [
+            np.mean(
+                [
+                    best_candidate[side]["stats"][s_][f"{k[0]}_{side}"]
+                    for s_ in symbols
+                    if s_ in best_candidate[side]["symbols_to_include"]
+                ]
+            )
+            for k in keys
+        ]
+        ind_scores_mean = np.mean([best_candidate[side]["individual_scores"][sym] for sym in symbols])
+        table.add_row(["mean"] + [round_dynamic(m, 4) for m in means] + [ind_scores_mean])
+        print(table)
     live_config = candidate_to_live_config(best_config)
     if args.dump_live_config:
         lc_fpath = make_get_filepath(f"{args.results_fpath.replace('.txt', '_best_config.json')}")

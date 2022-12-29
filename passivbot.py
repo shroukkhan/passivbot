@@ -14,8 +14,9 @@ from time import time
 from procedures import (
     load_live_config,
     make_get_filepath,
-    load_exchange_key_secret,
+    load_exchange_key_secret_passphrase,
     numpyize,
+    print_async_exception,
 )
 from pure_funcs import (
     filter_orders,
@@ -39,6 +40,10 @@ from njit_funcs import (
     calc_emas_last,
     calc_ema,
 )
+from njit_funcs_neat_grid import (
+    calc_neat_grid_long,
+    calc_neat_grid_short,
+)
 from njit_funcs_recursive_grid import (
     calc_recursive_entries_long,
     calc_recursive_entries_short,
@@ -47,6 +52,8 @@ from typing import Union, Dict, List
 
 import websockets
 import logging
+
+TEST_MODE_SUPPORTED_EXCHANGES = ["bybit"]
 
 
 class Bot:
@@ -58,7 +65,8 @@ class Bot:
         self.config["max_leverage"] = 25
         self.xk = {}
 
-        self.ws = None
+        self.ws_user = None
+        self.ws_market = None
 
         self.hedge_mode = self.config["hedge_mode"] = True
         self.set_config(self.config)
@@ -103,7 +111,10 @@ class Bot:
 
         self.log_filepath = make_get_filepath(f"logs/{self.exchange}/{config['config_name']}.log")
 
-        _, self.key, self.secret = load_exchange_key_secret(self.user)
+        self.api_keys = config["api_keys"] if "api_keys" in config else None
+        _, self.key, self.secret, self.passphrase = load_exchange_key_secret_passphrase(
+            self.user, self.api_keys
+        )
 
         self.log_level = 0
 
@@ -114,14 +125,18 @@ class Bot:
         self.process_websocket_ticks = True
 
     def set_config(self, config):
-        if "long_mode" not in config:
-            config["long_mode"] = None
-        if "short_mode" not in config:
-            config["short_mode"] = None
-        if "assigned_balance" not in config:
-            config["assigned_balance"] = None
-        if "cross_wallet_pct" not in config:
-            config["cross_wallet_pct"] = 1.0
+        for k, v in [
+            ("long_mode", None),
+            ("short_mode", None),
+            ("test_mode", False),
+            ("assigned_balance", None),
+            ("cross_wallet_pct", 1.0),
+            ("price_distance_threshold", 0.5),
+            ("c_mult", 1.0),
+            ("leverage", 7.0),
+        ]:
+            if k not in config:
+                config[k] = v
         self.passivbot_mode = config["passivbot_mode"] = determine_passivbot_mode(config)
         if config["cross_wallet_pct"] > 1.0 or config["cross_wallet_pct"] <= 0.0:
             logging.warning(
@@ -211,11 +226,13 @@ class Bot:
                 self.dump_log({"log_type": "open_orders", "data": open_orders})
             self.open_orders = open_orders
             self.error_halt["update_open_orders"] = False
+            return True
         except Exception as e:
             self.error_halt["update_open_orders"] = True
 
             logging.error(f"error with update open orders {e}")
             traceback.print_exc()
+            return False
         finally:
             self.ts_released["update_open_orders"] = time()
 
@@ -286,10 +303,12 @@ class Bot:
                 self.dump_log({"log_type": "position", "data": position})
             self.position = position
             self.error_halt["update_position"] = False
+            return True
         except Exception as e:
             self.error_halt["update_position"] = True
             logging.error(f"error with update position {e}")
             traceback.print_exc()
+            return False
         finally:
             self.ts_released["update_position"] = time()
 
@@ -328,77 +347,61 @@ class Bot:
             return []
         self.ts_locked["create_orders"] = time()
         try:
-            creations = []
-            for oc in sorted(orders_to_create, key=lambda x: calc_diff(x["price"], self.price)):
-                try:
-                    creations.append((oc, asyncio.create_task(self.execute_order(oc))))
-                except Exception as e:
-                    logging.error(f"error creating order a {oc} {e}")
-            created_orders = []
-            for oc, c in creations:
-                try:
-                    o = await c
-                    created_orders.append(o)
-                    if "side" in o:
-                        logging.info(
-                            f'  created order {o["symbol"]} {o["side"]: <4} '
-                            + f'{o["position_side"]: <5} {o["qty"]} {o["price"]}'
-                        )
-                        if o["order_id"] not in {x["order_id"] for x in self.open_orders}:
-                            self.open_orders.append(o)
-                    else:
-                        logging.error(f"error creating order b {o} {oc}")
-                except Exception as e:
-                    logging.error(f"error creating order c {oc} {c.exception()} {e}")
-            return created_orders
+            orders = await self.execute_orders(orders_to_create)
+            for order in sorted(orders, key=lambda x: calc_diff(x["price"], self.price)):
+                if "side" in order:
+                    logging.info(
+                        f'  created order {order["symbol"]} {order["side"]: <4} '
+                        + f'{order["position_side"]: <5} {order["qty"]} {order["price"]}'
+                    )
+            return orders
         finally:
             self.ts_released["create_orders"] = time()
 
     async def cancel_orders(self, orders_to_cancel: [dict]) -> [dict]:
-        if not orders_to_cancel:
-            return
         if self.ts_locked["cancel_orders"] > self.ts_released["cancel_orders"]:
             return
         self.ts_locked["cancel_orders"] = time()
         try:
-            deletions = []
-            for oc in orders_to_cancel:
-                try:
-                    deletions.append((oc, asyncio.create_task(self.execute_cancellation(oc))))
-                except Exception as e:
-                    logging.error(f"error cancelling order c {oc} {e}")
-            cancelled_orders = []
-            for oc, c in deletions:
-                try:
-                    o = await c
-                    cancelled_orders.append(o)
-                    if "order_id" in o:
+            if not orders_to_cancel:
+                return
+            deletions, orders_to_cancel_dedup, oo_ids = [], [], set()
+            for o in orders_to_cancel:
+                if o["order_id"] not in oo_ids:
+                    oo_ids.add(o["order_id"])
+                    orders_to_cancel_dedup.append(o)
+            cancellations = None
+            try:
+                cancellations = await self.execute_cancellations(orders_to_cancel_dedup)
+                for cancellation in cancellations:
+                    if "order_id" in cancellation:
                         logging.info(
-                            f'cancelled order {o["symbol"]} {o["side"]: <4} '
-                            + f'{o["position_side"]: <5} {o["qty"]} {o["price"]}'
+                            f'cancelled order {cancellation["symbol"]} {cancellation["side"]: <4} '
+                            + f'{cancellation["position_side"]: <5} {cancellation["qty"]} {cancellation["price"]}'
                         )
                         self.open_orders = [
-                            oo for oo in self.open_orders if oo["order_id"] != o["order_id"]
+                            oo
+                            for oo in self.open_orders
+                            if oo["order_id"] != cancellation["order_id"]
                         ]
-
-                    else:
-                        logging.error(f"error cancelling order {o}")
-                except Exception as e:
-                    logging.error(f"error cancelling order {oc} {c.exception()} {e}")
-            return cancelled_orders
+                return cancellations
+            except Exception as e:
+                logging.error(f"error cancelling orders {cancellations} {e}")
+                print_async_exception(cancellations)
+                return []
         finally:
             self.ts_released["cancel_orders"] = time()
 
     def stop(self, signum=None, frame=None) -> None:
         logging.info("Stopping passivbot, please wait...")
-        try:
+        self.stop_websocket = True
+        if not self.ohlcv:
+            try:
+                self.user_stream_task.cancel()
+                self.market_stream_task.cancel()
 
-            self.stop_websocket = True
-            self.user_stream_task.cancel()
-            self.market_stream_task.cancel()
-
-        except Exception as e:
-            logging.error(f"An error occurred during shutdown: {e}")
+            except Exception as e:
+                logging.error(f"An error occurred during shutdown: {e}")
 
     def pause(self) -> None:
         self.process_websocket_ticks = False
@@ -484,6 +487,30 @@ class Bot:
                         self.xk["eprice_pprice_diff"][0],
                         self.xk["secondary_allocation"][0],
                         self.xk["secondary_pprice_diff"][0],
+                        self.xk["eprice_exp_base"][0],
+                        self.xk["auto_unstuck_wallet_exposure_threshold"][0],
+                        self.xk["auto_unstuck_ema_dist"][0],
+                    )
+                elif self.passivbot_mode == "neat_grid":
+                    entries_long = calc_neat_grid_long(
+                        balance,
+                        psize_long,
+                        pprice_long,
+                        self.ob[0],
+                        min(self.emas_long),
+                        self.xk["inverse"],
+                        self.xk["do_long"],
+                        self.xk["qty_step"],
+                        self.xk["price_step"],
+                        self.xk["min_qty"],
+                        self.xk["min_cost"],
+                        self.xk["c_mult"],
+                        self.xk["grid_span"][0],
+                        self.xk["wallet_exposure_limit"][0],
+                        self.xk["max_n_entry_orders"][0],
+                        self.xk["initial_qty_pct"][0],
+                        self.xk["initial_eprice_ema_dist"][0],
+                        self.xk["eqty_exp_base"][0],
                         self.xk["eprice_exp_base"][0],
                         self.xk["auto_unstuck_wallet_exposure_threshold"][0],
                         self.xk["auto_unstuck_ema_dist"][0],
@@ -574,6 +601,30 @@ class Bot:
                         self.xk["auto_unstuck_ema_dist"][1],
                         self.xk["auto_unstuck_wallet_exposure_threshold"][1],
                     )
+                elif self.passivbot_mode == "neat_grid":
+                    entries_short = calc_neat_grid_short(
+                        balance,
+                        psize_short,
+                        pprice_short,
+                        self.ob[1],
+                        max(self.emas_short),
+                        self.xk["inverse"],
+                        self.xk["do_short"],
+                        self.xk["qty_step"],
+                        self.xk["price_step"],
+                        self.xk["min_qty"],
+                        self.xk["min_cost"],
+                        self.xk["c_mult"],
+                        self.xk["grid_span"][1],
+                        self.xk["wallet_exposure_limit"][1],
+                        self.xk["max_n_entry_orders"][1],
+                        self.xk["initial_qty_pct"][1],
+                        self.xk["initial_eprice_ema_dist"][1],
+                        self.xk["eqty_exp_base"][1],
+                        self.xk["eprice_exp_base"][1],
+                        self.xk["auto_unstuck_wallet_exposure_threshold"][1],
+                        self.xk["auto_unstuck_ema_dist"][1],
+                    )
                 elif self.passivbot_mode == "static_grid":
                     entries_short = calc_entry_grid_short(
                         balance,
@@ -654,19 +705,34 @@ class Bot:
     async def cancel_and_create(self):
         if self.ts_locked["cancel_and_create"] > self.ts_released["cancel_and_create"]:
             return
-        if any(self.error_halt.values()):
-            logging.warning(
-                f"warning:  error in rest api fetch {self.error_halt}, "
-                + "halting order creations/cancellations"
-            )
-            return
         self.ts_locked["cancel_and_create"] = time()
         try:
+            if any(self.error_halt.values()):
+                logging.warning(
+                    f"warning:  error in rest api fetch {self.error_halt}, "
+                    + "halting order creations/cancellations"
+                )
+                return []
             ideal_orders = []
-            for o in self.calc_orders():
-                if any(x in o["custom_id"] for x in ["ientry", "unstuck"]):
+            all_orders = self.calc_orders()
+            for o in all_orders:
+                if (
+                    not self.ohlcv
+                    and "ientry" in o["custom_id"]
+                    and calc_diff(o["price"], self.price) < 0.002
+                ):
+                    # call update_position() before making initial entry orders
+                    # in case websocket has failed
+                    logging.info(
+                        f"update_position with REST API before creating initial entries.  Last price {self.price}"
+                    )
+                    await self.update_position()
+                    all_orders = self.calc_orders()
+                    break
+            for o in all_orders:
+                if any(x in o["custom_id"] for x in ["ientry", "unstuck"]) and not self.ohlcv:
                     if calc_diff(o["price"], self.price) < 0.01:
-                        # EMA based orders must be closer than 1% of current price
+                        # EMA based orders must be closer than 1% of current price unless ohlcv mode
                         ideal_orders.append(o)
                 else:
                     if calc_diff(o["price"], self.price) < self.price_distance_threshold:
@@ -677,7 +743,6 @@ class Bot:
                 ideal_orders,
                 keys=["side", "position_side", "qty", "price"],
             )
-
             to_cancel, to_create = [], []
             for elm in to_cancel_:
                 if elm["position_side"] == "long":
@@ -692,6 +757,8 @@ class Bot:
                             to_cancel.append(elm)
                     elif self.short_mode != "manual":
                         to_cancel.append(elm)
+                else:
+                    to_cancel.append(elm)
             for elm in to_create_:
                 if elm["position_side"] == "long":
                     if self.long_mode == "tp_only":
@@ -708,28 +775,28 @@ class Bot:
 
             to_cancel = sorted(to_cancel, key=lambda x: calc_diff(x["price"], self.price))
             to_create = sorted(to_create, key=lambda x: calc_diff(x["price"], self.price))
+
             """
-            logging.info(f'to_cancel {to_cancel.values()}')
-            logging.info(f'to create {to_create.values()}')
+            logging.info(f"to_cancel {to_cancel}")
+            logging.info(f"to create {to_create}")
             return
             """
 
             results = []
             if to_cancel:
-                # to avoid building backlog, cancel n+1 orders, create n orders
                 results.append(
                     asyncio.create_task(
-                        self.cancel_orders(to_cancel[: self.n_orders_per_execution + 1])
+                        self.cancel_orders(to_cancel[: self.max_n_cancellations_per_batch])
                     )
                 )
                 await asyncio.sleep(
                     0.01
                 )  # sleep 10 ms between sending cancellations and sending creations
             if to_create:
-                results.append(await self.create_orders(to_create[: self.n_orders_per_execution]))
-            await asyncio.sleep(self.delay_between_executions)  # sleep before releasing lock
+                results.append(await self.create_orders(to_create[: self.max_n_orders_per_batch]))
             return results
         finally:
+            await asyncio.sleep(self.delay_between_executions)  # sleep before releasing lock
             self.ts_released["cancel_and_create"] = time()
 
     async def on_market_stream_event(self, ticks: [dict]):
@@ -745,27 +812,30 @@ class Bot:
         now = time()
         if now - self.ts_released["force_update"] > self.force_update_interval:
             self.ts_released["force_update"] = now
-            # force update pos and open orders thru rest API every 30 sec
+            # force update pos and open orders thru rest API every x sec (default 30)
             await asyncio.gather(self.update_position(), self.update_open_orders())
         if now - self.heartbeat_ts > self.heartbeat_interval_seconds:
             # print heartbeat once an hour
-            logging.info(f"heartbeat {self.symbol}")
-            self.log_position_long()
-            self.log_position_short()
-            liq_price = self.position["long"]["liquidation_price"]
-            if calc_diff(self.position["short"]["liquidation_price"], self.price) < calc_diff(
-                liq_price, self.price
-            ):
-                liq_price = self.position["short"]["liquidation_price"]
-            logging.info(
-                f'balance: {round_dynamic(self.position["wallet_balance"], 6)}'
-                + f' equity: {round_dynamic(self.position["equity"], 6)} last price: {self.price}'
-                + f" liq: {round_(liq_price, self.price_step)}"
-            )
+            self.heartbeat_print()
             self.heartbeat_ts = time()
         await self.cancel_and_create()
 
-    def log_position_long(self):
+    def heartbeat_print(self):
+        logging.info(f"heartbeat {self.symbol}")
+        self.log_position_long()
+        self.log_position_short()
+        liq_price = self.position["long"]["liquidation_price"]
+        if calc_diff(self.position["short"]["liquidation_price"], self.price) < calc_diff(
+            liq_price, self.price
+        ):
+            liq_price = self.position["short"]["liquidation_price"]
+        logging.info(
+            f'balance: {round_dynamic(self.position["wallet_balance"], 6)}'
+            + f' equity: {round_dynamic(self.position["equity"], 6)} last price: {self.price}'
+            + f" liq: {round_(liq_price, self.price_step)}"
+        )
+
+    def log_position_long(self, prev_pos=None):
         closes_long = sorted(
             [o for o in self.open_orders if o["side"] == "sell" and o["position_side"] == "long"],
             key=lambda x: x["price"],
@@ -780,16 +850,25 @@ class Bot:
         lcqty, lcprice = (
             (closes_long[0]["qty"], closes_long[0]["price"]) if closes_long else (0.0, 0.0)
         )
+        prev_pos_line = (
+            (
+                f'long: {prev_pos["long"]["size"]} @'
+                + f' {round_(prev_pos["long"]["price"], self.price_step)} -> '
+            )
+            if prev_pos
+            else ""
+        )
         logging.info(
-            f'long: {self.position["long"]["size"]} @'
-            + f' {round_dynamic(self.position["long"]["price"], 5)}'
+            prev_pos_line
+            + f'long: {self.position["long"]["size"]} @'
+            + f' {round_(self.position["long"]["price"], self.price_step)}'
             + f' lWE: {self.position["long"]["wallet_exposure"]:.4f}'
             + f' pprc diff {self.position["long"]["price"] / self.price - 1:.3f}'
             + f" EMAs: {[round_dynamic(e, 5) for e in self.emas_long]}"
             + f" e {leqty} @ {leprice} | c {lcqty} @ {lcprice}"
         )
 
-    def log_position_short(self):
+    def log_position_short(self, prev_pos=None):
         closes_short = sorted(
             [o for o in self.open_orders if o["side"] == "buy" and o["position_side"] == "short"],
             key=lambda x: x["price"],
@@ -809,9 +888,18 @@ class Bot:
             if self.position["short"]["price"] != 0.0
             else 1.0
         )
+        prev_pos_line = (
+            (
+                f'short: {prev_pos["short"]["size"]} @'
+                + f' {round_(prev_pos["short"]["price"], self.price_step)} -> '
+            )
+            if prev_pos
+            else ""
+        )
         logging.info(
-            f'short: {self.position["short"]["size"]} @'
-            + f' {round_dynamic(self.position["short"]["price"], 5)}'
+            prev_pos_line
+            + f'short: {self.position["short"]["size"]} @'
+            + f' {round_(self.position["short"]["price"], self.price_step)}'
             + f' sWE: {self.position["short"]["wallet_exposure"]:.4f}'
             + f" pprc diff {pprice_diff:.3f}"
             + f" EMAs: {[round_dynamic(e, 5) for e in self.emas_short]}"
@@ -827,6 +915,9 @@ class Bot:
 
     async def on_user_stream_event(self, event: dict) -> None:
         try:
+            if "logged_in" in event:
+                # bitget needs to login before sending subscribe requests
+                await self.subscribe_to_user_stream(self.ws_user)
             pos_change = False
             if "wallet_balance" in event:
                 new_wallet_balance = self.adjust_wallet_balance(event["wallet_balance"])
@@ -909,12 +1000,15 @@ class Bot:
         await self.init_exchange_config()
         await self.init_order_book()
         await self.init_emas()
+        logging.info("starting websockets...")
         self.user_stream_task = asyncio.create_task(self.start_websocket_user_stream())
         self.market_stream_task = asyncio.create_task(self.start_websocket_market_stream())
-        logging.info("starting websockets...")
         await asyncio.gather(self.user_stream_task, self.market_stream_task)
 
     async def beat_heart_user_stream(self) -> None:
+        pass
+
+    async def beat_heart_market_stream(self) -> None:
         pass
 
     async def init_user_stream(self) -> None:
@@ -925,10 +1019,11 @@ class Bot:
         asyncio.create_task(self.beat_heart_user_stream())
         logging.info(f"url {self.endpoints['websocket_user']}")
         async with websockets.connect(self.endpoints["websocket_user"]) as ws:
-            self.ws = ws
+            self.ws_user = ws
             await self.subscribe_to_user_stream(ws)
             async for msg in ws:
-                if msg is None:
+                # print('debug user stream', msg)
+                if msg is None or msg == "pong":
                     continue
                 try:
                     if self.stop_websocket:
@@ -944,10 +1039,13 @@ class Bot:
 
     async def start_websocket_market_stream(self) -> None:
         k = 1
+        asyncio.create_task(self.beat_heart_market_stream())
         async with websockets.connect(self.endpoints["websocket_market"]) as ws:
+            self.ws_market = ws
             await self.subscribe_to_market_stream(ws)
             async for msg in ws:
-                if msg is None:
+                # print('debug market stream', msg)
+                if msg is None or msg == "pong":
                     continue
                 try:
                     if self.stop_websocket:
@@ -970,17 +1068,80 @@ class Bot:
     async def subscribe_to_user_stream(self, ws):
         pass
 
+    async def start_ohlcv_mode(self):
+        await asyncio.gather(self.update_position(), self.update_open_orders())
+        await self.init_exchange_config()
+        await self.init_order_book()
+        await self.init_emas()
+        logging.info("starting bot...")
+        while True:
+            now = time()
+            # print('secs until next', ((now + 60) - now % 60) - now)
+            while int(now) % 60 != 0:
+                if self.stop_websocket:
+                    break
+                await asyncio.sleep(0.5)
+                now = time()
+                print(
+                    f"\rcountdown: {((now + 60) - now % 60) - now:.1f} last price: {self.price}      ",
+                    end=" ",
+                )
+            if self.stop_websocket:
+                break
+            await self.on_minute_mark()
+            await asyncio.sleep(1.0)
+
+    async def on_minute_mark(self):
+        # called each whole minute
+        try:
+            print("\r", end="")
+            if time() - self.heartbeat_ts > self.heartbeat_interval_seconds:
+                # print heartbeat once an hour
+                self.heartbeat_print()
+                self.heartbeat_ts = time()
+            self.prev_price = self.ob[0]
+            prev_pos = self.position.copy()
+            res = await asyncio.gather(
+                self.update_position(), self.update_open_orders(), self.init_order_book()
+            )
+            # TODO catch when res != [True, True, True]
+            self.update_emas(self.ob[0], self.prev_price)
+            await self.cancel_and_create()
+            if prev_pos["wallet_balance"] != self.position["wallet_balance"]:
+                logging.info(
+                    f"balance: {round_dynamic(prev_pos['wallet_balance'], 7)}"
+                    + f" -> {round_dynamic(self.position['wallet_balance'], 7)}"
+                )
+            if prev_pos["long"]["size"] != self.position["long"]["size"]:
+                plp = prev_pos["long"]["size"], round_(prev_pos["long"]["price"], self.price_step)
+                clp = self.position["long"]["size"], round_(
+                    self.position["long"]["price"], self.price_step
+                )
+                self.log_position_long(prev_pos)
+            if prev_pos["short"]["size"] != self.position["short"]["size"]:
+                psp = prev_pos["short"]["size"], round_(prev_pos["short"]["price"], self.price_step)
+                csp = self.position["short"]["size"], round_(
+                    self.position["short"]["price"], self.price_step
+                )
+                self.log_position_short(prev_pos)
+        except Exception as e:
+            logging.error(f"error on minute mark {e}")
+            traceback.print_exc()
+
 
 async def start_bot(bot):
-    while not bot.stop_websocket:
-        try:
-            await bot.start_websocket()
-        except Exception as e:
-            logging.warning(
-                "Websocket connection has been lost, attempting to reinitialize the bot... {e}",
-            )
-            traceback.print_exc()
-            await asyncio.sleep(10)
+    if bot.ohlcv:
+        await bot.start_ohlcv_mode()
+    else:
+        while not bot.stop_websocket:
+            try:
+                await bot.start_websocket()
+            except Exception as e:
+                logging.warning(
+                    "Websocket connection has been lost, attempting to reinitialize the bot... {e}",
+                )
+                traceback.print_exc()
+                await asyncio.sleep(10)
 
 
 async def main() -> None:
@@ -1006,7 +1167,7 @@ async def main() -> None:
         "-gs",
         "--graceful_stop",
         action="store_true",
-        help="if true, disable long and short",
+        help="if passed, set graceful stop to both long and short",
     )
     parser.add_argument(
         "-sm",
@@ -1051,11 +1212,32 @@ async def main() -> None:
         "-ak",
         "--api-keys",
         "--api_keys",
-        type=open,
+        type=str,
         required=False,
         dest="api_keys",
         default="api-keys.json",
-        help="File containing users/accounts and api-keys for each exchanges",
+        help="File containing users/accounts and api-keys for each exchange",
+    )
+    parser.add_argument(
+        "-lev",
+        "--leverage",
+        type=int,
+        required=False,
+        dest="leverage",
+        default=7,
+        help="Leverage set on exchange, if applicable.  Default is 7.",
+    )
+    parser.add_argument(
+        "-tm",
+        "--test_mode",
+        action="store_true",
+        help=f"if true, run on the test net instead of normal exchange. Supported exchanges: {TEST_MODE_SUPPORTED_EXCHANGES}",
+    )
+    parser.add_argument(
+        "-oh",
+        "--ohlcv",
+        action="store_true",
+        help=f"if true, execute to exchange only on each minute mark instead of continuously",
     )
 
     float_kwargs = [
@@ -1090,33 +1272,40 @@ async def main() -> None:
 
     args = parser.parse_args()
     try:
-        accounts = json.load(args.api_keys)
+        exchange = load_exchange_key_secret_passphrase(args.user, args.api_keys)[0]
     except Exception as e:
         logging.error(f"{e} failed to load api-keys.json file")
-        return
-    try:
-        account = accounts[args.user]
-    except Exception as e:
-        logging.error(f"unrecognized account name {args.user} {e}")
         return
     try:
         config = load_live_config(args.live_config_path)
     except Exception as e:
         logging.error(f"{e} failed to load config {args.live_config_path}")
         return
-    config["user"] = args.user
-    config["exchange"] = account["exchange"]
-    config["symbol"] = args.symbol
+    config["exchange"] = exchange
+    for k in [
+        "user",
+        "api_keys",
+        "symbol",
+        "leverage",
+        "price_distance_threshold",
+        "ohlcv",
+        "test_mode",
+    ]:
+        config[k] = getattr(args, k)
+    if config["test_mode"] and config["exchange"] not in TEST_MODE_SUPPORTED_EXCHANGES:
+        raise IOError(f"Exchange {config['exchange']} is not supported in test mode.")
     config["market_type"] = args.market_type if args.market_type is not None else "futures"
     config["passivbot_mode"] = determine_passivbot_mode(config)
-    config["price_distance_threshold"] = args.price_distance_threshold
     if args.assigned_balance is not None:
         logging.info(f"assigned balance set to {args.assigned_balance}")
         config["assigned_balance"] = args.assigned_balance
 
     if args.long_mode is None:
-        if not config["long"]["enabled"]:
+        if config["long"]["enabled"]:
+            logging.info("long normal mode")
+        else:
             config["long_mode"] = "manual"
+            logging.info("long manual mode enabled; will neither cancel nor create long orders")
     else:
         if args.long_mode in ["gs", "graceful_stop", "graceful-stop"]:
             logging.info(
@@ -1136,9 +1325,13 @@ async def main() -> None:
         elif args.long_mode.lower() in ["t", "tp_only", "tp-only"]:
             logging.info("long tp only mode enabled")
             config["long_mode"] = "tp_only"
+
     if args.short_mode is None:
-        if not config["short"]["enabled"]:
+        if config["short"]["enabled"]:
+            logging.info("short normal mode")
+        else:
             config["short_mode"] = "manual"
+            logging.info("short manual mode enabled; will neither cancel nor create short orders")
     else:
         if args.short_mode in ["gs", "graceful_stop", "graceful-stop"]:
             logging.info(
@@ -1177,8 +1370,9 @@ async def main() -> None:
 
     if "spot" in config["market_type"]:
         config = spotify_config(config)
+    logging.info(f"using config \n{config_pretty_str(denumpyize(config))}")
 
-    if account["exchange"] == "binance":
+    if config["exchange"] == "binance":
         if "spot" in config["market_type"]:
             from procedures import create_binance_bot_spot
 
@@ -1187,18 +1381,27 @@ async def main() -> None:
             from procedures import create_binance_bot
 
             bot = await create_binance_bot(config)
-    elif account["exchange"] == "binance_us":
+    elif config["exchange"] == "binance_us":
         from procedures import create_binance_bot_spot
 
         bot = await create_binance_bot_spot(config)
-    elif account["exchange"] == "bybit":
+    elif config["exchange"] == "bybit":
         from procedures import create_bybit_bot
 
         bot = await create_bybit_bot(config)
-    else:
-        raise Exception("unknown exchange", account["exchange"])
+    elif config["exchange"] == "bitget":
+        from procedures import create_bitget_bot
 
-    logging.info(f"using config \n{config_pretty_str(denumpyize(config))}")
+        bot = await create_bitget_bot(config)
+
+    else:
+        raise Exception("unknown exchange", config["exchange"])
+
+    if args.ohlcv:
+        logging.info(
+            "starting passivbot in ohlcv mode, using REST API only and updating once a minute"
+        )
+
     signal.signal(signal.SIGINT, bot.stop)
     signal.signal(signal.SIGTERM, bot.stop)
     await start_bot(bot)

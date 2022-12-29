@@ -6,12 +6,13 @@ import traceback
 from time import time
 from typing import Union, List, Dict
 from urllib.parse import urlencode
+from uuid import uuid4
 
 import aiohttp
 import numpy as np
 
-from njit_funcs import round_
-from passivbot import Bot
+from njit_funcs import round_, calc_diff
+from passivbot import Bot, logging
 from procedures import print_async_exception, print_
 from pure_funcs import ts_to_date, sort_dict_keys, date_to_ts
 
@@ -37,20 +38,29 @@ def determine_pos_side(o: dict) -> str:
             return "both"
 
 
-class Bybit(Bot):
+class BybitBot(Bot):
     def __init__(self, config: dict):
         self.exchange = "bybit"
-        self.min_notional = 0.0
+        self.min_notional = 1.0
+        self.max_n_orders_per_batch = 5
+        self.max_n_cancellations_per_batch = 10
         super().__init__(config)
         self.base_endpoint = "https://api.bybit.com"
+        if self.test_mode:
+            self.base_endpoint = "https://api-testnet.bybit.com"
         self.endpoints = {
             "balance": "/v2/private/wallet/balance",
             "exchange_info": "/v2/public/symbols",
             "ticker": "/v2/public/tickers",
+            "funds_transfer": "/asset/v1/private/transfer",
         }
         self.session = aiohttp.ClientSession(headers={"referer": "passivbotbybit"})
 
     def init_market_type(self):
+        websockets_base_endpoint = "wss://stream.bybit.com"
+        if self.test_mode:
+            websockets_base_endpoint = "wss://stream-testnet.bybit.com"
+
         if self.symbol.endswith("USDT"):
             print("linear perpetual")
             self.market_type += "_linear_perpetual"
@@ -63,8 +73,8 @@ class Bybit(Bot):
                 "ticks": "/public/linear/recent-trading-records",
                 "fills": "/private/linear/trade/execution/list",
                 "ohlcvs": "/public/linear/kline",
-                "websocket_market": "wss://stream.bybit.com/realtime_public",
-                "websocket_user": "wss://stream.bybit.com/realtime_private",
+                "websocket_market": f"{websockets_base_endpoint}/realtime_public",
+                "websocket_user": f"{websockets_base_endpoint}/realtime_private",
                 "income": "/private/linear/trade/closed-pnl/list",
                 "created_at_key": "created_time",
             }
@@ -82,8 +92,8 @@ class Bybit(Bot):
                     "ticks": "/v2/public/trading-records",
                     "fills": "/v2/private/execution/list",
                     "ohlcvs": "/v2/public/kline/list",
-                    "websocket_market": "wss://stream.bybit.com/realtime",
-                    "websocket_user": "wss://stream.bybit.com/realtime",
+                    "websocket_market": f"{websockets_base_endpoint}/realtime",
+                    "websocket_user": f"{websockets_base_endpoint}/realtime",
                     "income": "/v2/private/trade/closed-pnl/list",
                     "created_at_key": "created_at",
                 }
@@ -100,17 +110,21 @@ class Bybit(Bot):
                     "ticks": "/v2/public/trading-records",
                     "fills": "/futures/private/execution/list",
                     "ohlcvs": "/v2/public/kline/list",
-                    "websocket_market": "wss://stream.bybit.com/realtime",
-                    "websocket_user": "wss://stream.bybit.com/realtime",
+                    "websocket_market": f"{websockets_base_endpoint}/realtime",
+                    "websocket_user": f"{websockets_base_endpoint}/realtime",
                     "income": "/futures/private/trade/closed-pnl/list",
                     "created_at_key": "created_at",
                 }
 
         self.spot_base_endpoint = "https://api.bybit.com"
+        if self.test_mode:
+            self.spot_base_endpoint = "https://api-testnet.bybit.com"
+
         self.endpoints["spot_balance"] = "/spot/v1/account"
         self.endpoints["balance"] = "/v2/private/wallet/balance"
         self.endpoints["exchange_info"] = "/v2/public/symbols"
         self.endpoints["ticker"] = "/v2/public/tickers"
+        self.endpoints["funds_transfer"] = "/asset/v1/private/transfer"
 
     async def _init(self):
         info = await self.public_get(self.endpoints["exchange_info"])
@@ -161,7 +175,9 @@ class Bybit(Bot):
             result = await response.text()
         return json.loads(result)
 
-    async def private_(self, type_: str, base_endpoint: str, url: str, params: dict = {}) -> dict:
+    async def private_(
+        self, type_: str, base_endpoint: str, url: str, params: dict = {}, json_: bool = False
+    ) -> dict:
         timestamp = int(time() * 1000)
         params.update({"api_key": self.key, "timestamp": timestamp})
         for k in params:
@@ -174,8 +190,12 @@ class Bybit(Bot):
             urlencode(sort_dict_keys(params)).encode("utf-8"),
             hashlib.sha256,
         ).hexdigest()
-        async with getattr(self.session, type_)(base_endpoint + url, params=params) as response:
-            result = await response.text()
+        if json_:
+            async with getattr(self.session, type_)(base_endpoint + url, json=params) as response:
+                result = await response.text()
+        else:
+            async with getattr(self.session, type_)(base_endpoint + url, params=params) as response:
+                result = await response.text()
         return json.loads(result)
 
     async def private_get(self, url: str, params: dict = {}, base_endpoint: str = None) -> dict:
@@ -193,6 +213,22 @@ class Bybit(Bot):
             url,
             params,
         )
+
+    async def transfer_from_derivatives_to_spot(self, coin: str, amount: float):
+        params = {
+            "coin": coin,
+            "amount": str(amount),
+            "from_account_type": "CONTRACT",
+            "to_account_type": "SPOT",
+            "transfer_id": str(uuid4()),
+        }
+        return await self.private_(
+            "post", self.base_endpoint, self.endpoints["funds_transfer"], params=params, json_=True
+        )
+
+    async def get_server_time(self):
+        now = await self.public_get("/v2/public/time")
+        return float(now["time_now"]) * 1000
 
     async def fetch_position(self) -> dict:
         position = {}
@@ -236,6 +272,31 @@ class Bybit(Bot):
             "liquidation_price": float(short_pos["liq_price"]),
         }
         return position
+
+    async def execute_orders(self, orders: [dict]) -> [dict]:
+        if not orders:
+            return []
+        creations = []
+        for order in sorted(orders, key=lambda x: calc_diff(x["price"], self.price)):
+            creation = None
+            try:
+                creation = asyncio.create_task(self.execute_order(order))
+                creations.append((order, creation))
+            except Exception as e:
+                print(f"error creating order {order} {e}")
+                print_async_exception(creation)
+                traceback.print_exc()
+        results = []
+        for creation in creations:
+            result = None
+            try:
+                result = await creation[1]
+                results.append(result)
+            except Exception as e:
+                print(f"error creating order {creation} {e}")
+                print_async_exception(result)
+                traceback.print_exc()
+        return results
 
     async def execute_order(self, order: dict) -> dict:
         o = None
@@ -283,6 +344,31 @@ class Bybit(Bot):
             traceback.print_exc()
             return {}
 
+    async def execute_cancellations(self, orders: [dict]) -> [dict]:
+        if not orders:
+            return []
+        cancellations = []
+        for order in sorted(orders, key=lambda x: calc_diff(x["price"], self.price)):
+            cancellation = None
+            try:
+                cancellation = asyncio.create_task(self.execute_cancellation(order))
+                cancellations.append((order, cancellation))
+            except Exception as e:
+                print(f"error cancelling order {order} {e}")
+                print_async_exception(cancellation)
+                traceback.print_exc()
+        results = []
+        for cancellation in cancellations:
+            result = None
+            try:
+                result = await cancellation[1]
+                results.append(result)
+            except Exception as e:
+                print(f"error cancelling order {cancellation} {e}")
+                print_async_exception(result)
+                traceback.print_exc()
+        return results
+
     async def execute_cancellation(self, order: dict) -> dict:
         cancellation = None
         try:
@@ -299,9 +385,21 @@ class Bybit(Bot):
                 "price": order["price"],
             }
         except Exception as e:
-            print(f"error cancelling order {order} {e}")
-            print_async_exception(cancellation)
-            traceback.print_exc()
+            if (
+                cancellation is not None
+                and "ret_code" in cancellation
+                and cancellation["ret_code"] == 20001
+            ):
+                error_cropped = {
+                    k: v for k, v in cancellation.items() if k in ["ret_msg", "ret_code"]
+                }
+                logging.error(
+                    f"error cancelling order {error_cropped} {order}"
+                )  # neater error message
+            else:
+                print(f"error cancelling order {order} {e}")
+                print_async_exception(cancellation)
+                traceback.print_exc()
             self.ts_released["force_update"] = 0.0
             return {}
 
@@ -351,7 +449,7 @@ class Bybit(Bot):
         return trades
 
     async def fetch_ohlcvs(
-            self, symbol: str = None, start_time: int = None, interval="1m", limit=200
+        self, symbol: str = None, start_time: int = None, interval="1m", limit=200
     ):
         # m -> minutes; h -> hours; d -> days; w -> weeks; M -> months
         interval_map = {
@@ -394,12 +492,29 @@ class Bybit(Bot):
         ]
 
     async def get_all_income(
-            self,
-            symbol: str = None,
-            start_time: int = None,
-            income_type: str = "Trade",
-            end_time: int = None,
+        self,
+        symbol: str = None,
+        start_time: int = None,
+        income_type: str = "Trade",
+        end_time: int = None,
     ):
+        if symbol is None:
+            all_income = []
+            all_positions = await self.private_get(self.endpoints["position"], params={"symbol": ""})
+            symbols = sorted(
+                set(
+                    [
+                        x["data"]["symbol"]
+                        for x in all_positions["result"]
+                        if float(x["data"]["size"]) > 0
+                    ]
+                )
+            )
+            for symbol in symbols:
+                all_income += await self.get_all_income(
+                    symbol=symbol, start_time=start_time, income_type=income_type, end_time=end_time
+                )
+            return sorted(all_income, key=lambda x: x["timestamp"])
         limit = 50
         income = []
         page = 1
@@ -413,8 +528,8 @@ class Bybit(Bot):
             )
             if len(fetched) == 0:
                 break
-            print_(["fetched income", ts_to_date(fetched[0]["timestamp"])])
-            if fetched == income[-len(fetched):]:
+            print_(["fetched income", symbol, ts_to_date(fetched[0]["timestamp"])])
+            if fetched == income[-len(fetched) :]:
                 break
             income += fetched
             if len(fetched) < limit:
@@ -424,13 +539,13 @@ class Bybit(Bot):
         return sorted(income_d.values(), key=lambda x: x["timestamp"])
 
     async def fetch_income(
-            self,
-            symbol: str = None,
-            income_type: str = None,
-            limit: int = 50,
-            start_time: int = None,
-            end_time: int = None,
-            page=None,
+        self,
+        symbol: str = None,
+        income_type: str = None,
+        limit: int = 50,
+        start_time: int = None,
+        end_time: int = None,
+        page=None,
     ):
         params = {"limit": limit, "symbol": self.symbol if symbol is None else symbol}
         if start_time is not None:
@@ -469,11 +584,11 @@ class Bybit(Bot):
             return []
 
     async def fetch_fills(
-            self,
-            limit: int = 200,
-            from_id: int = None,
-            start_time: int = None,
-            end_time: int = None,
+        self,
+        limit: int = 200,
+        from_id: int = None,
+        start_time: int = None,
+        end_time: int = None,
     ):
         return []
         ffills, fpnls = await asyncio.gather(
@@ -507,7 +622,6 @@ class Bybit(Bot):
         except Exception as e:
             print("error fetching fills", e)
             return []
-        print("ntufnt")
         return fetched
         print("fetch_fills not implemented for Bybit")
         return []
@@ -521,18 +635,17 @@ class Bybit(Bot):
                         "/futures/private/position/leverage/save",
                         {
                             "symbol": self.symbol,
-                            "position_idx": 1,
-                            "buy_leverage": 0,
-                            "sell_leverage": 0,
+                            "buy_leverage": self.leverage,
+                            "sell_leverage": self.leverage,
                         },
                     ),
                     self.private_post(
-                        "/futures/private/position/leverage/save",
+                        "/futures/private/position/switch-isolated",
                         {
                             "symbol": self.symbol,
-                            "position_idx": 2,
-                            "buy_leverage": 0,
-                            "sell_leverage": 0,
+                            "is_isolated": False,
+                            "buy_leverage": self.leverage,
+                            "sell_leverage": self.leverage,
                         },
                     ),
                 )
@@ -548,23 +661,36 @@ class Bybit(Bot):
                     {
                         "symbol": self.symbol,
                         "is_isolated": False,
-                        "buy_leverage": 9,  # arbitrary
-                        "sell_leverage": 9,  # arbitrary
+                        "buy_leverage": self.leverage,
+                        "sell_leverage": self.leverage,
                     },
                 )
                 print(res)
                 res = await self.private_post(
                     "/private/linear/position/set-leverage",
-                    {"symbol": self.symbol, "buy_leverage": 9, "sell_leverage": 9},  # arbitrary
+                    {
+                        "symbol": self.symbol,
+                        "buy_leverage": self.leverage,
+                        "sell_leverage": self.leverage,
+                    },
                 )
                 print(res)
             elif "inverse_perpetual" in self.market_type:
                 res = await self.private_post(
-                    "/v2/private/position/leverage/save",
-                    {"symbol": self.symbol, "leverage": 0},
+                    "/v2/private/position/switch-isolated",
+                    {
+                        "symbol": self.symbol,
+                        "is_isolated": False,
+                        "buy_leverage": self.leverage,
+                        "sell_leverage": self.leverage,
+                    },
                 )
-
-                print(res)
+                print("1", res)
+                res = await self.private_post(
+                    "/v2/private/position/leverage/save",
+                    {"symbol": self.symbol, "leverage": self.leverage, "leverage_only": True},
+                )
+                print("2", res)
         except Exception as e:
             print(e)
 
@@ -588,10 +714,10 @@ class Bybit(Bot):
         while True:
             await asyncio.sleep(27)
             try:
-                await self.ws.send(json.dumps({"op": "ping"}))
+                await self.ws_user.send(json.dumps({"op": "ping"}))
             except Exception as e:
                 traceback.print_exc()
-                print_(["error sending heartbeat", e])
+                print_(["error sending heartbeat user", e])
 
     async def subscribe_to_market_stream(self, ws):
         await ws.send(json.dumps({"op": "subscribe", "args": ["trade." + self.symbol]}))
@@ -620,7 +746,7 @@ class Bybit(Bot):
         return {"code": "-1", "msg": "Transferring funds not supported for Bybit"}
 
     def standardize_user_stream_event(
-            self, event: Union[List[Dict], Dict]
+        self, event: Union[List[Dict], Dict]
     ) -> Union[List[Dict], Dict]:
         events = []
         if "topic" in event:
@@ -659,14 +785,14 @@ class Bybit(Bot):
                                 new_open_order["position_side"] = (
                                     "long"
                                     if (
-                                            (
-                                                    new_open_order["side"] == "buy"
-                                                    and elm["create_type"] == "CreateByUser"
-                                            )
-                                            or (
-                                                    new_open_order["side"] == "sell"
-                                                    and elm["create_type"] == "CreateByClosing"
-                                            )
+                                        (
+                                            new_open_order["side"] == "buy"
+                                            and elm["create_type"] == "CreateByUser"
+                                        )
+                                        or (
+                                            new_open_order["side"] == "sell"
+                                            and elm["create_type"] == "CreateByClosing"
+                                        )
                                     )
                                     else "short"
                                 )

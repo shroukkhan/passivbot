@@ -1,10 +1,10 @@
 ![Passivbot](docs/images/pbot_logo_full.svg)
 
-# Trading bot running on Bybit and Binance Futures
+# Trading bot running on Bybit, Binance and Bitget
 
 :warning: **Use at own risk** :warning:
 
-v5.6.0  
+v5.8.2
 
 
 ## Overview
@@ -41,6 +41,24 @@ See also https://www.futuresboard.xyz/guides.html
 [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/QAF2H2UmzZ)
 
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/passivbot_futures)
+
+## Referrals and Tip Jar
+
+https://accounts.binance.me/en/register?ref=TII4B07C  
+https://www.bybit.com/en-US/register?affiliate_id=16464  
+https://partner.bitget.com/bg/Y8FU1W  
+https://www.okx.com/join/15429595  
+
+https://www.buymeacoffee.com/enarjord  
+
+Solana Tether USD (USDT):  
+9hUCHBQA261PU6rUSbwgMoxn8nrdcXPAYgbASRgA8dtm
+
+Monero (XMR):  
+49gUQ1jasDK23tJTMCvP4mQUUwndeLWAwSgdCFn6ovmRKXZAjQnVp2JZ2K4UuDDdYMNam1HE8ELZoWdeJPRfYEa9QSEK6XZ
+
+Bitcoin (BTC):  
+bc1qcc3kr9gudg35gnsljg64zeaurt0y24pfej36w6
 
 ## License
 

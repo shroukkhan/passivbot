@@ -1,6 +1,6 @@
 import os
 
-os.environ["NOJIT"] = "false"
+# os.environ["NOJIT"] = "false"
 
 import argparse
 import asyncio
@@ -9,11 +9,11 @@ from time import time
 
 import numpy as np
 import pandas as pd
-from types import SimpleNamespace
 
 from downloader import Downloader, load_hlc_cache
 from njit_funcs import backtest_static_grid, round_
 from njit_funcs_recursive_grid import backtest_recursive_grid
+from njit_funcs_neat_grid import backtest_neat_grid
 from plotting import dump_plots
 from procedures import (
     prepare_backtest_config,
@@ -37,6 +37,14 @@ def backtest(config: dict, data: np.ndarray, do_print=False) -> (list, bool):
     xk = create_xk(config)
     if passivbot_mode == "recursive_grid":
         return backtest_recursive_grid(
+            data,
+            config["starting_balance"],
+            config["latency_simulation_ms"],
+            config["maker_fee"],
+            **xk,
+        )
+    elif passivbot_mode == "neat_grid":
+        return backtest_neat_grid(
             data,
             config["starting_balance"],
             config["latency_simulation_ms"],
@@ -72,59 +80,14 @@ def plot_wrap(config, data):
     sdf.to_csv(config["plots_dirpath"] + "stats.csv")
     df = pd.DataFrame({**{"timestamp": data[:, 0], "qty": data[:, 1], "price": data[:, 2]}, **{}})
     print("dumping plots...")
-    dump_plots(config, longs, shorts, sdf, df, n_parts=10)
+    dump_plots(config, longs, shorts, sdf, df, n_parts=config["n_parts"])
+    if config["enable_interactive_plot"]:
+        import interactive_plot
 
-
-async def do_backtest(backtest_config_path: str, live_config_path: str, start_date: str, end_date: str, symbol: str,
-                      short_wallet_exposure_limit: float = None, long_wallet_exposure_limit: float = None,
-                      starting_balance=25,
-                      base_dir: str = 'backtests', enable_shorts: bool = True, enable_longs: bool = True, user=None,
-                      production_backtest=False):
-    args = SimpleNamespace(**{
-        'backtest_config_path': backtest_config_path,
-        'live_config_path': live_config_path,
-        'start_date': start_date,
-        'end_date': end_date,
-        'symbol': symbol,
-        'starting_balance': starting_balance,
-        'market_type': None,
-        'nojit': False,
-        'short_wallet_exposure_limit': short_wallet_exposure_limit,
-        'long_wallet_exposure_limit': long_wallet_exposure_limit,
-        'user': user,
-        'n_parts': 10,
-        'base_dir': base_dir
-    })
-    config = await prepare_backtest_config(args)
-    live_config = load_live_config(args.live_config_path)
-
-    config['production_backtest'] = production_backtest
-    live_config['short']['enabled'] = enable_shorts
-    live_config['long']['enabled'] = enable_longs
-
-    config.update(live_config)
-    downloader = Downloader(config)
-    print()
-    for k in (
-            keys := [
-                "exchange",
-                "spot",
-                "symbol",
-                "market_type",
-                "config_type",
-                "starting_balance",
-                "start_date",
-                "end_date",
-                "latency_simulation_ms",
-            ]
-    ):
-        if k in config:
-            print(f"{k: <{max(map(len, keys)) + 2}} {config[k]}")
-    print()
-    data = await downloader.get_sampled_ticks()
-    config["n_days"] = round_((data[-1][0] - data[0][0]) / (1000 * 60 * 60 * 24), 0.1)
-    pprint.pprint(denumpyize(live_config))
-    plot_wrap(config, data)
+        print("dumping interactive plot...")
+        sts = time()
+        interactive_plot.dump_interactive_plot(config, data, longs, shorts)
+        print(f"{time() - sts:.2f} seconds spent on dumping interactive plot")
 
 
 async def main():
@@ -225,19 +188,19 @@ async def main():
 
         print()
         for k in (
-                keys := [
-                    "exchange",
-                    "spot",
-                    "symbol",
-                    "market_type",
-                    "passivbot_mode",
-                    "config_type",
-                    "starting_balance",
-                    "start_date",
-                    "end_date",
-                    "latency_simulation_ms",
-                    "base_dir",
-                ]
+            keys := [
+                "exchange",
+                "spot",
+                "symbol",
+                "market_type",
+                "passivbot_mode",
+                "config_type",
+                "starting_balance",
+                "start_date",
+                "end_date",
+                "latency_simulation_ms",
+                "base_dir",
+            ]
         ):
             if k in config:
                 print(f"{k: <{max(map(len, keys)) + 2}} {config[k]}")

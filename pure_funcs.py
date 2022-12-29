@@ -72,6 +72,32 @@ def get_xk_keys(passivbot_mode="static_grid"):
             "auto_unstuck_wallet_exposure_threshold",
             "auto_unstuck_ema_dist",
         ]
+    elif passivbot_mode == "neat_grid":
+        return [
+            "inverse",
+            "do_long",
+            "do_short",
+            "backwards_tp",
+            "qty_step",
+            "price_step",
+            "min_qty",
+            "min_cost",
+            "c_mult",
+            "grid_span",
+            "wallet_exposure_limit",
+            "max_n_entry_orders",
+            "initial_qty_pct",
+            "eqty_exp_base",
+            "eprice_exp_base",
+            "min_markup",
+            "markup_range",
+            "n_close_orders",
+            "ema_span_0",
+            "ema_span_1",
+            "initial_eprice_ema_dist",
+            "auto_unstuck_wallet_exposure_threshold",
+            "auto_unstuck_ema_dist",
+        ]
     return [
         "inverse",
         "do_long",
@@ -104,6 +130,8 @@ def get_xk_keys(passivbot_mode="static_grid"):
 def determine_passivbot_mode(config: dict) -> str:
     if all(k in config["long"] for k in get_template_live_config("recursive_grid")["long"]):
         return "recursive_grid"
+    if all(k in config["long"] for k in get_template_live_config("neat_grid")["long"]):
+        return "neat_grid"
     elif all(k in config["long"] for k in get_template_live_config("static_grid")["long"]):
         return "static_grid"
     else:
@@ -123,7 +151,7 @@ def create_xk(config: dict) -> dict:
     keys = get_xk_keys(config["passivbot_mode"])
     config_["long"]["n_close_orders"] = int(round(config_["long"]["n_close_orders"]))
     config_["short"]["n_close_orders"] = int(round(config_["short"]["n_close_orders"]))
-    if config["passivbot_mode"] == "static_grid":
+    if config["passivbot_mode"] in ["static_grid", "neat_grid"]:
         config_["long"]["max_n_entry_orders"] = int(round(config_["long"]["max_n_entry_orders"]))
         config_["short"]["max_n_entry_orders"] = int(round(config_["short"]["max_n_entry_orders"]))
     for k in keys:
@@ -232,8 +260,8 @@ def candidate_to_live_config(candidate_: dict) -> dict:
             for k in live_config[side]:
                 live_config[side][k] = candidate[side][k]
             live_config[side]["n_close_orders"] = int(round(live_config[side]["n_close_orders"]))
-    elif passivbot_mode == "static_grid":
-        live_config = get_template_live_config("static_grid")
+    elif passivbot_mode in ["static_grid", "neat_grid"]:
+        live_config = get_template_live_config(passivbot_mode)
         sides = ["long", "short"]
         for side in sides:
             for k in live_config[side]:
@@ -257,6 +285,15 @@ def candidate_to_live_config(candidate_: dict) -> dict:
         n_days = (date_to_ts(result_dict["end_date"]) - date_to_ts(result_dict["start_date"])) / (
             1000 * 60 * 60 * 24
         )
+    elif "config_name" in candidate and "days" in candidate["config_name"]:
+        try:
+            cn = candidate["config_name"]
+            for i in range(len(cn) - 1, -1, -1):
+                if cn[i] == "_":
+                    break
+            n_days = int(cn[i + 1 : cn.find("days")])
+        except:
+            n_days = 0
     else:
         n_days = 0
     name += f"_{n_days:.0f}days"
@@ -425,9 +462,54 @@ def get_template_live_config(passivbot_mode="static_grid"):
                 },
             }
         )
+    elif passivbot_mode == "neat_grid":
+        return sort_dict_keys(
+            {
+                "config_name": "neat_template",
+                "logging_level": 0,
+                "long": {
+                    "enabled": True,
+                    "ema_span_0": 1440,  # in minutes
+                    "ema_span_1": 4320,
+                    "grid_span": 0.16,
+                    "wallet_exposure_limit": 1.6,
+                    "max_n_entry_orders": 10,
+                    "initial_qty_pct": 0.01,
+                    "initial_eprice_ema_dist": -0.01,  # negative is closer; positive is further away
+                    "eqty_exp_base": 1.8,
+                    "eprice_exp_base": 1.618034,
+                    "min_markup": 0.0045,
+                    "markup_range": 0.0075,
+                    "n_close_orders": 7,
+                    "auto_unstuck_wallet_exposure_threshold": 0.1,  # percentage of wallet_exposure_limit to trigger soft stop.
+                    # e.g. wallet_exposure_limit=0.06 and auto_unstuck_wallet_exposure_threshold=0.1: soft stop when wallet_exposure > 0.06 * (1 - 0.1) == 0.054
+                    "auto_unstuck_ema_dist": 0.02,
+                    "backwards_tp": False,
+                },
+                "short": {
+                    "enabled": True,
+                    "ema_span_0": 1440,  # in minutes
+                    "ema_span_1": 4320,
+                    "grid_span": 0.16,
+                    "wallet_exposure_limit": 1.6,
+                    "max_n_entry_orders": 10,
+                    "initial_qty_pct": 0.01,
+                    "initial_eprice_ema_dist": -0.01,  # negative is closer; positive is further away
+                    "eqty_exp_base": 1.8,
+                    "eprice_exp_base": 1.618034,
+                    "min_markup": 0.0045,
+                    "markup_range": 0.0075,
+                    "n_close_orders": 7,
+                    "auto_unstuck_wallet_exposure_threshold": 0.1,  # percentage of wallet_exposure_limit to trigger soft stop.
+                    # e.g. wallet_exposure_limit=0.06 and auto_unstuck_wallet_exposure_threshold=0.1: soft stop when wallet_exposure > 0.06 * (1 - 0.1) == 0.054
+                    "auto_unstuck_ema_dist": 0.02,
+                    "backwards_tp": False,
+                },
+            }
+        )
     return sort_dict_keys(
         {
-            "config_name": "template",
+            "config_name": "static_template",
             "logging_level": 0,
             "long": {
                 "enabled": True,
@@ -586,7 +668,9 @@ def analyze_fills(
         daily_gains_long = daily_equity_long / daily_equity_long.shift(1) - 1
         adg_long = daily_gains_long.mean()
         DGstd_long = daily_gains_long.std()
-        adg_DGstd_ratio_long = adg_long / DGstd_long if len(daily_gains_long) > 0 else 0.0
+        adg_DGstd_ratio_long = (
+            adg_long / DGstd_long if (len(daily_gains_long) > 0 and DGstd_long != 0.0) else 0.0
+        )
         if any("bankruptcy" in e for e in longs.type.unique()):
             adg_long = 0.01 ** (1 / n_days) - 1  # reward bankrupt runs lasting longer
         adg_realized_long = (sdf.iloc[-1].balance_long / sdf.iloc[0].balance_long) ** (1 / n_days) - 1
@@ -599,7 +683,9 @@ def analyze_fills(
         daily_gains_short = daily_equity_short / daily_equity_short.shift(1) - 1
         adg_short = daily_gains_short.mean()
         DGstd_short = daily_gains_short.std()
-        adg_DGstd_ratio_short = adg_short / DGstd_short if len(daily_gains_short) > 0 else 0.0
+        adg_DGstd_ratio_short = (
+            adg_short / DGstd_short if (len(daily_gains_short) > 0 and DGstd_short != 0.0) else 0.0
+        )
         if any("bankruptcy" in e for e in shorts.type.unique()):
             adg_short = 0.01 ** (1 / n_days) - 1  # reward bankrupt runs lasting longer
         gain_realized_short = sdf.iloc[-1].balance_short / sdf.iloc[0].balance_short
@@ -634,17 +720,33 @@ def analyze_fills(
         if len(shorts) > 0
         else 0.0
     )
+    pa_distance_std_long = pa_distance_long.std()
+    pa_distance_std_short = pa_distance_short.std()
+    pa_distance_mean_long = pa_distance_long.mean()
+    pa_distance_mean_short = pa_distance_short.mean()
 
     analysis = {
         "exchange": config["exchange"] if "exchange" in config else "unknown",
         "symbol": config["symbol"] if "symbol" in config else "unknown",
         "starting_balance": sdf.balance_long.iloc[0],
-        "pa_distance_mean_long": pa_distance_long.mean(),
+        "pa_distance_mean_long": pa_distance_mean_long
+        if pa_distance_mean_long == pa_distance_mean_long
+        else 1.0,
         "pa_distance_max_long": pa_distance_long.max(),
-        "pa_distance_std_long": pa_distance_long.std(),
-        "pa_distance_mean_short": pa_distance_short.mean(),
+        "pa_distance_std_long": pa_distance_std_long
+        if pa_distance_std_long == pa_distance_std_long
+        else 1.0,
+        "pa_distance_mean_short": pa_distance_mean_short
+        if pa_distance_mean_short == pa_distance_mean_short
+        else 1.0,
         "pa_distance_max_short": pa_distance_short.max(),
-        "pa_distance_std_short": pa_distance_short.std(),
+        "pa_distance_std_short": pa_distance_std_short
+        if pa_distance_std_short == pa_distance_std_short
+        else 1.0,
+        "equity_balance_ratio_mean_long": (sdf.equity_long / sdf.balance_long).mean(),
+        "equity_balance_ratio_std_long": (sdf.equity_long / sdf.balance_long).std(),
+        "equity_balance_ratio_mean_short": (sdf.equity_short / sdf.balance_short).mean(),
+        "equity_balance_ratio_std_short": (sdf.equity_short / sdf.balance_short).std(),
         "gain_long": gain_long,
         "adg_long": adg_long if adg_long == adg_long else -1.0,
         "adg_per_exposure_long": adg_long / config["long"]["wallet_exposure_limit"]
@@ -693,12 +795,16 @@ def analyze_fills(
         "hrs_stuck_avg_short": hrs_stuck_avg_short,
         "hrs_stuck_max": max(hrs_stuck_max_long, hrs_stuck_max_short),
         "hrs_stuck_avg": max(hrs_stuck_avg_long, hrs_stuck_avg_short),
-        "loss_sum_long": longs[longs.pnl < 0.0].pnl.sum(),
-        "loss_sum_short": shorts[shorts.pnl < 0.0].pnl.sum(),
-        "profit_sum_long": longs[longs.pnl > 0.0].pnl.sum(),
-        "profit_sum_short": shorts[shorts.pnl > 0.0].pnl.sum(),
+        "loss_sum_long": (loss_sum_long := longs[longs.pnl < 0.0].pnl.sum()),
+        "loss_sum_short": (loss_sum_short := shorts[shorts.pnl < 0.0].pnl.sum()),
+        "profit_sum_long": (profit_sum_long := longs[longs.pnl > 0.0].pnl.sum()),
+        "profit_sum_short": (profit_sum_short := shorts[shorts.pnl > 0.0].pnl.sum()),
         "pnl_sum_long": (pnl_sum_long := longs.pnl.sum()),
         "pnl_sum_short": (pnl_sum_short := shorts.pnl.sum()),
+        "loss_profit_ratio_long": (abs(loss_sum_long) / profit_sum_long) if profit_sum_long else 1.0,
+        "loss_profit_ratio_short": (abs(loss_sum_short) / profit_sum_short)
+        if profit_sum_short
+        else 1.0,
         "fee_sum_long": (fee_sum_long := longs.fee_paid.sum()),
         "fee_sum_short": (fee_sum_short := shorts.fee_paid.sum()),
         "net_pnl_plus_fees_long": pnl_sum_long + fee_sum_long,
@@ -1011,7 +1117,86 @@ def make_compatible(live_config_: dict) -> dict:
         if "backwards_tp" not in live_config[side]:
             live_config[side]["backwards_tp"] = False
         live_config[side]["n_close_orders"] = int(round(live_config[side]["n_close_orders"]))
+        if "max_n_entry_orders" in live_config[side]:
+            live_config[side]["max_n_entry_orders"] = int(
+                round(live_config[side]["max_n_entry_orders"])
+            )
     if all(k in live_config["long"] for k in template_recurv["long"]):
+        return sort_dict_keys(live_config)
+    elif all(k in live_config["long"] for k in get_template_live_config("neat_grid")["long"]):
         return sort_dict_keys(live_config)
     assert all(k in live_config["long"] for k in get_template_live_config()["long"])
     return live_config
+
+
+def strip_config(cfg: dict) -> dict:
+    pm = determine_passivbot_mode(cfg)
+    template = get_template_live_config(pm)
+    for k in template["long"]:
+        template["long"][k] = cfg["long"][k]
+        template["short"][k] = cfg["short"][k]
+    return template
+
+
+def calc_scores(config: dict, results: dict):
+    sides = ["long", "short"]
+    keys = [
+        ("adg_realized_per_exposure", True),
+        ("pa_distance_std", False),
+        ("pa_distance_mean", False),
+        ("hrs_stuck_max", False),
+        ("loss_profit_ratio", False),
+        ("eqbal_ratio_min", True),
+    ]
+    means = {side: {} for side in sides}  # adjusted means
+    scores = {side: -1.0 for side in sides}
+    raws = {side: {} for side in sides}  # unadjusted means
+    individual_raws = {side: {sym: {} for sym in results} for side in sides}
+    individual_vals = {side: {sym: {} for sym in results} for side in sides}
+    individual_scores = {side: {sym: -1.0 for sym in results} for side in sides}
+    symbols_to_include = {side: [] for side in sides}
+    for side in sides:
+        for sym in results:
+            for key, mult in keys:
+                individual_raws[side][sym][key] = results[sym][f"{key}_{side}"]
+                if (max_key := f"maximum_{key}_{side}") in config:
+                    if config[max_key] >= 0.0:
+                        val = max(config[max_key], results[sym][f"{key}_{side}"])
+                    else:
+                        val = 1.0
+                elif (min_key := f"minimum_{key}_{side}") in config:
+                    if config[min_key] >= 0.0:
+                        val = min(config[min_key], results[sym][f"{key}_{side}"])
+                    else:
+                        val = 1.0
+                else:
+                    val = results[sym][f"{key}_{side}"]
+                individual_vals[side][sym][key] = val
+                if mult:
+                    individual_scores[side][sym] *= val
+                else:
+                    individual_scores[side][sym] /= val
+        raws[side] = {
+            key: np.mean([individual_raws[side][sym][key] for sym in results]) for key, _ in keys
+        }
+        symbols_to_include[side] = sorted(
+            individual_scores[side], key=lambda x: individual_scores[side][x]
+        )[: max(1, int(len(individual_scores[side]) * (1 - config["clip_threshold"])))]
+        # print(symbols_to_include, individual_scores[side], config["clip_threshold"])
+        means[side] = {
+            key: np.mean([individual_vals[side][sym][key] for sym in symbols_to_include[side]])
+            for key, _ in keys
+        }
+        for key, mult in keys:
+            if mult:
+                scores[side] *= means[side][key]
+            else:
+                scores[side] /= means[side][key]
+    return {
+        "scores": scores,
+        "means": means,
+        "raws": raws,
+        "individual_scores": individual_scores,
+        "keys": keys,
+        "symbols_to_include": symbols_to_include,
+    }

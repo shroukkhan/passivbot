@@ -31,8 +31,6 @@ def dump_plots(
     table.title = "Summary"
 
     table.add_row(["Exchange", result["exchange"] if "exchange" in result else "unknown"])
-    table.add_row(["Passivbot Version", "5.5"])
-    table.add_row(["Production Config", result["production_backtest"]])
     table.add_row(["Market type", result["market_type"] if "market_type" in result else "unknown"])
     table.add_row(["Symbol", result["symbol"] if "symbol" in result else "unknown"])
     table.add_row(["No. days", round_dynamic(result["result"]["n_days"], 6)])
@@ -42,8 +40,10 @@ def dump_plots(
         if result[side]["enabled"]:
             table.add_row([" ", " "])
             table.add_row([side.capitalize(), result[side]["enabled"]])
-            adg_per_exp = result["result"][f"adg_{side}"] / result[side]["wallet_exposure_limit"]
-            table.add_row(["ADG per exposure", f"{round_dynamic(adg_per_exp * 100, 3)}%"])
+            adg_realized_per_exp = result["result"][f"adg_realized_per_exposure_{side}"]
+            table.add_row(
+                ["ADG realized per exposure", f"{round_dynamic(adg_realized_per_exp * 100, 3)}%"]
+            )
             profit_color = (
                 Fore.RED
                 if result["result"][f"final_balance_{side}"] < result["result"]["starting_balance"]
@@ -79,12 +79,10 @@ def dump_plots(
                     f"{profit_color}{round_dynamic((result['result'][f'adg_{side}']) * 100, 3)}%{Fore.RESET}",
                 ]
             )
-            gain_per_exp = result["result"][f"gain_{side}"] / result[side]["wallet_exposure_limit"]
-            table.add_row(["Gain per exposure", f"{round_dynamic(gain_per_exp * 100, 3)}%"])
             table.add_row(
                 [
-                    "DG mean std ratio",
-                    f"{round_dynamic(result['result'][f'adg_DGstd_ratio_{side}'], 4)}",
+                    "Loss to profit ratio",
+                    f"{round_dynamic(result['result'][f'loss_profit_ratio_{side}'], 4)}",
                 ]
             )
             table.add_row(
@@ -115,6 +113,12 @@ def dump_plots(
                 [
                     "Lowest equity/balance ratio",
                     f'{round_dynamic(result["result"][f"eqbal_ratio_min_{side}"], 4)}',
+                ]
+            )
+            table.add_row(
+                [
+                    "Equity/balance ratio std",
+                    f'{round_dynamic(result["result"][f"equity_balance_ratio_std_{side}"], 4)}',
                 ]
             )
             table.add_row(["No. fills", result["result"][f"n_fills_{side}"]])
@@ -178,8 +182,7 @@ def dump_plots(
         if result[side]["enabled"]:
             plt.clf()
             fig = plot_fills(df, fdf, plot_whole_df=True, title=f"Overview Fills {side.capitalize()}")
-            if fig is None:
-                print(f"!Skipping {result['plots_dirpath']}whole_backtest_{side}.png, because fig is NONE? ...\n")
+            if not fig:
                 continue
             fig.savefig(f"{result['plots_dirpath']}whole_backtest_{side}.png")
             print(f"\nplotting balance and equity {side}...")
@@ -196,8 +199,8 @@ def dump_plots(
                 print(f"{side} {z} of {n_parts} {start_ * 100:.2f}% to {end_ * 100:.2f}%")
                 fig = plot_fills(
                     df,
-                    fdf.iloc[int(len(fdf) * start_): int(len(fdf) * end_)],
-                    title=f"Fills {side} {z + 1} of {n_parts}",
+                    fdf.iloc[int(len(fdf) * start_) : int(len(fdf) * end_)],
+                    title=f"Fills {side} {z+1} of {n_parts}",
                 )
                 if fig is not None:
                     fig.savefig(f"{result['plots_dirpath']}backtest_{side}{z + 1}of{n_parts}.png")
@@ -265,7 +268,7 @@ def plot_fills(df, fdf_, side: int = 0, plot_whole_df: bool = False, title=""):
         dfc = dfc.set_index("timestamp")
     if not plot_whole_df:
         dfc = dfc[(dfc.index > fdf.index[0]) & (dfc.index < fdf.index[-1])]
-        dfc = dfc.loc[fdf.index[0]: fdf.index[-1]]
+        dfc = dfc.loc[fdf.index[0] : fdf.index[-1]]
     dfc.price.plot(style="y-", title=title, xlabel="Time", ylabel="Price + Fills")
     if side >= 0:
         longs = fdf[fdf.type.str.contains("long")]
