@@ -355,3 +355,4 @@ configs/live/multigrid.json
 reports/*
 
 0dca.csv
+downloaded_configs/*
