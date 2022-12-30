@@ -21,7 +21,7 @@ data_url = "https://fapi.binance.com/fapi/v1/exchangeInfo"
 data = requests.get(data_url).json()
 prices_url = "https://fapi.binance.com/fapi/v1/ticker/price"
 pricedata = requests.get(prices_url).json()
-volume_url = "https://fapi.binance.com//fapi/v1/ticker/24hr"
+volume_url = "https://fapi.binance.com/fapi/v1/ticker/24hr"
 volume_data = requests.get(volume_url).json()
 
 min_listing_date = datetime.datetime(2021, 7, 1, )
@@ -58,7 +58,7 @@ try:
                 else:
                     min_notional = min_notional_calc
 
-                if min_notional <= 10 and float(volm) > 10:
+                if min_notional <= 5 and float(volm) > 10:
                     resultlist.append(f"{volm}\t\t{min_notional:.2f}\t\t{symbol.ljust(13, ' ')}\t\t{listed_on}")
                     resultlistnotional.append(f"{min_notional:.2f}\t\t{volm}\t\t{symbol.ljust(13, ' ')}\t\t{listed_on}")
                     coinlist.append(symbol)
