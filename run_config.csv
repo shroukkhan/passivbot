@@ -3,4 +3,4 @@
 1,HBAR,long_short,n,n,0.01,0.01,binance_02
 2,LINK,long_short,n,n,0.01,0.01,binance_03
 3,MATIC,long_short,n,n,0.01,0.01,binance_04
-4,XRP,long_short,n,n,0.01,0.01,binance_05
+4,XRP,long_short,gs,gs,0.01,0.01,binance_05
