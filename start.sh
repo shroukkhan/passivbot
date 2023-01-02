@@ -25,3 +25,7 @@ screen -dmS ATOM_binance ./cfgs_runtime/ATOM.sh ATOM
 screen -X -S EOS_binance kill
 chmod +x cfgs_runtime/EOS.sh
 screen -dmS EOS_binance ./cfgs_runtime/EOS.sh EOS
+
+screen -X -S CHZ_binance kill
+chmod +x cfgs_runtime/CHZ.sh
+screen -dmS CHZ_binance ./cfgs_runtime/CHZ.sh CHZ
