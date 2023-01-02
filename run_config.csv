@@ -1,6 +1,8 @@
 ,symbol,direction,long_mode,short_mode,long_exposure,short_exposure,account
 0,DOGE,long_short,n,n,0.01,0.01,binance_01
-1,HBAR,long_short,n,n,0.01,0.01,binance_02
-2,LINK,long_short,n,n,0.01,0.01,binance_03
-3,MATIC,long_short,n,n,0.01,0.01,binance_04
-4,XRP,long_short,gs,gs,0.01,0.01,binance_05
+1,HBAR,long_short,n,n,0.01,0.01,binance_01
+2,LINK,long_short,n,n,0.01,0.01,binance_01
+3,MATIC,long_short,n,n,0.01,0.01,binance_01
+4,XRP,long_short,n,n,0.01,0.01,binance_01
+5,ATOM,long_short,n,n,0.01,0.01,binance_01
+6,EOS,long_short,n,n,0.01,0.01,binance_01

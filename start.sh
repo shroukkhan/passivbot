@@ -17,3 +17,11 @@ screen -dmS MATIC_binance ./cfgs_runtime/MATIC.sh MATIC
 screen -X -S XRP_binance kill
 chmod +x cfgs_runtime/XRP.sh
 screen -dmS XRP_binance ./cfgs_runtime/XRP.sh XRP
+
+screen -X -S ATOM_binance kill
+chmod +x cfgs_runtime/ATOM.sh
+screen -dmS ATOM_binance ./cfgs_runtime/ATOM.sh ATOM
+
+screen -X -S EOS_binance kill
+chmod +x cfgs_runtime/EOS.sh
+screen -dmS EOS_binance ./cfgs_runtime/EOS.sh EOS
