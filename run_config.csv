@@ -6,4 +6,7 @@
 4,XRP,long_short,n,n,0.01,0.01,binance_01
 5,ATOM,long_short,n,n,0.01,0.01,binance_01
 6,EOS,long_short,n,n,0.01,0.01,binance_01
-7,CHZ,long,n,m,0.01,0.00,binance_01
+7,CHZ,long_short,n,n,0.01,0.01,binance_01
+8,DOT,long_short,n,n,0.01,0.01,binance_01
+9,XMR,long_short,n,n,0.01,0.01,binance_01
+10,XTG,long_short,n,n,0.01,0.01,binance_01

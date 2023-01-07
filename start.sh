@@ -29,3 +29,15 @@ screen -dmS EOS_binance ./cfgs_runtime/EOS.sh EOS
 screen -X -S CHZ_binance kill
 chmod +x cfgs_runtime/CHZ.sh
 screen -dmS CHZ_binance ./cfgs_runtime/CHZ.sh CHZ
+
+screen -X -S DOT_binance kill
+chmod +x cfgs_runtime/DOT.sh
+screen -dmS DOT_binance ./cfgs_runtime/DOT.sh DOT
+
+screen -X -S XMR_binance kill
+chmod +x cfgs_runtime/XMR.sh
+screen -dmS XMR_binance ./cfgs_runtime/XMR.sh XMR
+
+screen -X -S XTG_binance kill
+chmod +x cfgs_runtime/XTG.sh
+screen -dmS XTG_binance ./cfgs_runtime/XTG.sh XTG
