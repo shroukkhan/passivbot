@@ -41,3 +41,11 @@ screen -dmS XMR_binance ./cfgs_runtime/XMR.sh XMR
 screen -X -S XTZ_binance kill
 chmod +x cfgs_runtime/XTZ.sh
 screen -dmS XTZ_binance ./cfgs_runtime/XTZ.sh XTZ
+
+screen -X -S NEAR_binance kill
+chmod +x cfgs_runtime/NEAR.sh
+screen -dmS NEAR_binance ./cfgs_runtime/NEAR.sh NEAR
+
+screen -X -S SAND_binance kill
+chmod +x cfgs_runtime/SAND.sh
+screen -dmS SAND_binance ./cfgs_runtime/SAND.sh SAND
