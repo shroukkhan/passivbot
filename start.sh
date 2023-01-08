@@ -38,6 +38,6 @@ screen -X -S XMR_binance kill
 chmod +x cfgs_runtime/XMR.sh
 screen -dmS XMR_binance ./cfgs_runtime/XMR.sh XMR
 
-screen -X -S XTG_binance kill
-chmod +x cfgs_runtime/XTG.sh
-screen -dmS XTG_binance ./cfgs_runtime/XTG.sh XTG
+screen -X -S XTZ_binance kill
+chmod +x cfgs_runtime/XTZ.sh
+screen -dmS XTZ_binance ./cfgs_runtime/XTZ.sh XTZ
