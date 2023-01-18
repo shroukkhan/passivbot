@@ -7,7 +7,7 @@
 5,ATOM,long_short,n,n,0.04,0.03,binance_01
 6,EOS,long_short,n,n,0.04,0.03,binance_01
 7,CHZ,long_short,n,n,0.04,0.03,binance_01
-8,DOT,long_short,n,n,0.04,0.03,binance_01
+8,DOT,long_short,tp,tp,0.04,0.03,binance_01
 9,XMR,long_short,n,n,0.04,0.03,binance_01
 10,XTZ,long_short,n,n,0.04,0.03,binance_01
 11,NEAR,long_short,n,n,0.04,0.03,binance_01
