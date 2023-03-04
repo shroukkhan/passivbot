@@ -1,6 +1,6 @@
 #!/bin/bash
-cd /root/passivbot
-source /root/passivbot/.venv/bin/activate
+cd /root/passivbot_5.9.0
+source /root/passivbot_5.9.0/.venv/bin/activate
 echo Runing : $1 ...
 while true; do
   python3 passivbot.py {command} binance_01 $1USDT ./cfgs_live/$1.json
