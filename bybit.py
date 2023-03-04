@@ -155,24 +155,31 @@ class BybitBot(Bot):
             raise Exception(f"symbol missing {self.symbol}")
         self.max_leverage = e["leverage_filter"]["max_leverage"]
         self.coin = e["base_currency"]
-        self.quot = e["quote_currency"]
+        self.quote = e["quote_currency"]
         self.price_step = self.config["price_step"] = float(e["price_filter"]["tick_size"])
         self.qty_step = self.config["qty_step"] = float(e["lot_size_filter"]["qty_step"])
         self.min_qty = self.config["min_qty"] = float(e["lot_size_filter"]["min_trading_qty"])
-        self.min_cost = self.config["min_cost"] = 0.0
+        self.min_cost = self.config["min_cost"] = 1.0
         self.init_market_type()
-        self.margin_coin = self.coin if self.inverse else self.quot
+        self.margin_coin = self.coin if self.inverse else self.quote
         await super()._init()
         await self.init_order_book()
         await self.update_position()
 
     async def init_order_book(self):
-        ticker = await self.private_get(self.endpoints["ticker"], {"symbol": self.symbol})
-        self.ob = [
-            float(ticker["result"][0]["bid_price"]),
-            float(ticker["result"][0]["ask_price"]),
-        ]
-        self.price = float(ticker["result"][0]["last_price"])
+        ticker = None
+        try:
+            ticker = await self.private_get(self.endpoints["ticker"], {"symbol": self.symbol})
+            self.ob = [
+                float(ticker["result"][0]["bid_price"]),
+                float(ticker["result"][0]["ask_price"]),
+            ]
+            self.price = float(ticker["result"][0]["last_price"])
+            return True
+        except Exception as e:
+            logging.error(f"error updating order book {e}")
+            print_async_exception(ticker)
+            return False
 
     async def fetch_open_orders(self) -> [dict]:
         fetched = await self.private_get(self.endpoints["open_orders"], {"symbol": self.symbol})
@@ -257,11 +264,11 @@ class BybitBot(Bot):
             if "linear_perpetual" in self.market_type:
                 fetched, bal = await asyncio.gather(
                     self.private_get(self.endpoints["position"], {"symbol": self.symbol}),
-                    self.private_get(self.endpoints["balance"], {"coin": self.quot}),
+                    self.private_get(self.endpoints["balance"], {"coin": self.quote}),
                 )
                 long_pos = [e for e in fetched["result"] if e["side"] == "Buy"][0]
                 short_pos = [e for e in fetched["result"] if e["side"] == "Sell"][0]
-                position["wallet_balance"] = float(bal["result"][self.quot]["wallet_balance"])
+                position["wallet_balance"] = float(bal["result"][self.quote]["wallet_balance"])
             else:
                 fetched, bal = await asyncio.gather(
                     self.private_get(self.endpoints["position"], {"symbol": self.symbol}),
@@ -612,6 +619,43 @@ class BybitBot(Bot):
             traceback.print_exc()
             print_async_exception(fetched)
             return []
+
+    async def fetch_latest_fills(self):
+        fetched = None
+        try:
+            fetched = await self.private_get(
+                self.endpoints["fills"], {"symbol": self.symbol, "limit": 200}
+            )
+            if (
+                fetched["result"]["data"] is None
+                and fetched["ret_code"] == 0
+                and fetched["ret_msg"] == "OK"
+            ):
+                return []
+            fills = [
+                {
+                    "order_id": elm["order_id"],
+                    "symbol": elm["symbol"],
+                    "status": elm["exec_type"].lower(),
+                    "custom_id": elm["order_link_id"],
+                    "price": float(elm["exec_price"]),
+                    "qty": float(elm["exec_qty"]),
+                    "original_qty": float(elm["order_qty"]),
+                    "type": elm["order_type"].lower(),
+                    "reduce_only": None,
+                    "side": elm["side"].lower(),
+                    "position_side": determine_pos_side(elm),
+                    "timestamp": elm["trade_time_ms"],
+                }
+                for elm in fetched["result"]["data"]
+                if elm["exec_type"] == "Trade"
+            ]
+        except Exception as e:
+            print("error fetching latest fills", e)
+            print_async_exception(fetched)
+            traceback.print_exc()
+            return []
+        return fills
 
     async def fetch_fills(
         self,

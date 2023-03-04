@@ -26,6 +26,7 @@ class OKXBot(Bot):
         self.okx = getattr(ccxt, "okx")(
             {"apiKey": self.key, "secret": self.secret, "password": self.passphrase}
         )
+        self.broker_code = "0fe0667832d7BCDE"
 
     async def init_market_type(self):
         self.markets = None
@@ -39,7 +40,7 @@ class OKXBot(Bot):
                 raise NotImplementedError(f"not implemented for {self.symbol}")
         except Exception as e:
             logging.error(f"error initiating market type {e}")
-            print_async_exception(self.exchange_info)
+            print_async_exception(self.markets)
             traceback.print_exc()
             raise Exception("stopping bot")
 
@@ -51,6 +52,7 @@ class OKXBot(Bot):
         else:
             raise Exception(f"symbol {self.symbol} not found")
         self.inst_id = elm["info"]["instId"]
+        self.inst_type = elm["info"]["instType"]
         self.coin = elm["base"]
         self.quote = elm["quote"]
         self.margin_coin = elm["quote"]
@@ -199,6 +201,7 @@ class OKXBot(Bot):
                     "posSide": order["position_side"],
                     "sz": int(order["qty"]),
                     "reduceOnly": order["reduce_only"],
+                    "tag": self.broker_code,
                 }
                 if order["type"] == "limit":
                     params["ordType"] = "post_only"
@@ -265,6 +268,35 @@ class OKXBot(Bot):
             print_async_exception(cancellations)
             traceback.print_exc()
             return []
+
+    async def fetch_latest_fills(self):
+        fetched = None
+        try:
+            params = {"instType": self.inst_type, "instId": self.inst_id}
+            fetched = await self.okx.private_get_trade_fills(params=params)
+            fills = [
+                {
+                    "order_id": elm["ordId"],
+                    "symbol": self.symbol,
+                    "status": None,
+                    "custom_id": elm["clOrdId"],
+                    "price": float(elm["fillPx"]),
+                    "qty": float(elm["fillSz"]),
+                    "original_qty": None,
+                    "type": None,
+                    "reduce_only": None,
+                    "side": elm["side"],
+                    "position_side": elm["posSide"],
+                    "timestamp": float(elm["ts"]),
+                }
+                for elm in fetched["data"]
+            ]
+        except Exception as e:
+            print("error fetching latest fills", e)
+            print_async_exception(fetched)
+            traceback.print_exc()
+            return []
+        return fills
 
     async def fetch_fills(
         self,

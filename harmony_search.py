@@ -33,6 +33,7 @@ from procedures import (
     load_exchange_key_secret_passphrase,
     prepare_backtest_config,
     dump_live_config,
+    utc_ms,
 )
 from time import sleep, time
 import logging
@@ -161,6 +162,8 @@ class HarmonySearch:
         self.unfinished_evals[id_key]["single_results"][symbol] = self.workers[wi]["task"].get()
         self.unfinished_evals[id_key]["in_progress"].remove(symbol)
         results = deepcopy(self.unfinished_evals[id_key]["single_results"])
+        for s in results:
+            results[s]["timestamp_finished"] = utc_ms()
         if set(results) == set(self.symbols):
             # completed multisymbol iter
             scores_res = calc_scores(self.config, results)
@@ -236,7 +239,7 @@ class HarmonySearch:
             is_better = False
             if self.do_long and scores["long"] <= self.hm[best_key_long]["long"]["score"]:
                 is_better = True
-                line = f"i{cfg['config_no']} - new best config long, score {round_dynamic(scores['long'], 4)} "
+                line = f"i{cfg['config_no']} - new best config long, score {round_dynamic(scores['long'], 12)} "
                 for key, _ in keys:
                     line += f"{key} {round_dynamic(raws['long'][key], 4)} "
                 logging.info(line)
@@ -249,7 +252,7 @@ class HarmonySearch:
                 )
             if self.do_short and scores["short"] <= self.hm[best_key_short]["short"]["score"]:
                 is_better = True
-                line = f"i{cfg['config_no']} - new best config short, score {round_dynamic(scores['short'], 4)} "
+                line = f"i{cfg['config_no']} - new best config short, score {round_dynamic(scores['short'], 12)} "
                 for key, _ in keys:
                     line += f"{key} {round_dynamic(raws['short'][key], 4)} "
                 logging.info(line)
@@ -359,20 +362,6 @@ class HarmonySearch:
             **{"symbol": self.symbols[0], "initial_eval_key": hm_key, "config_no": self.iter_counter},
         }
         line = f"starting new initial eval {config['config_no']} of {self.n_harmonies} "
-        if self.do_long:
-            line += " - long: " + " ".join(
-                [
-                    f"{e[0][:2]}{e[0][-2:]}" + str(round_dynamic(e[1], 3))
-                    for e in sorted(self.hm[hm_key]["long"]["config"].items())
-                ]
-            )
-        if self.do_short:
-            line += " - short: " + " ".join(
-                [
-                    f"{e[0][:2]}{e[0][-2:]}" + str(round_dynamic(e[1], 3))
-                    for e in sorted(self.hm[hm_key]["short"]["config"].items())
-                ]
-            )
         logging.info(line)
 
         config["market_specific_settings"] = self.market_specific_settings[config["symbol"]]
@@ -555,17 +544,7 @@ async def main():
         required=False,
         dest="passivbot_mode",
         default=None,
-        help="passivbot mode options: [s/static_grid, r/recursive_grid, n/neat_grid]",
-    )
-    parser.add_argument(
-        "-sf",
-        "--score_formula",
-        "--score-formula",
-        type=str,
-        required=False,
-        dest="score_formula",
-        default=None,
-        help="passivbot score formula options: [adg_PAD_mean, adg_PAD_std, adg_DGstd_ratio, adg_mean, adg_min, adg_PAD_std_min]",
+        help="passivbot mode options: [s/static_grid, r/recursive_grid, n/neat_grid, c/clock]",
     )
     parser.add_argument(
         "-oh",
@@ -575,23 +554,9 @@ async def main():
     )
     parser = add_argparse_args(parser)
     args = parser.parse_args()
-    args.symbol = "BTCUSDT"  # dummy symbol
+    if args.symbol is None or "," in args.symbol:
+        args.symbol = "BTCUSDT"  # dummy symbol
     config = await prepare_optimize_config(args)
-    if args.score_formula is not None:
-        if args.score_formula not in [
-            "adg_PAD_mean",
-            "adg_PAD_std",
-            "adg_DGstd_ratio",
-            "adg_mean",
-            "adg_min",
-            "adg_PAD_std_min",
-            "adg_realized_PAD_mean",
-            "adg_realized_PAD_std",
-        ]:
-            logging.error(f"unknown score formula {args.score_formula}")
-            logging.error(f"using score formula {config['score_formula']}")
-        else:
-            config["score_formula"] = args.score_formula
     if args.passivbot_mode is not None:
         if args.passivbot_mode in ["s", "static_grid", "static"]:
             config["passivbot_mode"] = "static_grid"
@@ -599,6 +564,8 @@ async def main():
             config["passivbot_mode"] = "recursive_grid"
         elif args.passivbot_mode in ["n", "neat_grid", "neat"]:
             config["passivbot_mode"] = "neat_grid"
+        elif args.passivbot_mode in ["c", "clock"]:
+            config["passivbot_mode"] = "clock"
         else:
             raise Exception(f"unknown passivbot mode {args.passivbot_mode}")
     passivbot_mode = config["passivbot_mode"]
@@ -606,6 +573,7 @@ async def main():
         "recursive_grid",
         "static_grid",
         "neat_grid",
+        "clock",
     ], f"unknown passivbot mode {passivbot_mode}"
     config.update(get_template_live_config(passivbot_mode))
     config["long"]["backwards_tp"] = config["backwards_tp_long"]
@@ -636,7 +604,7 @@ async def main():
         config["n_cpus"] = args.n_cpus
     if args.base_dir is not None:
         config["base_dir"] = args.base_dir
-    config["ohlcv"] = args.ohlcv
+    config["ohlcv"] = True if passivbot_mode == "clock" else args.ohlcv
     print()
     lines = [(k, getattr(args, k)) for k in args.__dict__ if args.__dict__[k] is not None]
     lines += [(k, config[k]) for k in ["start_date", "end_date"] if k not in [z[0] for z in lines]]
