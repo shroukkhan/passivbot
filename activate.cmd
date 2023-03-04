@@ -1,0 +1,1 @@
+C:\AgodaGit\passivbot\bin\activate.ps1
