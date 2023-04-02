@@ -29,3 +29,15 @@ screen -dmS XMR_binance_v5_9_3_clock ./cfgs_runtime/XMR.sh XMR
 screen -X -S TRX_binance_v5_9_3_clock kill
 chmod +x cfgs_runtime/TRX.sh
 screen -dmS TRX_binance_v5_9_3_clock ./cfgs_runtime/TRX.sh TRX
+
+screen -X -S ALGO_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/ALGO.sh
+screen -dmS ALGO_binance_v5_9_3_clock ./cfgs_runtime/ALGO.sh ALGO
+
+screen -X -S COMP_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/COMP.sh
+screen -dmS COMP_binance_v5_9_3_clock ./cfgs_runtime/COMP.sh COMP
+
+screen -X -S RUNE_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/RUNE.sh
+screen -dmS RUNE_binance_v5_9_3_clock ./cfgs_runtime/RUNE.sh RUNE
