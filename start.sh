@@ -41,3 +41,7 @@ screen -dmS COMP_binance_v5_9_3_clock ./cfgs_runtime/COMP.sh COMP
 screen -X -S RUNE_binance_v5_9_3_clock kill
 chmod +x cfgs_runtime/RUNE.sh
 screen -dmS RUNE_binance_v5_9_3_clock ./cfgs_runtime/RUNE.sh RUNE
+
+screen -X -S NEAR_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/NEAR.sh
+screen -dmS NEAR_binance_v5_9_3_clock ./cfgs_runtime/NEAR.sh NEAR
