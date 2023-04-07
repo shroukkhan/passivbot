@@ -49,3 +49,11 @@ screen -dmS XRP_binance_v5_9_0 ./cfgs_runtime/XRP.sh XRP
 screen -X -S XTZ_binance_v5_9_0 kill
 chmod +x cfgs_runtime/XTZ.sh
 screen -dmS XTZ_binance_v5_9_0 ./cfgs_runtime/XTZ.sh XTZ
+
+screen -X -S DYDX_binance_v5_9_0 kill
+chmod +x cfgs_runtime/DYDX.sh
+screen -dmS DYDX_binance_v5_9_0 ./cfgs_runtime/DYDX.sh DYDX
+
+screen -X -S OP_binance_v5_9_0 kill
+chmod +x cfgs_runtime/OP.sh
+screen -dmS OP_binance_v5_9_0 ./cfgs_runtime/OP.sh OP
