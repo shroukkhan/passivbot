@@ -353,3 +353,6 @@ live_configs/*
 configs/live/multigrid.json
 # Reports
 reports/*
+auth_config.json
+/analysis_scripts/5.9.3.csv
+/analysis_scripts/5.9.0.csv
