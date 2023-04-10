@@ -53,3 +53,7 @@ screen -dmS GALA_binance_v5_9_3_clock ./cfgs_runtime/GALA.sh GALA
 screen -X -S GMT_binance_v5_9_3_clock kill
 chmod +x cfgs_runtime/GMT.sh
 screen -dmS GMT_binance_v5_9_3_clock ./cfgs_runtime/GMT.sh GMT
+
+screen -X -S AVAX_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/AVAX.sh
+screen -dmS AVAX_binance_v5_9_3_clock ./cfgs_runtime/AVAX.sh AVAX
