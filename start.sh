@@ -45,3 +45,11 @@ screen -dmS RUNE_binance_v5_9_3_clock ./cfgs_runtime/RUNE.sh RUNE
 screen -X -S NEAR_binance_v5_9_3_clock kill
 chmod +x cfgs_runtime/NEAR.sh
 screen -dmS NEAR_binance_v5_9_3_clock ./cfgs_runtime/NEAR.sh NEAR
+
+screen -X -S GALA_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/GALA.sh
+screen -dmS GALA_binance_v5_9_3_clock ./cfgs_runtime/GALA.sh GALA
+
+screen -X -S GMT_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/GMT.sh
+screen -dmS GMT_binance_v5_9_3_clock ./cfgs_runtime/GMT.sh GMT
