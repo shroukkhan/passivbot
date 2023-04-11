@@ -57,3 +57,7 @@ screen -dmS GMT_binance_v5_9_3_clock ./cfgs_runtime/GMT.sh GMT
 screen -X -S AVAX_binance_v5_9_3_clock kill
 chmod +x cfgs_runtime/AVAX.sh
 screen -dmS AVAX_binance_v5_9_3_clock ./cfgs_runtime/AVAX.sh AVAX
+
+screen -X -S BTC_binance_v5_9_3_clock kill
+chmod +x cfgs_runtime/BTC.sh
+screen -dmS BTC_binance_v5_9_3_clock ./cfgs_runtime/BTC.sh BTC
