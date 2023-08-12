@@ -8,7 +8,7 @@
 6,XMR,long,n,m,0.1,0,binance_01
 7,TRX,long,n,m,0.1,0,binance_01
 8,ALGO,long,n,m,0.1,0,binance_01
-9,COMP,long,m,m,0.1,0,binance_01
+9,COMP,long,n,m,0.1,0,binance_01
 10,RUNE,long,n,m,0.1,0,binance_01
 11,NEAR,long,n,m,0.1,0,binance_01
 12,GALA,long,m,m,0.1,0,binance_01
