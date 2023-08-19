@@ -103,6 +103,7 @@ def get_xk_keys(passivbot_mode="static_grid"):
             "inverse",
             "do_long",
             "do_short",
+            "backwards_tp",
             "qty_step",
             "price_step",
             "min_qty",
@@ -110,8 +111,8 @@ def get_xk_keys(passivbot_mode="static_grid"):
             "c_mult",
             "ema_span_0",
             "ema_span_1",
-            "ema_dist_lower",
-            "ema_dist_upper",
+            "ema_dist_entry",
+            "ema_dist_close",
             "qty_pct_entry",
             "qty_pct_close",
             "we_multiplier_entry",
@@ -125,33 +126,36 @@ def get_xk_keys(passivbot_mode="static_grid"):
             "n_close_orders",
             "wallet_exposure_limit",
         ]
-    return [
-        "inverse",
-        "do_long",
-        "do_short",
-        "backwards_tp",
-        "qty_step",
-        "price_step",
-        "min_qty",
-        "min_cost",
-        "c_mult",
-        "grid_span",
-        "wallet_exposure_limit",
-        "max_n_entry_orders",
-        "initial_qty_pct",
-        "eprice_pprice_diff",
-        "secondary_allocation",
-        "secondary_pprice_diff",
-        "eprice_exp_base",
-        "min_markup",
-        "markup_range",
-        "n_close_orders",
-        "ema_span_0",
-        "ema_span_1",
-        "initial_eprice_ema_dist",
-        "auto_unstuck_wallet_exposure_threshold",
-        "auto_unstuck_ema_dist",
-    ]
+    elif passivbot_mode == "static_grid":
+        return [
+            "inverse",
+            "do_long",
+            "do_short",
+            "backwards_tp",
+            "qty_step",
+            "price_step",
+            "min_qty",
+            "min_cost",
+            "c_mult",
+            "grid_span",
+            "wallet_exposure_limit",
+            "max_n_entry_orders",
+            "initial_qty_pct",
+            "eprice_pprice_diff",
+            "secondary_allocation",
+            "secondary_pprice_diff",
+            "eprice_exp_base",
+            "min_markup",
+            "markup_range",
+            "n_close_orders",
+            "ema_span_0",
+            "ema_span_1",
+            "initial_eprice_ema_dist",
+            "auto_unstuck_wallet_exposure_threshold",
+            "auto_unstuck_ema_dist",
+        ]
+    else:
+        raise Exception(f"unknown passivbot mode {passivbot_mode}")
 
 
 def determine_passivbot_mode(config: dict, skip=[]) -> str:
@@ -550,8 +554,8 @@ def get_template_live_config(passivbot_mode="static_grid"):
                     "wallet_exposure_limit": 1.0,
                     "ema_span_0": 700.0,
                     "ema_span_1": 5300.0,
-                    "ema_dist_lower": 0.005,
-                    "ema_dist_upper": 0.005,
+                    "ema_dist_entry": 0.005,
+                    "ema_dist_close": 0.005,
                     "qty_pct_entry": 0.01,
                     "qty_pct_close": 0.01,
                     "we_multiplier_entry": 30.0,
@@ -563,14 +567,15 @@ def get_template_live_config(passivbot_mode="static_grid"):
                     "min_markup": 0.0075,
                     "markup_range": 0.03,
                     "n_close_orders": 10,
+                    "backwards_tp": True,
                 },
                 "short": {
                     "enabled": True,
                     "wallet_exposure_limit": 1.0,
                     "ema_span_0": 700.0,
                     "ema_span_1": 5300.0,
-                    "ema_dist_lower": 0.0045,
-                    "ema_dist_upper": 0.0039,
+                    "ema_dist_entry": 0.0039,
+                    "ema_dist_close": 0.0045,
                     "qty_pct_entry": 0.013,
                     "qty_pct_close": 0.03,
                     "we_multiplier_entry": 20.0,
@@ -582,57 +587,61 @@ def get_template_live_config(passivbot_mode="static_grid"):
                     "min_markup": 0.0075,
                     "markup_range": 0.03,
                     "n_close_orders": 10,
+                    "backwards_tp": True,
                 },
             }
         )
-    return sort_dict_keys(
-        {
-            "config_name": "static_template",
-            "logging_level": 0,
-            "long": {
-                "enabled": True,
-                "ema_span_0": 1440,  # in minutes
-                "ema_span_1": 4320,
-                "grid_span": 0.16,
-                "wallet_exposure_limit": 1.6,
-                "max_n_entry_orders": 10,
-                "initial_qty_pct": 0.01,
-                "initial_eprice_ema_dist": -0.01,  # negative is closer; positive is further away
-                "eprice_pprice_diff": 0.0025,
-                "secondary_allocation": 0.5,
-                "secondary_pprice_diff": 0.35,
-                "eprice_exp_base": 1.618034,
-                "min_markup": 0.0045,
-                "markup_range": 0.0075,
-                "n_close_orders": 7,
-                "auto_unstuck_wallet_exposure_threshold": 0.1,  # percentage of wallet_exposure_limit to trigger soft stop.
-                # e.g. wallet_exposure_limit=0.06 and auto_unstuck_wallet_exposure_threshold=0.1: soft stop when wallet_exposure > 0.06 * (1 - 0.1) == 0.054
-                "auto_unstuck_ema_dist": 0.02,
-                "backwards_tp": False,
-            },
-            "short": {
-                "enabled": True,
-                "ema_span_0": 1440,  # in minutes
-                "ema_span_1": 4320,
-                "grid_span": 0.16,
-                "wallet_exposure_limit": 1.6,
-                "max_n_entry_orders": 10,
-                "initial_qty_pct": 0.01,
-                "initial_eprice_ema_dist": -0.01,  # negative is closer; positive is further away
-                "eprice_pprice_diff": 0.0025,
-                "secondary_allocation": 0.5,
-                "secondary_pprice_diff": 0.35,
-                "eprice_exp_base": 1.618034,
-                "min_markup": 0.0045,
-                "markup_range": 0.0075,
-                "n_close_orders": 7,
-                "auto_unstuck_wallet_exposure_threshold": 0.1,  # percentage of wallet_exposure_limit to trigger soft stop.
-                # e.g. wallet_exposure_limit=0.06 and auto_unstuck_wallet_exposure_threshold=0.1: soft stop when wallet_exposure > 0.06 * (1 - 0.1) == 0.054
-                "auto_unstuck_ema_dist": 0.02,
-                "backwards_tp": False,
-            },
-        }
-    )
+    elif passivbot_mode == "static_grid":
+        return sort_dict_keys(
+            {
+                "config_name": "static_template",
+                "logging_level": 0,
+                "long": {
+                    "enabled": True,
+                    "ema_span_0": 1440,  # in minutes
+                    "ema_span_1": 4320,
+                    "grid_span": 0.16,
+                    "wallet_exposure_limit": 1.6,
+                    "max_n_entry_orders": 10,
+                    "initial_qty_pct": 0.01,
+                    "initial_eprice_ema_dist": -0.01,  # negative is closer; positive is further away
+                    "eprice_pprice_diff": 0.0025,
+                    "secondary_allocation": 0.5,
+                    "secondary_pprice_diff": 0.35,
+                    "eprice_exp_base": 1.618034,
+                    "min_markup": 0.0045,
+                    "markup_range": 0.0075,
+                    "n_close_orders": 7,
+                    "auto_unstuck_wallet_exposure_threshold": 0.1,  # percentage of wallet_exposure_limit to trigger soft stop.
+                    # e.g. wallet_exposure_limit=0.06 and auto_unstuck_wallet_exposure_threshold=0.1: soft stop when wallet_exposure > 0.06 * (1 - 0.1) == 0.054
+                    "auto_unstuck_ema_dist": 0.02,
+                    "backwards_tp": False,
+                },
+                "short": {
+                    "enabled": True,
+                    "ema_span_0": 1440,  # in minutes
+                    "ema_span_1": 4320,
+                    "grid_span": 0.16,
+                    "wallet_exposure_limit": 1.6,
+                    "max_n_entry_orders": 10,
+                    "initial_qty_pct": 0.01,
+                    "initial_eprice_ema_dist": -0.01,  # negative is closer; positive is further away
+                    "eprice_pprice_diff": 0.0025,
+                    "secondary_allocation": 0.5,
+                    "secondary_pprice_diff": 0.35,
+                    "eprice_exp_base": 1.618034,
+                    "min_markup": 0.0045,
+                    "markup_range": 0.0075,
+                    "n_close_orders": 7,
+                    "auto_unstuck_wallet_exposure_threshold": 0.1,  # percentage of wallet_exposure_limit to trigger soft stop.
+                    # e.g. wallet_exposure_limit=0.06 and auto_unstuck_wallet_exposure_threshold=0.1: soft stop when wallet_exposure > 0.06 * (1 - 0.1) == 0.054
+                    "auto_unstuck_ema_dist": 0.02,
+                    "backwards_tp": False,
+                },
+            }
+        )
+    else:
+        raise Exception(f"unknown passivbot mode {passivbot_mode}")
 
 
 def analyze_fills(
@@ -721,33 +730,59 @@ def analyze_fills(
     profit_sum_long = longs[longs.pnl > 0.0].pnl.sum()
     loss_sum_long = longs[longs.pnl < 0.0].pnl.sum()
     pnl_sum_long = profit_sum_long + loss_sum_long
-    gain_long = pnl_sum_long / sdf.balance_long.iloc[0]
+    gain_long = sdf.balance_long.iloc[-1] / sdf.balance_long.iloc[0] - 1
 
     profit_sum_short = shorts[shorts.pnl > 0.0].pnl.sum()
     loss_sum_short = shorts[shorts.pnl < 0.0].pnl.sum()
     pnl_sum_short = profit_sum_short + loss_sum_short
-    gain_short = pnl_sum_short / sdf.balance_short.iloc[0]
+    gain_short = sdf.balance_short.iloc[-1] / sdf.balance_short.iloc[0] - 1
+
+    # adgs:
+    # adg
+    # adg_per_exposure
+    # adg_weighted
+    # adg_weighted_per_exposure
+
+    if "adg_n_subdivisions" not in config:
+        config["adg_n_subdivisions"] = 1
 
     if sdf.balance_long.iloc[-1] <= 0.0:
-        adg_realized_long = sdf.balance_long.iloc[-1]
+        adg_long = adg_weighted_long = sdf.balance_long.iloc[-1]
     else:
-        adg_realized_long = (sdf.balance_long.iloc[-1] / sdf.balance_long.iloc[0]) ** (1 / n_days) - 1
+        adgs_long = []
+        for i in range(config["adg_n_subdivisions"]):
+            idx = round(int(len(sdf) * (1 - 1 / (i + 1))))
+            n_days_ = (sdf.timestamp.iloc[-1] - sdf.timestamp.iloc[idx]) / (1000 * 60 * 60 * 24)
+            adgs_long.append(
+                (sdf.balance_long.iloc[-1] / sdf.balance_long.iloc[idx]) ** (1 / n_days_) - 1
+            )
+        adg_long = adgs_long[0]
+        adg_weighted_long = np.mean(adgs_long)
     if sdf.balance_short.iloc[-1] <= 0.0:
-        adg_realized_short = sdf.balance_short.iloc[-1]
+        adg_short = adg_weighted_short = sdf.balance_short.iloc[-1]
+
     else:
-        adg_realized_short = (sdf.balance_short.iloc[-1] / sdf.balance_short.iloc[0]) ** (
-            1 / n_days
-        ) - 1
-    adg_realized_per_exposure_long = (
-        (adg_realized_long / config["long"]["wallet_exposure_limit"])
-        if config["long"]["wallet_exposure_limit"] > 0.0
-        else 0.0
-    )
-    adg_realized_per_exposure_short = (
-        (adg_realized_short / config["short"]["wallet_exposure_limit"])
-        if config["short"]["wallet_exposure_limit"] > 0.0
-        else 0.0
-    )
+        adgs_short = []
+        for i in range(config["adg_n_subdivisions"]):
+            idx = round(int(len(sdf) * (1 - 1 / (i + 1))))
+            n_days_ = (sdf.timestamp.iloc[-1] - sdf.timestamp.iloc[idx]) / (1000 * 60 * 60 * 24)
+            adgs_short.append(
+                (sdf.balance_short.iloc[-1] / sdf.balance_short.iloc[idx]) ** (1 / n_days_) - 1
+            )
+        adg_short = adgs_short[0]
+        adg_weighted_short = np.mean(adgs_short)
+    if config["long"]["wallet_exposure_limit"] > 0.0:
+        adg_per_exposure_long = adg_long / config["long"]["wallet_exposure_limit"]
+        adg_weighted_per_exposure_long = adg_weighted_long / config["long"]["wallet_exposure_limit"]
+    else:
+        adg_per_exposure_long = adg_weighted_per_exposure_long = 0.0
+    if config["short"]["wallet_exposure_limit"] > 0.0:
+        adg_per_exposure_short = adg_short / config["short"]["wallet_exposure_limit"]
+        adg_weighted_per_exposure_short = (
+            adg_weighted_short / config["short"]["wallet_exposure_limit"]
+        )
+    else:
+        adg_per_exposure_short = adg_weighted_per_exposure_short = 0.0
 
     volume_quote_long = longs.pcost.sum()
     volume_quote_short = shorts.pcost.sum()
@@ -771,8 +806,10 @@ def analyze_fills(
 
     eqbal_ratios_long = longs.equity / longs.balance
     eqbal_ratios_sdf_long = sdf.equity_long / sdf.balance_long
+    eqbal_ratio_std_long = eqbal_ratios_sdf_long.std()
     eqbal_ratios_short = shorts.equity / shorts.balance
     eqbal_ratios_sdf_short = sdf.equity_short / sdf.balance_short
+    eqbal_ratio_std_short = eqbal_ratios_sdf_short.std()
 
     analysis = {
         "exchange": config["exchange"] if "exchange" in config else "unknown",
@@ -793,19 +830,21 @@ def analyze_fills(
         if pa_distance_std_short == pa_distance_std_short
         else 1.0,
         "equity_balance_ratio_mean_long": (sdf.equity_long / sdf.balance_long).mean(),
-        "equity_balance_ratio_std_long": (sdf.equity_long / sdf.balance_long).std(),
+        "equity_balance_ratio_std_long": eqbal_ratio_std_long,
         "equity_balance_ratio_mean_short": (sdf.equity_short / sdf.balance_short).mean(),
-        "equity_balance_ratio_std_short": (sdf.equity_short / sdf.balance_short).std(),
+        "equity_balance_ratio_std_short": eqbal_ratio_std_short,
         "gain_long": gain_long,
-        "adg_long": adg_realized_long if adg_realized_long == adg_realized_long else -1.0,
-        "adg_per_exposure_long": adg_realized_per_exposure_long,
-        "adg_realized_per_exposure_long": adg_realized_per_exposure_long,
+        "adg_long": adg_long if adg_long == adg_long else -1.0,
+        "adg_weighted_long": adg_weighted_long if adg_weighted_long == adg_weighted_long else -1.0,
+        "adg_per_exposure_long": adg_per_exposure_long,
+        "adg_weighted_per_exposure_long": adg_weighted_per_exposure_long,
         "gain_short": gain_short,
-        "adg_short": adg_realized_short if adg_realized_short == adg_realized_short else -1.0,
-        "adg_per_exposure_short": adg_realized_per_exposure_short,
-        "adg_realized_per_exposure_short": adg_realized_per_exposure_short,
-        "adg_realized_long": adg_realized_long,
-        "adg_realized_short": adg_realized_short,
+        "adg_short": adg_short if adg_short == adg_short else -1.0,
+        "adg_weighted_short": adg_weighted_short
+        if adg_weighted_short == adg_weighted_short
+        else -1.0,
+        "adg_per_exposure_short": adg_per_exposure_short,
+        "adg_weighted_per_exposure_short": adg_weighted_per_exposure_short,
         "n_days": n_days,
         "n_fills_long": len(fills_long),
         "n_fills_short": len(fills_short),
@@ -823,13 +862,17 @@ def analyze_fills(
             longs[longs.type.str.contains("unstuck_close") | longs.type.str.contains("clock_close")]
         ),
         "n_unstuck_closes_short": len(
-            shorts[shorts.type.str.contains("unstuck_close") | shorts.type.str.contains("clock_close")]
+            shorts[
+                shorts.type.str.contains("unstuck_close") | shorts.type.str.contains("clock_close")
+            ]
         ),
         "n_unstuck_entries_long": len(
             longs[longs.type.str.contains("unstuck_entry") | longs.type.str.contains("clock_entry")]
         ),
         "n_unstuck_entries_short": len(
-            shorts[shorts.type.str.contains("unstuck_entry") | shorts.type.str.contains("clock_entry")]
+            shorts[
+                shorts.type.str.contains("unstuck_entry") | shorts.type.str.contains("clock_entry")
+            ]
         ),
         "avg_fills_per_day_long": len(longs) / n_days,
         "avg_fills_per_day_short": len(shorts) / n_days,
@@ -858,9 +901,13 @@ def analyze_fills(
         "closest_bkr_long": sdf.closest_bkr_long.min(),
         "closest_bkr_short": sdf.closest_bkr_short.min(),
         "eqbal_ratio_min_long": min(eqbal_ratios_long.min(), eqbal_ratios_sdf_long.min()),
+        "eqbal_ratio_mean_of_10_worst_long": eqbal_ratios_long.sort_values().iloc[:10].mean(),
         "eqbal_ratio_mean_long": eqbal_ratios_sdf_long.mean(),
+        "eqbal_ratio_std_long": eqbal_ratio_std_long,
         "eqbal_ratio_min_short": min(eqbal_ratios_short.min(), eqbal_ratios_sdf_short.min()),
+        "eqbal_ratio_mean_of_10_worst_short": eqbal_ratios_short.sort_values().iloc[:10].mean(),
         "eqbal_ratio_mean_short": eqbal_ratios_sdf_short.mean(),
+        "eqbal_ratio_std_short": eqbal_ratio_std_short,
         "volume_quote_long": volume_quote_long,
         "volume_quote_short": volume_quote_short,
     }
@@ -1140,6 +1187,14 @@ def make_compatible(live_config_: dict) -> dict:
         ("ema_span_max", "ema_span_1"),
     ]:
         live_config = json.loads(json.dumps(live_config).replace(src, dst))
+    for side, src, dst in [
+        ("long", "ema_dist_lower", "ema_dist_entry"),
+        ("long", "ema_dist_upper", "ema_dist_close"),
+        ("short", "ema_dist_upper", "ema_dist_entry"),
+        ("short", "ema_dist_lower", "ema_dist_close"),
+    ]:
+        if src in live_config[side]:
+            live_config[side][dst] = live_config[side].pop(src)
     passivbot_mode = determine_passivbot_mode(live_config, skip=["backwards_tp"])
     for side in ["long", "short"]:
         for k0 in [
@@ -1159,8 +1214,8 @@ def make_compatible(live_config_: dict) -> dict:
             ("max_n_entry_orders", 1.0, 100.0),  # don't let's spam the exchange
             ("n_close_orders", 1.0, 100.0),
             ("initial_eprice_ema_dist", -10.0, 10.0),
-            ("ema_dist_lower", -10.0, 10.0),
-            ("ema_dist_upper", -10.0, 10.0),
+            ("ema_dist_entry", -10.0, 10.0),
+            ("ema_dist_close", -10.0, 10.0),
             ("grid_span", 0.0, 10.0),
             ("delay_between_fills_minutes_entry", 1.0, 1000000.0),  # one million minutes...
             ("delay_between_fills_minutes_close", 1.0, 1000000.0),  #  ...is almost two years
@@ -1193,6 +1248,10 @@ def make_compatible(live_config_: dict) -> dict:
                 live_config[side]["auto_unstuck_ema_dist"] = 0.0
             if "backwards_tp" not in live_config[side]:
                 live_config[side]["backwards_tp"] = False
+        elif passivbot_mode == "clock":
+            if "backwards_tp" not in live_config[side]:
+                live_config[side]["backwards_tp"] = True
+
         if "ema_span_0" not in live_config[side]:
             live_config[side]["ema_span_0"] = 1.0
         if "ema_span_1" not in live_config[side]:
@@ -1217,13 +1276,15 @@ def strip_config(cfg: dict) -> dict:
 def calc_scores(config: dict, results: dict):
     sides = ["long", "short"]
     # keys are sorted by reverse importance
+    # [(key_name, higher_is_better)]
     keys = [
-        ("adg_realized_per_exposure", True),
+        ("adg_weighted_per_exposure", True),
         ("hrs_stuck_max", False),
         ("pa_distance_mean", False),
         ("pa_distance_std", False),
         ("loss_profit_ratio", False),
-        ("eqbal_ratio_min", True),
+        ("eqbal_ratio_mean_of_10_worst", True),
+        ("eqbal_ratio_std", False),
     ]
     means = {side: {} for side in sides}  # adjusted means
     scores = {side: 0.0 for side in sides}
@@ -1365,3 +1426,10 @@ def configs_are_equal(cfg0, cfg1) -> bool:
     except Exception as e:
         print(f"error checking whether configs are equal {e}")
         return False
+
+
+def shorten_custom_id(id_: str) -> str:
+    id0 = id_
+    for k_, r_ in [("clock", "clk"), ("close", "cls"), ("entry", "etr"), ("_", "")]:
+        id0 = id0.replace(k_, r_)
+    return id0

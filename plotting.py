@@ -14,29 +14,10 @@ from procedures import dump_live_config, make_get_filepath
 from pure_funcs import round_dynamic, denumpyize, ts_to_date
 
 
-def dump_plots(
-    result: dict,
-    longs: pd.DataFrame,
-    shorts: pd.DataFrame,
-    sdf: pd.DataFrame,
-    df: pd.DataFrame,
-    n_parts: int = None,
-    disable_plotting: bool = False,
-):
-    init(autoreset=True)
-    plt.rcParams["figure.figsize"] = [29, 18]
-    try:
-        pd.set_option("display.precision", 10)
-    except Exception as e:
-        print("error setting pandas precision", e)
-
-    result["plots_dirpath"] = make_get_filepath(
-        os.path.join(result["plots_dirpath"], f"{ts_to_date(time.time())[:19].replace(':', '')}", "")
-    )
-    longs.to_csv(result["plots_dirpath"] + "fills_long.csv")
-    shorts.to_csv(result["plots_dirpath"] + "fills_short.csv")
-    sdf.to_csv(result["plots_dirpath"] + "stats.csv")
-
+def make_table(result_):
+    result = result_.copy()
+    if "result" not in result:
+        result["result"] = result
     table = PrettyTable(["Metric", "Value"])
     table.align["Metric"] = "l"
     table.align["Value"] = "l"
@@ -48,6 +29,12 @@ def dump_plots(
     table.add_row(
         ["Passivbot mode", result["passivbot_mode"] if "passivbot_mode" in result else "unknown"]
     )
+    table.add_row(
+        [
+            "ADG n subdivisions",
+            result["adg_n_subdivisions"] if "adg_n_subdivisions" in result else "unknown",
+        ]
+    )
     table.add_row(["No. days", round_dynamic(result["result"]["n_days"], 2)])
     table.add_row(["Starting balance", round_dynamic(result["result"]["starting_balance"], 6)])
     for side in ["long", "short"]:
@@ -56,28 +43,33 @@ def dump_plots(
         if result[side]["enabled"]:
             table.add_row([" ", " "])
             table.add_row([side.capitalize(), True])
-            adg_realized_per_exp = result["result"][f"adg_realized_per_exposure_{side}"]
-            table.add_row(
-                ["ADG realized per exposure", f"{round_dynamic(adg_realized_per_exp * 100, 3)}%"]
-            )
             profit_color = (
                 Fore.RED
                 if result["result"][f"final_balance_{side}"] < result["result"]["starting_balance"]
                 else Fore.RESET
             )
             for title, key, precision, mul, suffix in [
+                ("ADG per exposure", f"adg_per_exposure_{side}", 3, 100, "%"),
+                (
+                    "ADG weighted per exposure",
+                    f"adg_weighted_per_exposure_{side}",
+                    3,
+                    100,
+                    "%",
+                ),
                 ("Final balance", f"final_balance_{side}", 6, 1, ""),
                 ("Final equity", f"final_equity_{side}", 6, 1, ""),
                 ("Net PNL + fees", f"net_pnl_plus_fees_{side}", 6, 1, ""),
-                ("Total gain", f"gain_{side}", 4, 100, "%"),
+                ("Net Total gain", f"gain_{side}", 4, 100, "%"),
                 ("Average daily gain", f"adg_{side}", 3, 100, "%"),
-                ("Net PNL + fees", f"net_pnl_plus_fees_{side}", 6, 1, ""),
+                ("Average daily gain weighted", f"adg_weighted_{side}", 3, 100, "%"),
                 ("Loss to profit ratio", f"loss_profit_ratio_{side}", 4, 1, ""),
                 (f"Price action distance mean", f"pa_distance_mean_{side}", 6, 1, ""),
                 (f"Price action distance std", f"pa_distance_std_{side}", 6, 1, ""),
                 (f"Price action distance max", f"pa_distance_max_{side}", 6, 1, ""),
                 ("Closest bankruptcy", f"closest_bkr_{side}", 4, 100, "%"),
                 ("Lowest equity/balance ratio", f"eqbal_ratio_min_{side}", 4, 1, ""),
+                ("Mean of 10 worst eq/bal ratios", f"eqbal_ratio_mean_of_10_worst_{side}", 4, 1, ""),
                 ("Equity/balance ratio std", f"equity_balance_ratio_std_{side}", 4, 1, ""),
             ]:
                 if key in result["result"]:
@@ -127,6 +119,32 @@ def dump_plots(
             ]:
                 if key in result["result"]:
                     table.add_row([title, round_dynamic(result["result"][key], precision)])
+    return table
+
+
+def dump_plots(
+    result: dict,
+    longs: pd.DataFrame,
+    shorts: pd.DataFrame,
+    sdf: pd.DataFrame,
+    df: pd.DataFrame,
+    n_parts: int = None,
+    disable_plotting: bool = False,
+):
+    init(autoreset=True)
+    plt.rcParams["figure.figsize"] = [29, 18]
+    try:
+        pd.set_option("display.precision", 10)
+    except Exception as e:
+        print("error setting pandas precision", e)
+
+    result["plots_dirpath"] = make_get_filepath(
+        os.path.join(result["plots_dirpath"], f"{ts_to_date(time.time())[:19].replace(':', '')}", "")
+    )
+    longs.to_csv(result["plots_dirpath"] + "fills_long.csv")
+    shorts.to_csv(result["plots_dirpath"] + "fills_short.csv")
+    sdf.to_csv(result["plots_dirpath"] + "stats.csv")
+    table = make_table(result)
 
     dump_live_config(result, result["plots_dirpath"] + "live_config.json")
     json.dump(denumpyize(result), open(result["plots_dirpath"] + "result.json", "w"), indent=4)
@@ -169,10 +187,16 @@ def dump_plots(
                     {f"ema_{span}": df.price.ewm(span=span, adjust=False).mean() for span in spans},
                     index=df.index,
                 )
+                ema_dist_lower = result[side][
+                    "ema_dist_entry" if side == "long" else "ema_dist_close"
+                ]
+                ema_dist_upper = result[side][
+                    "ema_dist_entry" if side == "short" else "ema_dist_close"
+                ]
                 ema_bands = pd.DataFrame(
                     {
-                        "ema_band_lower": emas.min(axis=1) * (1 - result[side]["ema_dist_lower"]),
-                        "ema_band_upper": emas.max(axis=1) * (1 + result[side]["ema_dist_upper"]),
+                        "ema_band_lower": emas.min(axis=1) * (1 - ema_dist_lower),
+                        "ema_band_upper": emas.max(axis=1) * (1 + ema_dist_upper),
                     },
                     index=df.index,
                 )
@@ -221,30 +245,19 @@ def plot_fills(df, fdf_, side: int = 0, plot_whole_df: bool = False, title=""):
         dfc.ema_band_upper.plot(style="r--")
     if side >= 0:
         longs = fdf[fdf.type.str.contains("long")]
-        types = longs.type.unique()
-        if any(x in types for x in ["clock_entry_long", "clock_close_long", "long_nclose"]):
-            # clock mode
-            longs[longs.type == "clock_entry_long"].price.plot(style="bo")
-            longs[longs.type == "clock_close_long"].price.plot(style="ro")
-            longs[longs.type == "long_nclose"].price.plot(style="rx")
-        else:
-            lentry = longs[
-                longs.type.str.contains("rentry")
-                | longs.type.str.contains("ientry")
-                | (longs.type == "entry_long")
-                | (longs.type == "clock_entry_long")
-            ]
-            lnclose = longs[longs.type.str.contains("nclose") | (longs.type == "close_long")]
-            luentry = longs[longs.type.str.contains("unstuck_entry")]
-            luclose = longs[longs.type.str.contains("unstuck_close")]
-            ldca = longs[longs.type.str.contains("secondary")]
-            lentry.price.plot(style="b.")
-            lnclose.price.plot(style="r.")
-            ldca.price.plot(style="go")
-            luentry.price.plot(style="bx")
-            luclose.price.plot(style="rx")
 
-        # longs.where(longs.pprice != 0.0).pprice.fillna(method="ffill").plot(style="b--")
+        longs[longs.type.str.contains("rentry") | longs.type.str.contains("ientry")].price.plot(
+            style="bo"
+        )
+        longs[longs.type.str.contains("secondary")].price.plot(style="go")
+        longs[longs.type == "long_nclose"].price.plot(style="ro")
+        longs[
+            (longs.type.str.contains("unstuck_entry")) | (longs.type == "clock_entry_long")
+        ].price.plot(style="bx")
+        longs[
+            (longs.type.str.contains("unstuck_close")) | (longs.type == "clock_close_long")
+        ].price.plot(style="rx")
+
         lppu = longs[(longs.pprice != longs.pprice.shift(1)) & (longs.pprice != 0.0)]
         for i in range(len(lppu) - 1):
             plt.plot(
@@ -252,28 +265,19 @@ def plot_fills(df, fdf_, side: int = 0, plot_whole_df: bool = False, title=""):
             )
     if side <= 0:
         shorts = fdf[fdf.type.str.contains("short")]
-        types = shorts.type.unique()
-        if any(x in types for x in ["clock_entry_short", "clock_close_short", "short_nclose"]):
-            # clock mode
-            shorts[shorts.type == "clock_entry_short"].price.plot(style="ro")
-            shorts[shorts.type == "clock_close_short"].price.plot(style="bo")
-            shorts[shorts.type == "short_nclose"].price.plot(style="bx")
-        else:
-            sentry = shorts[
-                shorts.type.str.contains("rentry")
-                | shorts.type.str.contains("ientry")
-                | (shorts.type == "entry_short")
-            ]
-            snclose = shorts[shorts.type.str.contains("nclose") | (shorts.type == "close_short")]
-            suentry = shorts[shorts.type.str.contains("unstuck_entry")]
-            suclose = shorts[shorts.type.str.contains("unstuck_close")]
-            sdca = shorts[shorts.type.str.contains("secondary")]
-            sentry.price.plot(style="r.")
-            snclose.price.plot(style="b.")
-            sdca.price.plot(style="go")
-            suentry.price.plot(style="rx")
-            suclose.price.plot(style="bx")
-        # shorts.where(shorts.pprice != 0.0).pprice.fillna(method="ffill").plot(style="r--")
+
+        shorts[shorts.type.str.contains("rentry") | shorts.type.str.contains("ientry")].price.plot(
+            style="ro"
+        )
+        shorts[shorts.type.str.contains("secondary")].price.plot(style="go")
+        shorts[shorts.type == "short_nclose"].price.plot(style="bo")
+        shorts[
+            (shorts.type.str.contains("unstuck_entry")) | (shorts.type == "clock_entry_short")
+        ].price.plot(style="rx")
+        shorts[
+            (shorts.type.str.contains("unstuck_close")) | (shorts.type == "clock_close_short")
+        ].price.plot(style="bx")
+
         sppu = shorts[(shorts.pprice != shorts.pprice.shift(1)) & (shorts.pprice != 0.0)]
         for i in range(len(sppu) - 1):
             plt.plot(

@@ -1,10 +1,10 @@
 ![Passivbot](docs/images/pbot_logo_full.svg)
 
-# Trading bot running on Bybit, Binance, OKX and Bitget
+# Trading bot running on Bybit, Binance, OKX, Kucoin and Bitget
 
 :warning: **Use at own risk** :warning:
 
-v5.9.0
+v5.9.5
 
 
 ## Overview
@@ -28,7 +28,7 @@ The strategy is integrated -- the bot only needs a predefined configuration to r
 
 ## Pre-optimized configurations
 
-A number of pre-optimized configurations for Passivbot can be found at https://github.com/JohnKearney1/PassivBot-Configurations.
+Pre-optimized configurations for Passivbot can be found at https://github.com/JohnKearney1/PassivBot-Configurations.
 
 ## Documentation:
 

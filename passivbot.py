@@ -11,6 +11,7 @@ import signal
 import pprint
 import numpy as np
 import time
+import random
 from procedures import (
     load_live_config,
     make_get_filepath,
@@ -18,6 +19,7 @@ from procedures import (
     numpyize,
     print_async_exception,
     utc_ms,
+    load_broker_code,
 )
 from pure_funcs import (
     filter_orders,
@@ -27,6 +29,7 @@ from pure_funcs import (
     spotify_config,
     determine_passivbot_mode,
     config_pretty_str,
+    shorten_custom_id,
 )
 from njit_funcs import (
     qty_to_cost,
@@ -127,6 +130,7 @@ class Bot:
         _, self.key, self.secret, self.passphrase = load_exchange_key_secret_passphrase(
             self.user, self.api_keys
         )
+        self.broker_code = load_broker_code(self.exchange)
 
         self.log_level = 0
 
@@ -202,7 +206,6 @@ class Bot:
                 self.config["long"]["delay_between_fills_minutes_close"] * 60 * 1000.0,
                 self.config["short"]["delay_between_fills_minutes_close"] * 60 * 1000.0,
             )
-            self.xk["backwards_tp"] = (True, True)
         print("initiating position, open orders, fills, exchange config, order book, and emas...")
         await asyncio.gather(
             self.update_position(),
@@ -213,13 +216,20 @@ class Bot:
             self.init_emas(),
         )
         print("done")
-        if (
+        if "price_step_custom" in self.config and self.config["price_step_custom"] is not None:
+            new_price_step = max(
+                self.price_step, round_(self.config["price_step_custom"], self.price_step)
+            )
+            if new_price_step != self.price_step:
+                logging.info(f"changing price step from {self.price_step} to {new_price_step}")
+                self.price_step = self.config["price_step"] = self.xk["price_step"] = new_price_step
+        elif (
             "price_precision_multiplier" in self.config
             and self.config["price_precision_multiplier"] is not None
         ):
             new_price_step = max(
                 self.price_step,
-                round_dynamic(self.ob[0] * self.config["price_precision_multiplier"], 1),
+                round_(self.ob[0] * self.config["price_precision_multiplier"], self.price_step),
             )
             if new_price_step != self.price_step:
                 logging.info(f"changing price step from {self.price_step} to {new_price_step}")
@@ -443,6 +453,7 @@ class Bot:
         self.ts_locked["create_orders"] = time.time()
         try:
             orders = None
+            orders_to_create = [order for order in orders_to_create if self.order_is_valid(order)]
             orders = await self.execute_orders(orders_to_create)
             for order in sorted(orders, key=lambda x: calc_diff(x["price"], self.price)):
                 if "side" in order:
@@ -634,7 +645,7 @@ class Bot:
                             self.xk["min_qty"],
                             self.xk["min_cost"],
                             self.xk["c_mult"],
-                            self.xk["ema_dist_lower"][0],
+                            self.xk["ema_dist_entry"][0],
                             self.xk["qty_pct_entry"][0],
                             self.xk["we_multiplier_entry"][0],
                             self.xk["delay_weight_entry"][0],
@@ -693,7 +704,7 @@ class Bot:
                         self.xk["min_qty"],
                         self.xk["min_cost"],
                         self.xk["c_mult"],
-                        self.xk["ema_dist_upper"][0],
+                        self.xk["ema_dist_close"][0],
                         self.xk["qty_pct_close"][0],
                         self.xk["we_multiplier_close"][0],
                         self.xk["delay_weight_close"][0],
@@ -842,7 +853,7 @@ class Bot:
                             self.xk["min_qty"],
                             self.xk["min_cost"],
                             self.xk["c_mult"],
-                            self.xk["ema_dist_lower"][1],
+                            self.xk["ema_dist_entry"][1],
                             self.xk["qty_pct_entry"][1],
                             self.xk["we_multiplier_entry"][1],
                             self.xk["delay_weight_entry"][1],
@@ -901,7 +912,7 @@ class Bot:
                         self.xk["min_qty"],
                         self.xk["min_cost"],
                         self.xk["c_mult"],
-                        self.xk["ema_dist_lower"][1],
+                        self.xk["ema_dist_close"][1],
                         self.xk["qty_pct_close"][1],
                         self.xk["we_multiplier_close"][1],
                         self.xk["delay_weight_close"][1],
@@ -1258,6 +1269,9 @@ class Bot:
     async def init_user_stream(self) -> None:
         pass
 
+    async def init_market_stream(self) -> None:
+        pass
+
     async def start_websocket_user_stream(self) -> None:
         await self.init_user_stream()
         asyncio.create_task(self.beat_heart_user_stream())
@@ -1268,6 +1282,8 @@ class Bot:
             async for msg in ws:
                 # print('debug user stream', msg)
                 if msg is None or msg == "pong":
+                    continue
+                if "type" in msg and "welcome" in msg or "ack" in msg:
                     continue
                 try:
                     if self.stop_websocket:
@@ -1282,6 +1298,7 @@ class Bot:
                     traceback.print_exc()
 
     async def start_websocket_market_stream(self) -> None:
+        await self.init_market_stream()
         k = 1
         asyncio.create_task(self.beat_heart_market_stream())
         async with websockets.connect(self.endpoints["websocket_market"]) as ws:
@@ -1290,6 +1307,8 @@ class Bot:
             async for msg in ws:
                 # print('debug market stream', msg)
                 if msg is None or msg == "pong":
+                    continue
+                if "type" in msg and "welcome" in msg or "ack" in msg:
                     continue
                 try:
                     if self.stop_websocket:
@@ -1326,7 +1345,7 @@ class Bot:
             for fill in sorted(fills, key=lambda x: x["timestamp"], reverse=True):
                 # print("debug fills", fill["custom_id"])
                 for key in all_keys - keys_done:
-                    if any(k in fill["custom_id"] for k in [key, key.replace("_", "")]):
+                    if any(k in fill["custom_id"] for k in [key, shorten_custom_id(key)]):
                         self.last_fills_timestamps[key] = fill["timestamp"]
                         keys_done.add(key)
                         if all_keys == keys_done:
@@ -1414,6 +1433,86 @@ class Bot:
             logging.error(f"error on minute mark {e}")
             traceback.print_exc()
 
+    def order_is_valid(self, order: dict) -> bool:
+
+        # perform checks to detect abnormal orders
+        # such abnormal orders were observed in bitget bots where short entries exceeded exposure limit
+
+        try:
+            order_good = True
+            fault = ""
+            if order["position_side"] == "long":
+                if order["side"] == "buy":
+                    max_cost = self.position["wallet_balance"] * self.xk["wallet_exposure_limit"][0]
+                    # check if order cost is too big
+                    order_cost = qty_to_cost(
+                        order["qty"],
+                        order["price"],
+                        self.xk["inverse"],
+                        self.xk["c_mult"],
+                    )
+                    position_cost = qty_to_cost(
+                        self.position["long"]["size"],
+                        self.position["long"]["price"],
+                        self.xk["inverse"],
+                        self.xk["c_mult"],
+                    )
+                    if order_cost + position_cost > max_cost * 1.2:
+                        fault = "Long pos cost would be more than 20% greater than max allowed"
+                        order_good = False
+                elif order["side"] == "sell":
+                    # check if price is above pos price
+                    if "n_close" in order["custom_id"]:
+                        if order["price"] < self.position["long"]["price"]:
+                            fault = "long nclose price below pos price"
+                            order_good = False
+
+            elif order["position_side"] == "short":
+                max_cost = self.position["wallet_balance"] * self.xk["wallet_exposure_limit"][1]
+                if order["side"] == "sell":
+                    order_cost = qty_to_cost(
+                        order["qty"],
+                        order["price"],
+                        self.xk["inverse"],
+                        self.xk["c_mult"],
+                    )
+                    position_cost = qty_to_cost(
+                        self.position["short"]["size"],
+                        self.position["short"]["price"],
+                        self.xk["inverse"],
+                        self.xk["c_mult"],
+                    )
+                    if order_cost + position_cost > max_cost * 1.2:
+                        fault = "Short pos cost would be more than 20% greater than max allowed"
+                        order_good = False
+                elif order["side"] == "buy":
+                    # check if price is below pos price
+                    if "n_close" in order["custom_id"]:
+                        if order["price"] > self.position["short"]["price"]:
+                            fault = "short nclose price above pos price"
+                            order_good = False
+
+            if not order_good:
+                logging.error(f"invalid order: {fault} {order}")
+                info = {
+                    "timestamp": utc_ms(),
+                    "date": ts_to_date(utc_ms()),
+                    "fault": fault,
+                    "order": order,
+                    "open_orders": self.open_orders,
+                    "position": self.position,
+                    "order_book": self.ob,
+                    "emas_long": self.emas_long,
+                    "emas_short": self.emas_short,
+                }
+                with open(self.log_filepath, "a") as f:
+                    f.write(json.dumps(denumpyize(info)) + "\n")
+            return order_good
+        except Exception as e:
+            logging.error(f"error validating order")
+            traceback.print_exc()
+            return False
+
 
 async def start_bot(bot):
     if bot.ohlcv:
@@ -1482,7 +1581,7 @@ async def main() -> None:
         required=False,
         dest="assigned_balance",
         default=None,
-        help="add assigned_balance to live config",
+        help="add assigned_balance to live config, overriding balance fetched from exchange",
     )
     parser.add_argument(
         "-pt",
@@ -1492,7 +1591,7 @@ async def main() -> None:
         required=False,
         dest="price_distance_threshold",
         default=0.5,
-        help="only create limit orders closer to price than threshold; default=0.5",
+        help="only create limit orders closer to price than threshold.  default=0.5 (50%)",
     )
     parser.add_argument(
         "-ak",
@@ -1520,12 +1619,6 @@ async def main() -> None:
         help=f"if true, run on the test net instead of normal exchange. Supported exchanges: {TEST_MODE_SUPPORTED_EXCHANGES}",
     )
     parser.add_argument(
-        "-oh",
-        "--ohlcv",
-        action="store_true",
-        help=f"if true, execute to exchange only on each minute mark instead of continuously",
-    )
-    parser.add_argument(
         "-cd",
         "--countdown",
         action="store_true",
@@ -1542,14 +1635,35 @@ async def main() -> None:
         help="Override price step with round_dynamic(market_price * price_precision, 1).  Suggested val 0.0001",
     )
     parser.add_argument(
+        "-ps",
+        "--price-step",
+        "--price_step",
+        type=float,
+        required=False,
+        dest="price_step_custom",
+        default=None,
+        help="Override price step with custom price step.  Takes precedence over -pp",
+    )
+    parser.add_argument(
         "-co",
         "--countdown-offset",
         "--countdown_offset",
         type=int,
         required=False,
         dest="countdown_offset",
-        default=0,
+        default=random.randrange(60),
         help="when in ohlcv mode, offset execution cycle in seconds from whole minute",
+    )
+    parser.add_argument(
+        "-oh",
+        "--ohlcv",
+        type=str,
+        required=False,
+        dest="ohlcv",
+        default=None,
+        nargs="?",
+        const="y",
+        help="if no arg or [y/yes], use 1m ohlcv instead of 1s ticks, overriding param ohlcv from config/backtest/default.hjson",
     )
 
     float_kwargs = [
@@ -1600,11 +1714,11 @@ async def main() -> None:
         "symbol",
         "leverage",
         "price_distance_threshold",
-        "ohlcv",
         "test_mode",
         "countdown",
         "countdown_offset",
         "price_precision_multiplier",
+        "price_step_custom",
     ]:
         config[k] = getattr(args, k)
     if config["test_mode"] and config["exchange"] not in TEST_MODE_SUPPORTED_EXCHANGES:
@@ -1612,6 +1726,16 @@ async def main() -> None:
     config["market_type"] = args.market_type if args.market_type is not None else "futures"
     config["passivbot_mode"] = determine_passivbot_mode(config)
     if config["passivbot_mode"] == "clock":
+        config["ohlcv"] = True
+    elif hasattr(args, "ohlcv"):
+        if args.ohlcv is None:
+            config["ohlcv"] = True
+        else:
+            if args.ohlcv.lower() in ["y", "yes", "t", "true"]:
+                config["ohlcv"] = True
+            else:
+                config["ohlcv"] = False
+    else:
         config["ohlcv"] = True
     if args.assigned_balance is not None:
         logging.info(f"assigned balance set to {args.assigned_balance}")
@@ -1708,12 +1832,18 @@ async def main() -> None:
     elif config["exchange"] == "bitget":
         from procedures import create_bitget_bot
 
+        config["ohlcv"] = True
         bot = await create_bitget_bot(config)
     elif config["exchange"] == "okx":
         from procedures import create_okx_bot
 
         config["ohlcv"] = True
         bot = await create_okx_bot(config)
+    elif config["exchange"] == "kucoin":
+        from procedures import create_kucoin_bot
+
+        config["ohlcv"] = True
+        bot = await create_kucoin_bot(config)
     else:
         raise Exception("unknown exchange", config["exchange"])
 

@@ -42,7 +42,7 @@ class Downloader:
         # use binance data for bybit
         self.config["exchange"] = (
             "binance"
-            if self.config["exchange"] in ["bybit", "bitget", "okx"]
+            if self.config["exchange"] in ["bybit", "bitget", "okx", "kucoin"]
             else self.config["exchange"]
         )
         self.spot = "spot" in config and config["spot"]
@@ -1093,12 +1093,6 @@ async def main():
         "-d",
         "--download-only",
         help="download only, do not dump ticks caches",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-oh",
-        "--ohlcv",
-        help="use 1m ohlcv instead of 1s ticks",
         action="store_true",
     )
     parser = add_argparse_args(parser)

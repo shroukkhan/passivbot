@@ -16,6 +16,7 @@ from pure_funcs import (
     candidate_to_live_config,
     calc_scores,
     determine_passivbot_mode,
+    make_compatible,
 )
 from njit_funcs import round_dynamic
 
@@ -33,8 +34,10 @@ def main():
         ("pls", "maximum_loss_profit_ratio_short"),
         ("hsl", "maximum_hrs_stuck_max_long"),
         ("hss", "maximum_hrs_stuck_max_short"),
-        ("erl", "minimum_eqbal_ratio_min_long"),
-        ("ers", "minimum_eqbal_ratio_min_short"),
+        ("erl", "minimum_eqbal_ratio_mean_of_10_worst_long"),
+        ("ers", "minimum_eqbal_ratio_mean_of_10_worst_short"),
+        ("esl", "maximum_eqbal_ratio_std_long"),
+        ("ess", "maximum_eqbal_ratio_std_short"),
         ("ct", "clip_threshold"),
     ]
     for k0, k1 in weights_keys:
@@ -53,8 +56,8 @@ def main():
         dest="index",
         type=int,
         required=False,
-        default=0,
-        help="best conf index, default=0",
+        default=None,
+        help="inspect particular config of given index",
     )
     parser.add_argument(
         "-d",
@@ -65,14 +68,7 @@ def main():
 
     args = parser.parse_args()
 
-    # attempt guessing whether harmony search or particle swarm
-    opt_config_path = (
-        "configs/optimize/harmony_search.hjson"
-        if "harmony" in args.results_fpath
-        else "configs/optimize/particle_swarm_optimization.hjson"
-    )
-
-    opt_config = hjson.load(open(opt_config_path))
+    opt_config = hjson.load(open("configs/optimize/default.hjson"))
     minsmaxs = {}
     for _, k1 in weights_keys:
         minsmaxs[k1] = opt_config[k1] if getattr(args, k1) is None else getattr(args, k1)
@@ -83,7 +79,7 @@ def main():
     with open(args.results_fpath) as f:
         results = [json.loads(x) for x in f.readlines()]
     print(f"{'n results': <{klen}} {len(results)}")
-    passivbot_mode = determine_passivbot_mode(results[-1]["config"])
+    passivbot_mode = determine_passivbot_mode(make_compatible(results[-1]["config"]))
     all_scores = []
     symbols = [s for s in results[0]["results"] if s != "config_no"]
     starting_balance = results[-1]["results"][symbols[0]]["starting_balance"]
@@ -113,13 +109,17 @@ def main():
     best_candidate = {}
     for side in sides:
         scoress = sorted([sc[side] for sc in all_scores], key=lambda x: x["score"])
-        best_candidate[side] = scoress[args.index]
+        best_candidate[side] = scoress[0]
+        if args.index is not None:
+            best_candidate[side] = [elm for elm in scoress if elm["config_no"] == args.index][0]
     best_config = {side: best_candidate[side]["config"] for side in sides}
     best_config = {
         "long": best_candidate["long"]["config"],
         "short": best_candidate["short"]["config"],
     }
-
+    table_filepath = f"{args.results_fpath.replace('all_results.txt', '')}table_best_config.txt"
+    if os.path.exists(table_filepath):
+        os.remove(table_filepath)
     for side in sides:
         row_headers = ["symbol"] + [k[0] for k in keys] + ["n_days", "score"]
         table = PrettyTable(row_headers)
@@ -162,12 +162,7 @@ def main():
             + [round(np.mean(list(best_candidate[side]["n_days"].values())), 2)]
             + [ind_scores_mean]
         )
-        with open(
-            make_get_filepath(
-                f"{args.results_fpath.replace('all_results.txt', '')}table_best_config.txt"
-            ),
-            "a",
-        ) as f:
+        with open(make_get_filepath(table_filepath), "a") as f:
             output = table.get_string(border=True, padding_width=1)
             print(output)
             f.write(re.sub("\033\\[([0-9]+)(;[0-9]+)*m", "", output) + "\n\n")

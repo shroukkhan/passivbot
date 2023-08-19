@@ -17,7 +17,7 @@ except:
     print("pandas not found, trying without...")
     pass
 
-from njit_funcs import calc_samples
+from njit_funcs import calc_samples, round_
 from pure_funcs import (
     numpyize,
     candidate_to_live_config,
@@ -78,7 +78,6 @@ async def prepare_backtest_config(args) -> dict:
         "starting_balance",
         "market_type",
         "base_dir",
-        "ohlcv",
     ]:
         if hasattr(args, key) and getattr(args, key) is not None:
             config[key] = getattr(args, key)
@@ -95,6 +94,19 @@ async def prepare_backtest_config(args) -> dict:
         f"{config['start_date'].replace(' ', '').replace(':', '').replace('.', '')}_"
         f"{config['end_date'].replace(' ', '').replace(':', '').replace('.', '')}"
     )
+    if config["exchange"] in ["okx"]:
+        config["ohlcv"] = True
+    elif hasattr(args, "ohlcv"):
+        if args.ohlcv is None:
+            if "ohlcv" not in config:
+                config["ohlcv"] = True
+        else:
+            if args.ohlcv.lower() in ["y", "t", "yes", "true"]:
+                config["ohlcv"] = True
+            else:
+                config["ohlcv"] = False
+    elif "ohlcv" not in config:
+        config["ohlcv"] = True
 
     if config["base_dir"].startswith("~"):
         raise Exception("error: using the ~ to indicate the user's home directory is not supported")
@@ -109,14 +121,13 @@ async def prepare_backtest_config(args) -> dict:
     config["plots_dirpath"] = make_get_filepath(os.path.join(base_dirpath, "plots", ""))
 
     await add_market_specific_settings(config)
-
     return config
 
 
 async def prepare_optimize_config(args) -> dict:
     config = await prepare_backtest_config(args)
     config.update(load_hjson_config(args.optimize_config_path))
-    for key in ["starting_configs", "iters"]:
+    for key in ["starting_configs", "iters", "algorithm"]:
         if hasattr(args, key) and getattr(args, key) is not None:
             config[key] = getattr(args, key)
         elif key not in config:
@@ -126,19 +137,22 @@ async def prepare_optimize_config(args) -> dict:
 
 async def add_market_specific_settings(config):
     mss = config["caches_dirpath"] + "market_specific_settings.json"
+    symbol = config["symbol"]
     try:
-        print("fetching market_specific_settings...")
-        market_specific_settings = await fetch_market_specific_settings(config)
+        print(f"fetching market_specific_settings for {symbol}...")
+        market_specific_settings = fetch_market_specific_settings(config)
         json.dump(market_specific_settings, open(mss, "w"), indent=4)
     except Exception as e:
         traceback.print_exc()
-        print("\nfailed to fetch market_specific_settings", e, "\n")
+        print(f"\nfailed to fetch market_specific_settings for symbol {symbol}", e, "\n")
         try:
             if os.path.exists(mss):
                 market_specific_settings = json.load(open(mss))
-            print("using cached market_specific_settings")
-        except Exception:
-            raise Exception("failed to load cached market_specific_settings")
+                print("using cached market_specific_settings")
+            else:
+                raise Exception(f"no cached market_specific_settings for symbol {symbol}")
+        except:
+            raise Exception(f"failed to load cached market_specific_settings for symbol {symbol}")
     config.update(market_specific_settings)
 
 
@@ -174,6 +188,15 @@ def load_exchange_key_secret_passphrase(
         raise Exception("API KeyFile Missing!")
 
 
+def load_broker_code(exchange: str) -> str:
+    try:
+        return hjson.load(open("broker_codes.hjson"))[exchange]
+    except Exception as e:
+        print(f"failed to load broker code", e)
+        traceback.print_exc()
+        return ""
+
+
 def print_(args, r=False, n=False):
     line = ts_to_date(utc_ms())[:19] + "  "
     # line = ts_to_date(local_time())[:19] + '  '
@@ -188,7 +211,7 @@ def print_(args, r=False, n=False):
     return line
 
 
-async def fetch_market_specific_settings(config: dict):
+async def fetch_market_specific_settings_old(config: dict):
     user = config["user"]
     exchange = config["exchange"]
     symbol = config["symbol"]
@@ -300,6 +323,14 @@ async def create_okx_bot(config: dict):
     return bot
 
 
+async def create_kucoin_bot(config: dict):
+    from kucoin import KuCoinBot
+
+    bot = KuCoinBot(config)
+    await bot._init()
+    return bot
+
+
 def add_argparse_args(parser):
     parser.add_argument("--nojit", help="disable numba", action="store_true")
     parser.add_argument(
@@ -376,7 +407,17 @@ def add_argparse_args(parser):
         default=None,
         help="specify the base output directory for the results",
     )
-
+    parser.add_argument(
+        "-oh",
+        "--ohlcv",
+        type=str,
+        required=False,
+        dest="ohlcv",
+        default=None,
+        nargs="?",
+        const="y",
+        help="if no arg or [y/yes], use 1m ohlcv instead of 1s ticks, overriding param ohlcv from config/backtest/default.hjson",
+    )
     return parser
 
 
@@ -466,213 +507,131 @@ def print_async_exception(coro):
         pass
 
 
-async def init_optimizer(logging):
-    import argparse
-    from downloader import Downloader, load_hlc_cache
+def fetch_market_specific_settings(config: dict):
+    import ccxt
 
-    parser = argparse.ArgumentParser(
-        prog="Optimize multi symbol", description="Optimize passivbot config multi symbol"
-    )
-    parser.add_argument(
-        "-o",
-        "--optimize_config",
-        type=str,
-        required=False,
-        dest="optimize_config_path",
-        default="configs/optimize/particle_swarm_optimization.hjson",
-        help="optimize config hjson file",
-    )
-    parser.add_argument(
-        "-t",
-        "--start",
-        type=str,
-        required=False,
-        dest="starting_configs",
-        default=None,
-        help="start with given live configs.  single json file or dir with multiple json files",
-    )
-    parser.add_argument(
-        "-i", "--iters", type=int, required=False, dest="iters", default=None, help="n optimize iters"
-    )
-    parser.add_argument(
-        "-c", "--n_cpus", type=int, required=False, dest="n_cpus", default=None, help="n cpus"
-    )
-    parser.add_argument(
-        "-le",
-        "--long",
-        type=str,
-        required=False,
-        dest="long_enabled",
-        default=None,
-        help="long enabled: [y/n]",
-    )
-    parser.add_argument(
-        "-se",
-        "--short",
-        type=str,
-        required=False,
-        dest="short_enabled",
-        default=None,
-        help="short enabled: [y/n]",
-    )
-    parser.add_argument(
-        "-pm",
-        "--passivbot_mode",
-        "--passivbot-mode",
-        type=str,
-        required=False,
-        dest="passivbot_mode",
-        default=None,
-        help="passivbot mode options: [s/static_grid, r/recursive_grid, n/neat_grid, c/clock]",
-    )
-    parser.add_argument(
-        "-oh",
-        "--ohlcv",
-        help="use 1m ohlcv instead of 1s ticks",
-        action="store_true",
-    )
-    parser = add_argparse_args(parser)
-    args = parser.parse_args()
-    args.symbol = "BTCUSDT"  # dummy symbol
-    config = await prepare_optimize_config(args)
-    if args.passivbot_mode is not None:
-        if args.passivbot_mode in ["s", "static_grid", "static"]:
-            config["passivbot_mode"] = "static_grid"
-        elif args.passivbot_mode in ["r", "recursive_grid", "recursive"]:
-            config["passivbot_mode"] = "recursive_grid"
-        elif args.passivbot_mode in ["n", "neat_grid", "neat"]:
-            config["passivbot_mode"] = "neat_grid"
-        elif args.passivbot_mode in ["c", "clock"]:
-            config["passivbot_mode"] = "clock"
-        else:
-            raise Exception(f"unknown passivbot mode {args.passivbot_mode}")
-    passivbot_mode = config["passivbot_mode"]
-    assert passivbot_mode in [
-        "recursive_grid",
-        "static_grid",
-        "neat_grid",
-        "clock",
-    ], f"unknown passivbot mode {passivbot_mode}"
-    config["exchange"] = load_exchange_key_secret_passphrase(config["user"])[0]
-    args = parser.parse_args()
-    if args.long_enabled is None:
-        do_long = config["do_long"]
-    else:
-        if "y" in args.long_enabled.lower():
-            do_long = config["do_long"] = True
-        elif "n" in args.long_enabled.lower():
-            do_long = config["do_long"] = False
-        else:
-            raise Exception("please specify y/n with kwarg -le/--long")
-    if args.short_enabled is None:
-        do_short = config["do_short"]
-    else:
-        if "y" in args.short_enabled.lower():
-            do_short = config["do_short"] = True
-        elif "n" in args.short_enabled.lower():
-            do_short = config["do_short"] = False
-        else:
-            raise Exception("please specify y/n with kwarg -le/--short")
-    template_config = get_template_live_config(passivbot_mode)
-    if passivbot_mode == "clock":
-        template_config["do_long"] = do_long
-        template_config["do_short"] = do_short
-        config["long"] = template_config.copy()
-        config["short"] = template_config.copy()
-        bounds = config["bounds_clock"].copy()
-        config["bounds_clock"] = {"long": bounds, "short": bounds}
-    config.update(template_config)
-    config["long"]["enabled"], config["short"]["enabled"] = do_long, do_short
-    config["long"]["backwards_tp"] = config["backwards_tp_long"]
-    config["short"]["backwards_tp"] = config["backwards_tp_short"]
-    config["do_long"], config["do_short"] = do_long, do_short
-    if args.symbol is not None:
-        config["symbols"] = args.symbol.split(",")
-    if args.n_cpus is not None:
-        config["n_cpus"] = args.n_cpus
-    if args.base_dir is not None:
-        config["base_dir"] = args.base_dir
-    config["ohlcv"] = args.ohlcv if config["passivbot_mode"] != "clock" else True
-    print()
-    lines = [(k, getattr(args, k)) for k in args.__dict__ if args.__dict__[k] is not None]
-    lines += [
-        (k, config[k])
-        for k in [
-            "starting_balance",
-            "start_date",
-            "end_date",
-            "w",
-            "c0",
-            "c1",
-            "maximum_pa_distance_std_long",
-            "maximum_pa_distance_std_short",
-            "maximum_pa_distance_mean_long",
-            "maximum_pa_distance_mean_short",
-            "maximum_loss_profit_ratio_long",
-            "maximum_loss_profit_ratio_short",
-            "minimum_eqbal_ratio_min_long",
-            "minimum_eqbal_ratio_min_short",
-            "maximum_hrs_stuck_max_long",
-            "maximum_hrs_stuck_max_short",
-            "clip_threshold",
-        ]
-        if k in config and k not in [z[0] for z in lines]
-    ]
-    for line in lines:
-        logging.info(f"{line[0]: <{max([len(x[0]) for x in lines]) + 2}} {line[1]}")
-    print()
+    exchange = config["exchange"]
+    symbol = config["symbol"]
+    market_type = config["market_type"]
 
-    # download ticks .npy file if missing
-    if config["ohlcv"]:
-        cache_fname = f"{config['start_date']}_{config['end_date']}_ohlcv_cache.npy"
-    else:
-        cache_fname = f"{config['start_date']}_{config['end_date']}_ticks_cache.npy"
-    exchange_name = config["exchange"] + ("_spot" if config["market_type"] == "spot" else "")
-    config["symbols"] = sorted(config["symbols"])
-    for symbol in config["symbols"]:
-        cache_dirpath = os.path.join(config["base_dir"], exchange_name, symbol, "caches", "")
-        if not os.path.exists(cache_dirpath + cache_fname) or not os.path.exists(
-            cache_dirpath + "market_specific_settings.json"
-        ):
-            logging.info(f"fetching data {symbol}")
-            args.symbol = symbol
-            tmp_cfg = await prepare_backtest_config(args)
-            if config["ohlcv"]:
-                data = load_hlc_cache(
-                    symbol,
-                    config["start_date"],
-                    config["end_date"],
-                    base_dir=config["base_dir"],
-                    spot=config["spot"],
-                    exchange=config["exchange"],
-                )
+    settings_from_exchange = {"exchange": exchange}
+    if exchange == "binance":
+        if "futures" in market_type:
+            if symbol.endswith("USDT") or symbol.endswith("BUSD"):
+                cc = ccxt.binanceusdm()
+                settings_from_exchange["inverse"] = False
+
+            elif symbol.endswith("PERP"):
+                cc = ccxt.binancecoinm()
+                settings_from_exchange["inverse"] = True
             else:
-                downloader = Downloader({**config, **tmp_cfg})
-                await downloader.get_sampled_ticks()
+                raise Exception(f"unknown symbol {symbol}")
+            settings_from_exchange["hedge_mode"] = True
+            settings_from_exchange["spot"] = False
 
-    # prepare starting configs
-    cfgs = []
-    if args.starting_configs is not None:
-        logging.info("preparing starting configs...")
-        if os.path.isdir(args.starting_configs):
-            for fname in os.listdir(args.starting_configs):
-                try:
-                    cfg = load_live_config(os.path.join(args.starting_configs, fname))
-                    assert determine_passivbot_mode(cfg) == passivbot_mode, "wrong passivbot mode"
-                    cfgs.append(cfg)
-                    logging.info(f"successfully loaded config {fname}")
+        elif "spot" in market_type:
+            cc = ccxt.binance()
+            settings_from_exchange["spot"] = True
+            settings_from_exchange["inverse"] = False
+            settings_from_exchange["hedge_mode"] = False
+        else:
+            raise Exception(f"unknown market type {market_type}")
+        markets = cc.fetch_markets()
+        for elm in markets:
+            if elm["id"] == symbol:
+                break
+        else:
+            raise Exception(f"unknown symbol {symbol}")
+        settings_from_exchange["maker_fee"] = elm["maker"]
+        settings_from_exchange["taker_fee"] = elm["taker"]
+        settings_from_exchange["c_mult"] = elm["contractSize"]
+        settings_from_exchange["min_qty"] = elm["limits"]["amount"]["min"]
+        for elm1 in elm["info"]["filters"]:
+            if elm1["filterType"] == "LOT_SIZE":
+                settings_from_exchange["qty_step"] = float(elm1["stepSize"])
+            if elm1["filterType"] == "PRICE_FILTER":
+                settings_from_exchange["price_step"] = float(elm1["tickSize"])
+    elif exchange == "bitget":
+        cc = ccxt.bitget()
+        markets = cc.fetch_markets()
+        for elm in markets:
+            if elm["type"] == "swap" and elm["id"] == symbol + "_UMCBL":
+                break
+        else:
+            raise Exception(f"unknown symbol {symbol}")
+        settings_from_exchange["hedge_mode"] = True
+        settings_from_exchange["maker_fee"] = elm["maker"]
+        settings_from_exchange["taker_fee"] = elm["taker"]
+        settings_from_exchange["c_mult"] = 1.0
+        settings_from_exchange["price_step"] = round_(
+            (10 ** (-int(elm["info"]["pricePlace"]))) * int(elm["info"]["priceEndStep"]), 1e-12
+        )
+        settings_from_exchange["qty_step"] = round_(
+            10 ** (-int(elm["info"]["volumePlace"])), 0.00000001
+        )
+        settings_from_exchange["min_qty"] = float(elm["info"]["minTradeNum"])
+        settings_from_exchange["spot"] = elm["spot"]
+        settings_from_exchange["inverse"] = not elm["linear"]
+    elif exchange == "okx":
+        cc = ccxt.okx()
+        markets = cc.fetch_markets()
+        for elm in markets:
+            if elm["type"] == "swap" and symbol in elm["id"].replace("-", ""):
+                break
+        else:
+            raise Exception(f"unknown symbol {symbol}")
+        settings_from_exchange["hedge_mode"] = True
+        settings_from_exchange["maker_fee"] = elm["maker"]
+        settings_from_exchange["taker_fee"] = elm["taker"]
+        settings_from_exchange["c_mult"] = elm["contractSize"]
+        settings_from_exchange["qty_step"] = elm["precision"]["amount"]
+        settings_from_exchange["price_step"] = elm["precision"]["price"]
+        settings_from_exchange["spot"] = elm["spot"]
+        settings_from_exchange["inverse"] = not elm["linear"]
+        settings_from_exchange["min_qty"] = elm["limits"]["amount"]["min"]
+    elif exchange == "bybit":
+        cc = ccxt.bybit()
+        markets = cc.fetch_markets()
+        for elm in markets:
+            if elm["id"] == symbol:
+                break
+        else:
+            raise Exception(f"unknown symbol {symbol}")
+        settings_from_exchange["hedge_mode"] = True
+        settings_from_exchange["maker_fee"] = 0.0001
+        settings_from_exchange["taker_fee"] = 0.0006
+        settings_from_exchange["c_mult"] = elm["contractSize"]
+        settings_from_exchange["qty_step"] = float(elm["info"]["lot_size_filter"]["qty_step"])
+        settings_from_exchange["price_step"] = float(elm["info"]["price_filter"]["tick_size"])
+        settings_from_exchange["spot"] = False
+        settings_from_exchange["inverse"] = not elm["linear"]
+        settings_from_exchange["min_qty"] = elm["limits"]["amount"]["min"]
+    else:
+        raise Exception(f"unknown exchange {exchange}")
+    settings_from_exchange["min_cost"] = (
+        0.0 if elm["limits"]["cost"]["min"] is None else elm["limits"]["cost"]["min"]
+    )
+    for key in [
+        "c_mult",
+        "exchange",
+        "hedge_mode",
+        "inverse",
+        "maker_fee",
+        "min_cost",
+        "min_qty",
+        "price_step",
+        "qty_step",
+        "spot",
+        "taker_fee",
+    ]:
+        assert key in settings_from_exchange, f"missing {key}"
+    # import pprint
+    # pprint.pprint(elm)
+    return sort_dict_keys(settings_from_exchange)
 
-                except Exception as e:
-                    logging.error(f"error loading config {fname}: {e}")
-        elif os.path.exists(args.starting_configs):
-            try:
-                cfg = load_live_config(args.starting_configs)
-                assert determine_passivbot_mode(cfg) == passivbot_mode, "wrong passivbot mode"
-                cfgs.append(cfg)
-                logging.info(f"successfully loaded config {args.starting_configs}")
-            except Exception as e:
-                logging.error(f"error loading config {args.starting_configs}: {e}")
-    if passivbot_mode == "clock":
-        cfgs = [{"long": cfg.copy(), "short": cfg.copy()} for cfg in cfgs]
-    config["starting_configs"] = cfgs
-    return config
+
+if __name__ == "__main__":
+    for exchange in ["bitget", "binance", "bybit", "okx"]:
+        cfg = {"exchange": exchange, "symbol": "YFIUSDT", "market_type": "futures"}
+        mss = fetch_market_specific_settings(cfg)
+        print(mss)
