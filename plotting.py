@@ -1,178 +1,302 @@
+import json
+import re
+import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import json
-from pure_funcs import round_dynamic, denumpyize, candidate_to_live_config
-from njit_funcs import round_up
-from procedures import dump_live_config
-from prettytable import PrettyTable
+import time
 from colorama import init, Fore
-import re
+from prettytable import PrettyTable
+
+from njit_funcs import round_up
+from procedures import dump_live_config, make_get_filepath
+from pure_funcs import round_dynamic, denumpyize, ts_to_date
 
 
-def dump_plots(result: dict, fdf: pd.DataFrame, sdf: pd.DataFrame, df: pd.DataFrame):
-    init(autoreset=True)
-    plt.rcParams['figure.figsize'] = [29, 18]
-    pd.set_option('precision', 10)
-
+def make_table(result_):
+    result = result_.copy()
+    if "result" not in result:
+        result["result"] = result
     table = PrettyTable(["Metric", "Value"])
-    table.align['Metric'] = 'l'
-    table.align['Value'] = 'l'
-    table.title = 'Summary'
+    table.align["Metric"] = "l"
+    table.align["Value"] = "l"
+    table.title = "Summary"
 
-    table.add_row(['Exchange', result['exchange'] if 'exchange' in result else 'unknown'])
-    table.add_row(['Market type', result['market_type'] if 'market_type' in result else 'unknown'])
-    table.add_row(['Symbol', result['symbol'] if 'symbol' in result else 'unknown'])
-    table.add_row(['No. days', round_dynamic(result['result']['n_days'], 6)])
-    table.add_row(['Starting balance', round_dynamic(result['result']['starting_balance'], 6)])
-    profit_color = Fore.RED if result['result']['final_balance'] < result['result']['starting_balance'] else Fore.RESET
-    table.add_row(['Final balance', f"{profit_color}{round_dynamic(result['result']['final_balance'], 6)}{Fore.RESET}"])
-    table.add_row(['Final equity', f"{profit_color}{round_dynamic(result['result']['final_equity'], 6)}{Fore.RESET}"])
-    table.add_row(['Net PNL + fees', f"{profit_color}{round_dynamic(result['result']['net_pnl_plus_fees'], 6)}{Fore.RESET}"])
-    table.add_row(['Total gain percentage', f"{profit_color}{round_dynamic(result['result']['gain'] * 100, 4)}%{Fore.RESET}"])
-    table.add_row(['Average daily gain percentage', f"{profit_color}{round_dynamic((result['result']['average_daily_gain']) * 100, 3)}%{Fore.RESET}"])
-    table.add_row(['Adjusted daily gain', f"{profit_color}{round_dynamic(result['result']['adjusted_daily_gain'], 6)}{Fore.RESET}"])
-    bankruptcy_color = Fore.RED if result['result']['closest_bkr'] < 0.4 else Fore.YELLOW if result['result']['closest_bkr'] < 0.8 else Fore.RESET
-    table.add_row(['Closest bankruptcy percentage', f"{bankruptcy_color}{round_dynamic(result['result']['closest_bkr'] * 100, 4)}%{Fore.RESET}"])
-    table.add_row([' ', ' '])
-    table.add_row(['Profit sum', f"{profit_color}{round_dynamic(result['result']['profit_sum'], 6)}{Fore.RESET}"])
-    table.add_row(['Loss sum', f"{Fore.RED}{round_dynamic(result['result']['loss_sum'], 6)}{Fore.RESET}"])
-    table.add_row(['Fee sum', round_dynamic(result['result']['fee_sum'], 6)])
-    table.add_row(['Lowest equity/balance ratio', round_dynamic(result['result']['eqbal_ratio_min'], 6)])
-    table.add_row(['Biggest psize', round_dynamic(result['result']['biggest_psize'], 6)])
-    table.add_row(['Price action distance mean long', round_dynamic(result['result']['pa_closeness_mean_long'], 6)])
-    table.add_row(['Price action distance median long', round_dynamic(result['result']['pa_closeness_median_long'], 6)])
-    table.add_row(['Price action distance max long', round_dynamic(result['result']['pa_closeness_max_long'], 6)])
-    table.add_row(['Price action distance mean short', round_dynamic(result['result']['pa_closeness_mean_shrt'], 6)])
-    table.add_row(['Price action distance median short', round_dynamic(result['result']['pa_closeness_median_shrt'], 6)])
-    table.add_row(['Price action distance max short', round_dynamic(result['result']['pa_closeness_max_shrt'], 6)])
-    table.add_row(['Average n fills per day', round_dynamic(result['result']['avg_fills_per_day'], 6)])
-    table.add_row([' ', ' '])
-    table.add_row(['No. fills', round_dynamic(result['result']['n_fills'], 6)])
-    table.add_row(['No. entries', round_dynamic(result['result']['n_entries'], 6)])
-    table.add_row(['No. closes', round_dynamic(result['result']['n_closes'], 6)])
-    table.add_row(['No. initial entries', round_dynamic(result['result']['n_ientries'], 6)])
-    table.add_row(['No. reentries', round_dynamic(result['result']['n_rentries'], 6)])
-    table.add_row([' ', ' '])
-    table.add_row(['Mean hours between fills', round_dynamic(result['result']['hrs_stuck_avg_long'], 6)])
-    table.add_row(['Max hours no fills (same side)', round_dynamic(result['result']['hrs_stuck_max_long'], 6)])
-    table.add_row(['Max hours no fills', round_dynamic(result['result']['hrs_stuck_max_long'], 6)])
+    table.add_row(["Exchange", result["exchange"] if "exchange" in result else "unknown"])
+    table.add_row(["Market type", result["market_type"] if "market_type" in result else "unknown"])
+    table.add_row(["Symbol", result["symbol"] if "symbol" in result else "unknown"])
+    table.add_row(
+        ["Passivbot mode", result["passivbot_mode"] if "passivbot_mode" in result else "unknown"]
+    )
+    table.add_row(
+        [
+            "ADG n subdivisions",
+            result["adg_n_subdivisions"] if "adg_n_subdivisions" in result else "unknown",
+        ]
+    )
+    table.add_row(["No. days", round_dynamic(result["result"]["n_days"], 2)])
+    table.add_row(["Starting balance", round_dynamic(result["result"]["starting_balance"], 6)])
+    for side in ["long", "short"]:
+        if side not in result:
+            result[side] = {"enabled": result[f"do_{side}"]}
+        if result[side]["enabled"]:
+            table.add_row([" ", " "])
+            table.add_row([side.capitalize(), True])
+            profit_color = (
+                Fore.RED
+                if f"final_balance_{side}" in result["result"]
+                and result["result"][f"final_balance_{side}"] < result["result"]["starting_balance"]
+                else Fore.RESET
+            )
+            for title, key, precision, mul, suffix in [
+                ("ADG per exposure", f"adg_per_exposure_{side}", 3, 100, "%"),
+                (
+                    "ADG weighted per exposure",
+                    f"adg_weighted_per_exposure_{side}",
+                    3,
+                    100,
+                    "%",
+                ),
+                ("Final balance", f"final_balance_{side}", 6, 1, ""),
+                ("Final equity", f"final_equity_{side}", 6, 1, ""),
+                ("Net PNL + fees", f"net_pnl_plus_fees_{side}", 6, 1, ""),
+                ("Net Total gain", f"gain_{side}", 4, 100, "%"),
+                ("Average daily gain", f"adg_{side}", 3, 100, "%"),
+                ("Average daily gain weighted", f"adg_weighted_{side}", 3, 100, "%"),
+                ("Loss to profit ratio", f"loss_profit_ratio_{side}", 4, 1, ""),
+                ("Exposure ratios mean", f"exposure_ratios_mean_{side}", 5, 1, ""),
+                (f"Price action distance mean", f"pa_distance_mean_{side}", 6, 1, ""),
+                (f"Price action distance std", f"pa_distance_std_{side}", 6, 1, ""),
+                (f"Price action distance max", f"pa_distance_max_{side}", 6, 1, ""),
+                ("Closest bankruptcy", f"closest_bkr_{side}", 4, 100, "%"),
+                ("Lowest equity/balance ratio", f"eqbal_ratio_min_{side}", 4, 1, ""),
+                ("Mean of 10 worst eq/bal ratios", f"eqbal_ratio_mean_of_10_worst_{side}", 4, 1, ""),
+                ("Equity/balance ratio std", f"equity_balance_ratio_std_{side}", 4, 1, ""),
+                ("Ratio of time spent at max exposure", f"time_at_max_exposure_{side}", 4, 1, ""),
+            ]:
+                if key in result["result"]:
+                    val = round_dynamic(result["result"][key] * mul, precision)
+                    table.add_row(
+                        [
+                            title,
+                            f"{profit_color}{val}{suffix}{Fore.RESET}",
+                        ]
+                    )
+            for title, key in [
+                ("No. fills", f"n_fills_{side}"),
+                ("No. entries", f"n_entries_{side}"),
+                ("No. closes", f"n_closes_{side}"),
+                ("No. initial entries", f"n_ientries_{side}"),
+                ("No. reentries", f"n_rentries_{side}"),
+                ("No. unstuck/EMA entries", f"n_unstuck_entries_{side}"),
+                ("No. unstuck/EMA closes", f"n_unstuck_closes_{side}"),
+                ("No. normal closes", f"n_normal_closes_{side}"),
+            ]:
+                if key in result["result"]:
+                    table.add_row([title, result["result"][key]])
+            for title, key, precision in [
+                ("Average n fills per day", f"avg_fills_per_day_{side}", 3),
+                ("Mean hours stuck", f"hrs_stuck_avg_{side}", 6),
+                ("Max hours stuck", f"hrs_stuck_max_{side}", 6),
+            ]:
+                if key in result["result"]:
+                    table.add_row([title, round_dynamic(result["result"][key], precision)])
 
-    longs = fdf[fdf.type.str.contains('long')]
-    shrts = fdf[fdf.type.str.contains('shrt')]
-    if result['long']['enabled']:
-        table.add_row([' ', ' '])
-        table.add_row(['Long', result['long']['enabled']])
-        table.add_row(["No. inital entries", len(longs[longs.type.str.contains('ientry')])])
-        table.add_row(["No. reentries", len(longs[longs.type.str.contains('rentry')])])
-        table.add_row(["No. normal closes", len(longs[longs.type.str.contains('nclose')])])
-        table.add_row(['Mean hours stuck (long)', round_dynamic(result['result']['hrs_stuck_avg_long'], 6)])
-        table.add_row(['Max hours stuck (long)', round_dynamic(result['result']['hrs_stuck_max_long'], 6)])
-        profit_color = Fore.RED if longs.pnl.sum() < 0 else Fore.RESET
-        table.add_row(["PNL sum", f"{profit_color}{longs.pnl.sum()}{Fore.RESET}"])
+            if f"pnl_sum_{side}" in result["result"]:
+                profit_color = Fore.RED if result["result"][f"pnl_sum_{side}"] < 0 else Fore.RESET
 
-    if result['shrt']['enabled']:
-        table.add_row([' ', ' '])
-        table.add_row(['Short', result['shrt']['enabled']])
-        table.add_row(["No. inital entries", len(shrts[shrts.type.str.contains('ientry')])])
-        table.add_row(["No. reentries", len(shrts[shrts.type.str.contains('rentry')])])
-        table.add_row(["No. normal closes", len(shrts[shrts.type.str.contains('nclose')])])
-        table.add_row(['Mean hours stuck (shrt)', round_dynamic(result['result']['hrs_stuck_avg_shrt'], 6)])
-        table.add_row(['Max hours stuck (shrt)', round_dynamic(result['result']['hrs_stuck_max_shrt'], 6)])
-        profit_color = Fore.RED if shrts.pnl.sum() < 0 else Fore.RESET
-        table.add_row(["PNL sum", f"{profit_color}{shrts.pnl.sum()}{Fore.RESET}"])
+                table.add_row(
+                    [
+                        "PNL sum",
+                        f"{profit_color}{round_dynamic(result['result'][f'pnl_sum_{side}'], 4)}{Fore.RESET}",
+                    ]
+                )
+            for title, key, precision in [
+                ("Profit sum", f"profit_sum_{side}", 4),
+                ("Loss sum", f"loss_sum_{side}", 4),
+                ("Fee sum", f"fee_sum_{side}", 4),
+                ("Biggest pos cost", f"biggest_psize_quote_{side}", 4),
+                ("Volume quote", f"volume_quote_{side}", 6),
+                ("Biggest pos size", f"biggest_psize_{side}", 3),
+            ]:
+                if key in result["result"]:
+                    table.add_row([title, round_dynamic(result["result"][key], precision)])
+    return table
 
-    dump_live_config(result, result['plots_dirpath'] + 'live_config.json')
-    json.dump(denumpyize(result), open(result['plots_dirpath'] + 'result.json', 'w'), indent=4)
 
-    print('writing backtest_result.txt...\n')
-    with open(f"{result['plots_dirpath']}backtest_result.txt", 'w') as f:
+def dump_plots(
+    result: dict,
+    longs: pd.DataFrame,
+    shorts: pd.DataFrame,
+    sdf: pd.DataFrame,
+    df: pd.DataFrame,
+    n_parts: int = None,
+    disable_plotting: bool = False,
+):
+    init(autoreset=True)
+    plt.rcParams["figure.figsize"] = [29, 18]
+    try:
+        pd.set_option("display.precision", 10)
+    except Exception as e:
+        print("error setting pandas precision", e)
+
+    result["plots_dirpath"] = make_get_filepath(
+        os.path.join(result["plots_dirpath"], f"{ts_to_date(time.time())[:19].replace(':', '')}", "")
+    )
+    # sdf = sdf.set_index(pd.to_datetime(pd.to_datetime(sdf.timestamp * 1000 * 1000)))
+    # longs = longs.set_index(pd.to_datetime(pd.to_datetime(sdf.timestamp * 1000 * 1000)))
+    # shorts = shorts.set_index(pd.to_datetime(pd.to_datetime(sdf.timestamp * 1000 * 1000)))
+    longs.to_csv(result["plots_dirpath"] + "fills_long.csv")
+    shorts.to_csv(result["plots_dirpath"] + "fills_short.csv")
+    sdf.to_csv(result["plots_dirpath"] + "stats.csv")
+    table = make_table(result)
+
+    dump_live_config(result, result["plots_dirpath"] + "live_config.json")
+    json.dump(denumpyize(result), open(result["plots_dirpath"] + "result.json", "w"), indent=4)
+
+    print("writing backtest_result.txt...\n")
+    with open(f"{result['plots_dirpath']}backtest_result.txt", "w") as f:
         output = table.get_string(border=True, padding_width=1)
         print(output)
-        f.write(re.sub('\033\\[([0-9]+)(;[0-9]+)*m', '', output))
+        f.write(re.sub("\033\\[([0-9]+)(;[0-9]+)*m", "", output))
 
-    print('\nplotting balance and equity...')
+    if disable_plotting:
+        return
+    n_parts = (
+        n_parts if n_parts is not None else min(12, max(3, int(round_up(result["n_days"] / 14, 1.0))))
+    )
+    for side, fdf in [("long", longs), ("short", shorts)]:
+        if result[side]["enabled"]:
+            plt.clf()
+            fig = plot_fills(df, fdf, plot_whole_df=True, title=f"Overview Fills {side.capitalize()}")
+            if not fig:
+                continue
+            fig.savefig(f"{result['plots_dirpath']}whole_backtest_{side}.png")
+            print(f"\nplotting balance and equity {side} {result['plots_dirpath']}...")
+            plt.clf()
+            sdf[f"balance_{side}"].plot()
+            sdf[f"equity_{side}"].plot(
+                title=f"Balance and equity {side.capitalize()}", xlabel="Time", ylabel="Balance"
+            )
+            plt.savefig(f"{result['plots_dirpath']}balance_and_equity_sampled_{side}.png")
+
+            if result["passivbot_mode"] == "clock":
+                spans = sorted(
+                    [
+                        result[side]["ema_span_0"],
+                        (result[side]["ema_span_0"] * result[side]["ema_span_1"]) ** 0.5,
+                        result[side]["ema_span_1"],
+                    ]
+                )
+                emas = pd.DataFrame(
+                    {f"ema_{span}": df.price.ewm(span=span, adjust=False).mean() for span in spans},
+                    index=df.index,
+                )
+                ema_dist_lower = result[side][
+                    "ema_dist_entry" if side == "long" else "ema_dist_close"
+                ]
+                ema_dist_upper = result[side][
+                    "ema_dist_entry" if side == "short" else "ema_dist_close"
+                ]
+                if abs(ema_dist_lower) < 0.1:
+                    df = df.join(
+                        pd.DataFrame(
+                            {"ema_band_lower": emas.min(axis=1) * (1 - ema_dist_lower)},
+                            index=df.index,
+                        )
+                    )
+                if abs(ema_dist_upper) < 0.1:
+                    df = df.join(
+                        pd.DataFrame(
+                            {"ema_band_upper": emas.max(axis=1) * (1 + ema_dist_upper)},
+                            index=df.index,
+                        )
+                    )
+            for z in range(n_parts):
+                start_ = z / n_parts
+                end_ = (z + 1) / n_parts
+                print(f"{side} {z} of {n_parts} {start_ * 100:.2f}% to {end_ * 100:.2f}%")
+                fig = plot_fills(
+                    df,
+                    fdf.iloc[int(len(fdf) * start_) : int(len(fdf) * end_)],
+                    title=f"Fills {side} {z+1} of {n_parts}",
+                )
+                if fig is not None:
+                    fig.savefig(f"{result['plots_dirpath']}backtest_{side}{z + 1}of{n_parts}.png")
+                else:
+                    print(f"no {side} fills...")
+            if result["passivbot_mode"] == "clock":
+                if "ema_band_lower" in df.columns:
+                    df = df.drop(["ema_band_lower"], axis=1)
+                if "ema_band_upper" in df.columns:
+                    df = df.drop(["ema_band_upper"], axis=1)
+
+    print("plotting wallet exposures...")
     plt.clf()
-    sdf.balance.plot()
-    sdf.equity.plot(title="Balance and equity", xlabel="Time", ylabel="Balance")
-    plt.savefig(f"{result['plots_dirpath']}balance_and_equity_sampled.png")
+    sdf.wallet_exposure_short = sdf.wallet_exposure_short.abs() * -1
+    sdf[["wallet_exposure_long", "wallet_exposure_short"]].plot(
+        title="Wallet exposures: +long, -short",
+        xlabel="Time",
+        ylabel="Wallet Exposure",
+    )
+    plt.savefig(f"{result['plots_dirpath']}wallet_exposures_plot.png")
 
 
-    plt.clf()
-    longs.pnl.cumsum().plot(title="PNL cumulated sum - Long", xlabel="Time", ylabel="PNL")
-    plt.savefig(f"{result['plots_dirpath']}pnl_cumsum_long.png")
-
-    plt.clf()
-    shrts.pnl.cumsum().plot(title="PNL cumulated sum - Short", xlabel="Time", ylabel="PNL")
-    plt.savefig(f"{result['plots_dirpath']}pnl_cumsum_shrt.png")
-
-    adg = (sdf.equity / sdf.equity.iloc[0]) ** (1 / ((sdf.timestamp - sdf.timestamp.iloc[0]) / (1000 * 60 * 60 * 24)))
-    plt.clf()
-    adg.plot(title="Average daily gain", xlabel="Time", ylabel="Average daily gain")
-    plt.savefig(f"{result['plots_dirpath']}adg.png")
-
-    print('plotting backtest whole and in chunks...')
-    n_parts = max(3, int(round_up(result['n_days'] / 14, 1.0)))
-    for z in range(n_parts):
-        start_ = z / n_parts
-        end_ = (z + 1) / n_parts
-        print(f'{z} of {n_parts} {start_ * 100:.2f}% to {end_ * 100:.2f}%')
-        fig = plot_fills(df, fdf.iloc[int(len(fdf) * start_):int(len(fdf) * end_)], bkr_thr=0.1, title=f'Fills {z+1} of {n_parts}')
-        if fig is not None:
-            fig.savefig(f"{result['plots_dirpath']}backtest_{z + 1}of{n_parts}.png")
-        else:
-            print('no fills...')
-    fig = plot_fills(df, fdf, bkr_thr=0.1, plot_whole_df=True, title='Overview Fills')
-    fig.savefig(f"{result['plots_dirpath']}whole_backtest.png")
-
-    print('plotting pos sizes...')
-    plt.clf()
-    longs.psize.plot()
-    shrts.psize.plot(title="Position size in terms of contracts", xlabel="Time", ylabel="Position size")
-    plt.savefig(f"{result['plots_dirpath']}psizes_plot.png")
-
-
-def plot_fills(df, fdf_, side: int = 0, bkr_thr=0.1, plot_whole_df: bool = False, title = ''):
+def plot_fills(df, fdf_, side: int = 0, plot_whole_df: bool = False, title=""):
     if fdf_.empty:
         return
     plt.clf()
-    fdf = fdf_.set_index('timestamp')
-    dfc = df#.iloc[::max(1, int(len(df) * 0.00001))]
-    if dfc.index.name != 'timestamp':
-        dfc = dfc.set_index('timestamp')
+    fdf = fdf_.set_index("timestamp") if fdf_.index.name != "timestamp" else fdf_
+    dfc = df  # .iloc[::max(1, int(len(df) * 0.00001))]
+    if dfc.index.name != "timestamp":
+        dfc = dfc.set_index("timestamp")
     if not plot_whole_df:
         dfc = dfc[(dfc.index > fdf.index[0]) & (dfc.index < fdf.index[-1])]
-        dfc = dfc.loc[fdf.index[0]:fdf.index[-1]]
-    dfc.price.plot(style='y-',title=title, xlabel="Time", ylabel="Price + Fills")
-
+        dfc = dfc.loc[fdf.index[0] : fdf.index[-1]]
+    dfc.price.plot(style="y-", title=title, xlabel="Time", ylabel="Price + Fills")
+    if "ema_band_lower" in dfc.columns and "ema_band_upper" in dfc.columns:
+        dfc.ema_band_lower.plot(style="b--")
+        dfc.ema_band_upper.plot(style="r--")
     if side >= 0:
-        longs = fdf[fdf.type.str.contains('long')]
-        lientry = longs[longs.type.str.contains('ientry')]
-        lrentry = longs[longs.type.str.contains('rentry')]
-        lnclose = longs[longs.type.str.contains('nclose')]
-        lsclose = longs[longs.type.str.contains('sclose')]
-        ldca = longs[longs.type.str.contains('secondary')]
-        lientry.price.plot(style='b.')
-        lrentry.price.plot(style='b.')
-        lnclose.price.plot(style='r.')
-        lsclose.price.plot(style=('rx'))
-        ldca.price.plot(style='go')
+        longs = fdf[fdf.type.str.contains("long")]
 
-        longs.where(longs.pprice != 0.0).pprice.fillna(method='ffill').plot(style='b--')
+        longs[longs.type.str.contains("rentry") | longs.type.str.contains("ientry")].price.plot(
+            style="bo"
+        )
+        longs[longs.type.str.contains("secondary")].price.plot(style="go")
+        longs[longs.type == "long_nclose"].price.plot(style="ro")
+        longs[
+            (longs.type.str.contains("unstuck_entry")) | (longs.type == "clock_entry_long")
+        ].price.plot(style="bx")
+        longs[
+            (longs.type.str.contains("unstuck_close")) | (longs.type == "clock_close_long")
+        ].price.plot(style="rx")
+
+        lppu = longs[(longs.pprice != longs.pprice.shift(1)) & (longs.pprice != 0.0)]
+        for i in range(len(lppu) - 1):
+            plt.plot(
+                [lppu.index[i], lppu.index[i + 1]], [lppu.pprice.iloc[i], lppu.pprice.iloc[i]], "b--"
+            )
     if side <= 0:
-        shrts = fdf[fdf.type.str.contains('shrt')]
-        sientry = shrts[shrts.type.str.contains('ientry')]
-        srentry = shrts[shrts.type.str.contains('rentry')]
-        snclose = shrts[shrts.type.str.contains('nclose')]
-        ssclose = shrts[shrts.type.str.contains('sclose')]
-        sdca = shrts[shrts.type.str.contains('secondary')]
-        sientry.price.plot(style='r.')
-        srentry.price.plot(style='r.')
-        snclose.price.plot(style='b.')
-        ssclose.price.plot(style=('bx'))
-        sdca.price.plot(style='go')
-        shrts.where(shrts.pprice != 0.0).pprice.fillna(method='ffill').plot(style='r--')
+        shorts = fdf[fdf.type.str.contains("short")]
 
-    if 'bkr_price' in fdf.columns:
-        fdf.bkr_price.where(fdf.bkr_diff < bkr_thr, np.nan).plot(style='k--')
+        shorts[shorts.type.str.contains("rentry") | shorts.type.str.contains("ientry")].price.plot(
+            style="ro"
+        )
+        shorts[shorts.type.str.contains("secondary")].price.plot(style="go")
+        shorts[shorts.type == "short_nclose"].price.plot(style="bo")
+        shorts[
+            (shorts.type.str.contains("unstuck_entry")) | (shorts.type == "clock_entry_short")
+        ].price.plot(style="rx")
+        shorts[
+            (shorts.type.str.contains("unstuck_close")) | (shorts.type == "clock_close_short")
+        ].price.plot(style="bx")
+
+        sppu = shorts[(shorts.pprice != shorts.pprice.shift(1)) & (shorts.pprice != 0.0)]
+        for i in range(len(sppu) - 1):
+            plt.plot(
+                [sppu.index[i], sppu.index[i + 1]], [sppu.pprice.iloc[i], sppu.pprice.iloc[i]], "r--"
+            )
+
     return plt

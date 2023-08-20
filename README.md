@@ -1,10 +1,11 @@
 ![Passivbot](docs/images/pbot_logo_full.svg)
 
-# Trading bot running on Bybit and Binance Futures
+# Trading bot running on Bybit, Binance, OKX, Kucoin and Bitget
 
 :warning: **Use at own risk** :warning:
 
-v5.2.0 
+v5.9.11
+
 
 ## Overview
 
@@ -17,7 +18,6 @@ automatically creating and cancelling limit buy and sell orders.
 
 Because passivbot's live behavior is deterministic, it may be simulated on historical price data, using the included backtester.  
 Also included is an optimizer, which finds better configurations by iterating thousands of backtests with different candidates.  
-The bot can be controlled via Telegram.
 
 The strategy is integrated -- the bot only needs a predefined configuration to run.
 
@@ -28,7 +28,9 @@ The strategy is integrated -- the bot only needs a predefined configuration to r
 
 ## Pre-optimized configurations
 
-A number of pre-optimized configurations for Passivbot can be found at https://github.com/JohnKearney1/PassivBot-Configurations.
+Pre-optimized configurations for Passivbot can be found at https://github.com/JohnKearney1/PassivBot-Configurations.  
+
+See also https://pbconfigdb.scud.dedyn.io/
 
 ## Documentation:
 
@@ -41,6 +43,29 @@ See also https://www.futuresboard.xyz/guides.html
 [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/QAF2H2UmzZ)
 
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/passivbot_futures)
+
+## Referrals and Tip Jar
+
+https://accounts.binance.me/en/register?ref=TII4B07C  
+https://partner.bybit.com/b/passivbot  
+https://partner.bitget.com/bg/Y8FU1W  
+https://www.okx.com/join/PASSIVBOT  (20% rebate)
+
+https://www.buymeacoffee.com/enarjord  
+
+Tether USD (USDT):  
+- USDT Solana:  
+9hUCHBQA261PU6rUSbwgMoxn8nrdcXPAYgbASRgA8dtm  
+- USDT Binance Smart Chain BEP20:  
+0x574cad69595fe80c6424ea21988ca0e504cd90cc  
+- USDT Matic Polygon:  
+0x574cad69595fe80c6424ea21988ca0e504cd90cc  
+
+Monero (XMR):  
+49gUQ1jasDK23tJTMCvP4mQUUwndeLWAwSgdCFn6ovmRKXZAjQnVp2JZ2K4UuDDdYMNam1HE8ELZoWdeJPRfYEa9QSEK6XZ
+
+Bitcoin (BTC):  
+bc1qcc3kr9gudg35gnsljg64zeaurt0y24pfej36w6
 
 ## License
 

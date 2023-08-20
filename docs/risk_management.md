@@ -9,30 +9,30 @@ Passivbot uses only (unleveraged) wallet balance in its calculations,
 so adjusting leverage on exchange will make no difference on risk, profit or bot behavior,  
 as long as leverage is set high enough for the bot to make its grid according to the configuration.
 
-## PBR
+## Wallet Exposure
 
 To measure a position's risk, passivbot finds the ratio of position size to total unleveraged balance.  
-The formula for Position cost to Balance Ratio (PBR) is
+The formula for wallet exposure is
 
-`pbr = (position_size * position_price) / unleveraged_wallet_balance` for linear,  
-`pbr = (position_size / position_price) / unleveraged_wallet_balance` for inverse markets.
+`wallet_exposure = (position_size * position_price) / unleveraged_wallet_balance` for linear,  
+`wallet_exposure = (position_size / position_price) / unleveraged_wallet_balance` for inverse markets.
 
-pbr==0.0 means no position
-pbr==1.0 means 100% of unleveraged wallet balance is in position.
-pbr==4.0 means 400% of unleveraged wallet balance is in position.
+wallet_exposure==0.0 means no position
+wallet_exposure==1.0 means 100% of unleveraged wallet balance is in position.
+wallet_exposure==4.0 means 400% of unleveraged wallet balance is in position.
 
 E.g. if wallet balance is $1000, linear long position size is 100.0 and position price is 35.0,  
-then pbr is `100 * 35 / 1000 == 3.5`
+then wallet_exposure is `100 * 35 / 1000 == 3.5`
 
-## PBR Limit
+## Wallet Exposure Limit
 
-Each bot is configured with a parameter pbr_limit, greater than which the bot will not allow a position's pbr to grow.
+Each bot is configured with a parameter wallet_exposure_limit, greater than which the bot will not allow a position's wallet_exposure to grow.
 
-For example, if pbr_limit=0.6, the bot will not make any more entries when a position's pbr >= 0.6.
+For example, if wallet_exposure_limit=0.6, the bot will not make any more entries when a position's wallet_exposure >= 0.6.
 
 ## Bankruptcy and liquidation
 
-Bankruptcy is defined as when `equity (balance + unrealized_pnl) == 0.0`, that is, when total debt is equal to total assets.
+Bankruptcy is defined as when `equity == (balance + unrealized_pnl) == 0.0`, that is, when total debt is equal to total assets.
 
 Liquidation happens when the exchange force closes a position to avoid it going into negative equity.  
 This usually happens before actual bankruptcy is reached, in order for exchange to cover slippage costs.
@@ -41,21 +41,21 @@ Bankruptcy price may be calculated from position and balance.
 
 E.g.  
 For linear long:
-If pbr==1.0, bankruptcy price is zero.  
-If pbr==2.0, bankruptcy price is 50% lower than pos price.  
-If pbr==3.0, bankruptcy price is 33.33% lower than pos price.  
-If pbr==10.0, bankruptcy price is 10% lower than pos price.  
+If wallet_exposure==1.0, bankruptcy price is zero.  
+If wallet_exposure==2.0, bankruptcy price is 50% lower than pos price.  
+If wallet_exposure==3.0, bankruptcy price is 33.33% lower than pos price.  
+If wallet_exposure==10.0, bankruptcy price is 10% lower than pos price.  
 
 For inverse long:
-If pbr==1.0, bankruptcy price is 50% lower than pos price.  
-If pbr==2.0, bankruptcy price is 33.33% lower than pos price.  
-If pbr==3.0, bankruptcy price is 25% lower than pos price.  
-If pbr==10.0, bankruptcy price is 9.09% lower than pos price.  
+If wallet_exposure==1.0, bankruptcy price is 50% lower than pos price.  
+If wallet_exposure==2.0, bankruptcy price is 33.33% lower than pos price.  
+If wallet_exposure==3.0, bankruptcy price is 25% lower than pos price.  
+If wallet_exposure==10.0, bankruptcy price is 9.09% lower than pos price.  
 
 
 ## Getting stuck
 
-When a bot has no more entries left in its entry grid and pbr_limit is reached or exceeded, it is termed "getting stuck".  
+When a bot has no more entries left in its entry grid and wallet_exposure_limit is reached or exceeded, it is termed "getting stuck".  
 If a bot is stuck in a long position and the price keeps falling, the distance between position price and market price grows larger,  
 and closing the position in profit becomes less likely.
 
@@ -67,10 +67,9 @@ However, the larger the position size, the higher the risk of liquidation, shoul
 
 While correlation is observed in most markets in general and in crypto markets in particular  
 (e.g. if the price of bitcoin crashes, most other cryptos tend to follow closely),  
-it is also observed that the dead cat often bounces at slightly different times.
+it is also observed that the dead cat often bounces at slightly different times and different heights.
 
 A thousand coin flips will converge on 500 heads and 500 tails.  One single coin flip will be either heads or tails.  
 Say that on average there's a 30% chance of getting stuck in the typical market crash.  
-It may be more desirable to end up with 3 out of 10 bots stuck with pbr==0.1 each than with 1 single bot stuck with pbr==1.0.
-
+It may be more desirable to end up with 3 out of 10 bots stuck with wallet_exposure==0.1 each than with 1 single bot stuck with wallet_exposure==1.0.
 

@@ -343,12 +343,13 @@ backtests/
 !config/backtest/default.hjson
 config/
 historical_data/
+results*
 
 # Config files
 api-keys.json
 !live_configs/binance_default.json
 !live_configs/bybit_default.json
 live_configs/*
-
+configs/live/multigrid.json
 # Reports
 reports/*
