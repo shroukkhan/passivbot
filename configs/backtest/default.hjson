@@ -9,11 +9,11 @@
   latency_simulation_ms: 1000
 
   # specify starting balance in terms of margin token (i.e. usdt for usdt-m, coin for inverse coin-m)
-  starting_balance: 1000.0
+  starting_balance: 1000
 
   # format YYYY-MM-DD
-  start_date: 2020-01-01
-  end_date: 2023-03-17
+  start_date: 2023-03-01
+  end_date: 2023-08-19
 
   # non default historical data path
   # defaults to local dir if unspecified
@@ -34,6 +34,6 @@
 
   # interactive plot configs:
   enable_interactive_plot: true
-  plot_theme: light
+  plot_theme: dark
   plot_candles_interval: 1m
 }

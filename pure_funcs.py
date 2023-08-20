@@ -1430,6 +1430,57 @@ def configs_are_equal(cfg0, cfg1) -> bool:
 
 def shorten_custom_id(id_: str) -> str:
     id0 = id_
-    for k_, r_ in [("clock", "clk"), ("close", "cls"), ("entry", "etr"), ("_", "")]:
+    for k_, r_ in [
+        ("clock", "clk"),
+        ("close", "cls"),
+        ("entry", "etr"),
+        ("_", ""),
+        ("normal", "nrml"),
+        ("long", "lng"),
+        ("short", "shrt"),
+        ("primary", "prm"),
+        ("unstuck", "ustk"),
+    ]:
         id0 = id0.replace(k_, r_)
     return id0
+
+
+def determine_pos_side_ccxt(open_order: dict) -> str:
+    if "info" in open_order:
+        oo = open_order["info"]
+    else:
+        oo = open_order
+    keys_map = {key.lower().replace("_", ""): key for key in oo}
+    for poskey in ["posside", "positionside"]:
+        if poskey in keys_map:
+            return oo[keys_map[poskey]].lower()
+    if oo["side"].lower() == "buy":
+        if "reduceonly" in keys_map:
+            if oo[keys_map["reduceonly"]]:
+                return "short"
+            else:
+                return "long"
+        if "closedsize" in keys_map:
+            if float(oo[keys_map["closedsize"]]) != 0.0:
+                return "short"
+            else:
+                return "long"
+    if oo["side"].lower() == "sell":
+        if "reduceonly" in keys_map:
+            if oo[keys_map["reduceonly"]]:
+                return "long"
+            else:
+                return "short"
+        if "closedsize" in keys_map:
+            if float(oo[keys_map["closedsize"]]) != 0.0:
+                return "long"
+            else:
+                return "short"
+    for key in ["order_link_id", "clOrdId", "clientOid"]:
+        if key in oo:
+            if "long" in oo[key] or "lng" in oo[key]:
+                return "long"
+            if "short" in oo[key] or "shrt" in oo[key]:
+                return "short"
+    return "both"
+

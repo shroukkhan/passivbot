@@ -1,0 +1,3 @@
+python .\backtest.py -s WAVESUSDT ...config path .....
+
+
