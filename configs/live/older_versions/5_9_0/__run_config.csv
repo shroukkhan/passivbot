@@ -3,7 +3,7 @@
 1,CHZ,long_short,n,n,0.07,0.04,binance_01
 2,DOGE,long_short,n,gs,0.07,0.04,binance_01
 3,DOT,long_short,n,n,0.07,0.04,binance_01
-4,EOS,long_short,n,n,0.07,0.04,binance_01
+4,EOS,long_short,gs,gs,0.07,0.04,binance_01
 5,HBAR,long_short,n,n,0.07,0.04,binance_01
 6,LINK,long_short,n,n,0.07,0.04,binance_01
 7,MANA,long_short,n,n,0.07,0.04,binance_01
@@ -11,6 +11,6 @@
 9,SAND,long_short,n,n,0.07,0.04,binance_01
 10,SUSHI,long_short,n,n,0.07,0.04,binance_01
 11,XRP,long_short,n,n,0.07,0.04,binance_01
-12,XTZ,long_short,n,n,0.07,0.04,binance_01
+12,XTZ,long_short,gs,gs,0.07,0.04,binance_01
 13,DYDX,long_short,n,n,0.07,0.04,binance_02
 14,OP,long_short,n,m,0.07,0.04,binance_03
