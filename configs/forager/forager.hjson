@@ -1,0 +1,174 @@
+{
+  // supported exchanges: [kucoin, okx, bybit, binance]
+  user: binance_01
+  twe_long: 1.8
+  twe_short: 1.2
+  n_longs: 16
+  n_shorts: 8
+  max_min_cost: 5.0
+  n_ohlcvs: 100
+  ohlcv_interval: 1h
+  leverage: 10
+  price_distance_threshold: 0.3
+
+  // set to zero to disable
+  volume_clip_threshold: 0.51  // include 51% of the highest volume coins
+  unilateralness_clip_threshold: 0.49 // include 49% of symbols with lowest unilateralness
+  noisiness_clip_threshold: 0.52 // include 52% of symbols with highest noisiness
+
+  max_n_panes: 10
+
+  // forager restarts bots every x minutes
+  update_interval_minutes: 60
+
+  // Don't create bots with these symbols
+  symbols_to_ignore: [
+    BTCUSDT
+    ETHUSDT
+  ]
+
+  // if symbol is missing from live_configs_map, default to this config
+  default_config_path: configs/live/clock_mode.example.json
+
+  // if true, allow only symbols present in live_configs_map or live_configs_map_{long/short}
+  // if false, will use default_config_path when symbol is missing from live_configs_map
+  approved_symbols_only: true
+
+  // if symbol is present in live_configs_map_{long/short}, use that config for {long/short}
+  // elif symbol is present in live_configs_map, use that config for {long/short}
+  // else use default_config_path for {long/short}
+
+  live_configs_map: {
+    
+  }
+
+  // will override long configs from live_configs_map
+  live_configs_map_long: {
+    CHZUSDT: configs/live/longs/CHZUSDT.json
+    RSRUSDT: configs/live/longs/RSRUSDT.json
+    RNDRUSDT: configs/live/longs/RNDRUSDT.json
+    HBARUSDT: configs/live/longs/HBARUSDT.json
+    ALPHAUSDT: configs/live/longs/ALPHAUSDT.json
+    CRVUSDT: configs/live/longs/CRVUSDT.json
+    ONEUSDT: configs/live/longs/ONEUSDT.json
+    DYDXUSDT: configs/live/longs/DYDXUSDT.json
+    EGLDUSDT: configs/live/longs/EGLDUSDT.json
+    XRPUSDT: configs/live/longs/XRPUSDT.json
+    ROSEUSDT: configs/live/longs/ROSEUSDT.json
+    AAVEUSDT: configs/live/longs/AAVEUSDT.json
+    ARUSDT: configs/live/longs/ARUSDT.json
+    KSMUSDT: configs/live/longs/KSMUSDT.json
+    FTMUSDT: configs/live/longs/FTMUSDT.json
+    GALAUSDT: configs/live/longs/GALAUSDT.json
+    BAKEUSDT: configs/live/longs/BAKEUSDT.json
+    FOOTBALLUSDT: configs/live/longs/FOOTBALLUSDT.json
+    ZILUSDT: configs/live/longs/ZILUSDT.json
+    ATOMUSDT: configs/live/longs/ATOMUSDT.json
+    ANTUSDT: configs/live/longs/ANTUSDT.json
+    GRTUSDT: configs/live/longs/GRTUSDT.json
+    ENJUSDT: configs/live/longs/ENJUSDT.json
+    1000SHIBUSDT: configs/live/longs/1000SHIBUSDT.json
+    BALUSDT: configs/live/longs/BALUSDT.json
+    LPTUSDT: configs/live/longs/LPTUSDT.json
+    ASTRUSDT: configs/live/longs/ASTRUSDT.json
+    MKRUSDT: configs/live/longs/MKRUSDT.json
+    DOTUSDT: configs/live/longs/DOTUSDT.json
+    TOMOUSDT: configs/live/longs/TOMOUSDT.json
+    ANKRUSDT: configs/live/longs/ANKRUSDT.json
+    MATICUSDT: configs/live/longs/MATICUSDT.json
+    KNCUSDT: configs/live/longs/KNCUSDT.json
+    RVNUSDT: configs/live/longs/RVNUSDT.json
+    TRUUSDT: configs/live/longs/TRUUSDT.json
+    IMXUSDT: configs/live/longs/IMXUSDT.json
+    BNBUSDT: configs/live/longs/BNBUSDT.json
+    ICPUSDT: configs/live/longs/ICPUSDT.json
+    OPUSDT: configs/live/longs/OPUSDT.json
+    1000XECUSDT: configs/live/longs/1000XECUSDT.json
+    FLOWUSDT: configs/live/longs/FLOWUSDT.json
+    FETUSDT: configs/live/longs/FETUSDT.json
+    SFPUSDT: configs/live/longs/SFPUSDT.json
+    API3USDT: configs/live/longs/API3USDT.json
+    MINAUSDT: configs/live/longs/MINAUSDT.json
+    TUSDT: configs/live/longs/TUSDT.json
+    CKBUSDT: configs/live/longs/CKBUSDT.json
+    NEARUSDT: configs/live/longs/NEARUSDT.json
+    OGNUSDT: configs/live/longs/OGNUSDT.json
+    MANAUSDT: configs/live/longs/MANAUSDT.json
+    XLMUSDT: configs/live/longs/XLMUSDT.json
+    NEOUSDT: configs/live/longs/NEOUSDT.json
+    AGIXUSDT: configs/live/longs/AGIXUSDT.json
+    DOGEUSDT: configs/live/longs/DOGEUSDT.json
+    DGBUSDT: configs/live/longs/DGBUSDT.json
+    LDOUSDT: configs/live/longs/LDOUSDT.json
+    QNTUSDT: configs/live/longs/QNTUSDT.json
+    OMGUSDT: configs/live/longs/OMGUSDT.json
+    PHBUSDT: configs/live/longs/PHBUSDT.json
+    COMPUSDT: configs/live/longs/COMPUSDT.json
+    HIGHUSDT: configs/live/longs/HIGHUSDT.json
+    ARPAUSDT: configs/live/longs/ARPAUSDT.json
+    KAVAUSDT: configs/live/longs/KAVAUSDT.json
+  }
+
+  // will override short configs from live_configs_map
+  live_configs_map_short: {
+    BNBUSDT: configs/live/shorts/BNBUSDT.json
+    AUDIOUSDT: configs/live/shorts/AUDIOUSDT.json
+    UNFIUSDT: configs/live/shorts/UNFIUSDT.json
+    SUSHIUSDT: configs/live/shorts/SUSHIUSDT.json
+    ANTUSDT: configs/live/shorts/ANTUSDT.json
+    ATOMUSDT: configs/live/shorts/ATOMUSDT.json
+    JASMYUSDT: configs/live/shorts/JASMYUSDT.json
+    OCEANUSDT: configs/live/shorts/OCEANUSDT.json
+    XMRUSDT: configs/live/shorts/XMRUSDT.json
+    LUNA2USDT: configs/live/shorts/LUNA2USDT.json
+    ZECUSDT: configs/live/shorts/ZECUSDT.json
+    APEUSDT: configs/live/shorts/APEUSDT.json
+    DOGEUSDT: configs/live/shorts/DOGEUSDT.json
+    BNXUSDT: configs/live/shorts/BNXUSDT.json
+    BALUSDT: configs/live/shorts/BALUSDT.json
+    ZENUSDT: configs/live/shorts/ZENUSDT.json
+    GMXUSDT: configs/live/shorts/GMXUSDT.json
+    1000LUNCUSDT: configs/live/shorts/1000LUNCUSDT.json
+    DARUSDT: configs/live/shorts/DARUSDT.json
+    KSMUSDT: configs/live/shorts/KSMUSDT.json
+    ZILUSDT: configs/live/shorts/ZILUSDT.json
+    VETUSDT: configs/live/shorts/VETUSDT.json
+    ACHUSDT: configs/live/shorts/ACHUSDT.json
+    ENJUSDT: configs/live/shorts/ENJUSDT.json
+    CKBUSDT: configs/live/shorts/CKBUSDT.json
+    IOTXUSDT: configs/live/shorts/IOTXUSDT.json
+    CTKUSDT: configs/live/shorts/CTKUSDT.json
+    SANDUSDT: configs/live/shorts/SANDUSDT.json
+    BANDUSDT: configs/live/shorts/BANDUSDT.json
+    ONEUSDT: configs/live/shorts/ONEUSDT.json
+    ARUSDT: configs/live/shorts/ARUSDT.json
+    MATICUSDT: configs/live/shorts/MATICUSDT.json
+    PERPUSDT: configs/live/shorts/PERPUSDT.json
+    NEARUSDT: configs/live/shorts/NEARUSDT.json
+    BLUEBIRDUSDT: configs/live/shorts/BLUEBIRDUSDT.json
+    RLCUSDT: configs/live/shorts/RLCUSDT.json
+    AGIXUSDT: configs/live/shorts/AGIXUSDT.json
+    ANKRUSDT: configs/live/shorts/ANKRUSDT.json
+    1000SHIBUSDT: configs/live/shorts/1000SHIBUSDT.json
+    HOTUSDT: configs/live/shorts/HOTUSDT.json
+    GALUSDT: configs/live/shorts/GALUSDT.json
+    GALAUSDT: configs/live/shorts/GALAUSDT.json
+    REEFUSDT: configs/live/shorts/REEFUSDT.json
+    ASTRUSDT: configs/live/shorts/ASTRUSDT.json
+    RVNUSDT: configs/live/shorts/RVNUSDT.json
+    DOTUSDT: configs/live/shorts/DOTUSDT.json
+    TRBUSDT: configs/live/shorts/TRBUSDT.json
+    DASHUSDT: configs/live/shorts/DASHUSDT.json
+    CHRUSDT: configs/live/shorts/CHRUSDT.json
+    PEOPLEUSDT: configs/live/shorts/PEOPLEUSDT.json
+    TRBUSDT: configs/live/shorts/TRBUSDT.json
+    DGBUSDT: configs/live/shorts/DGBUSDT.json
+    SKLUSDT: configs/live/shorts/SKLUSDT.json
+    CHZUSDT: configs/live/shorts/CHZUSDT.json
+    ENSUSDT: configs/live/shorts/ENSUSDT.json
+    DEFIUSDT: configs/live/shorts/DEFIUSDT.json
+    FXSUSDT: configs/live/shorts/FXSUSDT.json
+    COMPUSDT: configs/live/shorts/COMPUSDT.json
+  }
+
+}
