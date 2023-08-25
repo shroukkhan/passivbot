@@ -25,6 +25,7 @@
   symbols_to_ignore: [
     BTCUSDT
     ETHUSDT
+    LINKUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
