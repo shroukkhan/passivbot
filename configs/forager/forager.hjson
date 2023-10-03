@@ -26,6 +26,7 @@
     BTCUSDT
     ETHUSDT
     LINKUSDT
+    TRBUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -158,11 +159,9 @@
     ASTRUSDT: configs/live/shorts/ASTRUSDT.json
     RVNUSDT: configs/live/shorts/RVNUSDT.json
     DOTUSDT: configs/live/shorts/DOTUSDT.json
-    TRBUSDT: configs/live/shorts/TRBUSDT.json
     DASHUSDT: configs/live/shorts/DASHUSDT.json
     CHRUSDT: configs/live/shorts/CHRUSDT.json
     PEOPLEUSDT: configs/live/shorts/PEOPLEUSDT.json
-    TRBUSDT: configs/live/shorts/TRBUSDT.json
     DGBUSDT: configs/live/shorts/DGBUSDT.json
     SKLUSDT: configs/live/shorts/SKLUSDT.json
     CHZUSDT: configs/live/shorts/CHZUSDT.json
