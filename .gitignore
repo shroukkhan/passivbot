@@ -339,6 +339,7 @@ $RECYCLE.BIN/
 
 # Backtest files
 backtests/
+backtests_live_config/
 !config/optimize/default.hjson
 !config/backtest/default.hjson
 config/
@@ -354,4 +355,11 @@ configs/live/multigrid.json
 # Reports
 reports/*
 
+#bat files that start with backtest 
+backtest*.bat
+
+downloaded_configs/*
+*.xlsx
+.metals/*
+logs/*
 ~$*
