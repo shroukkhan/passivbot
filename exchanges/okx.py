@@ -10,9 +10,12 @@ import aiohttp
 import numpy as np
 import ccxt.async_support as ccxt
 
+from procedures import load_ccxt_version
+
+ccxt_version_req = load_ccxt_version()
 assert (
-    ccxt.__version__ == "4.0.57"
-), f"Currently ccxt {ccxt.__version__} is installed. Please pip reinstall requirements.txt or install ccxt v4.0.57 manually"
+    ccxt.__version__ == ccxt_version_req
+), f"Currently ccxt {ccxt.__version__} is installed. Please pip reinstall requirements.txt or install ccxt v{ccxt_version_req} manually"
 import uuid
 
 from passivbot import Bot, logging
@@ -152,7 +155,9 @@ class OKXBot(Bot):
                 self.okx.fetch_positions(),
                 self.okx.fetch_balance(),
             )
-            positions = [e for e in positions if e["symbol"] == self.symbol]
+            positions = [
+                e for e in positions if e["symbol"] == self.symbol and e["marginMode"] == "cross"
+            ]
             position = {
                 "long": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
                 "short": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
@@ -177,18 +182,18 @@ class OKXBot(Bot):
                             if p["liquidationPrice"]
                             else 0.0,
                         }
-            if balance:
-                for elm in balance["info"]["data"]:
-                    for elm2 in elm["details"]:
-                        if elm2["ccy"] == self.quote:
-                            position["wallet_balance"] = float(elm2["cashBal"])
-                            break
+            for elm in balance["info"]["data"]:
+                for elm2 in elm["details"]:
+                    if elm2["ccy"] == self.quote:
+                        position["wallet_balance"] = float(elm2["cashBal"])
+                        break
             return position
         except Exception as e:
             logging.error(f"error fetching pos or balance {e}")
             print_async_exception(positions)
             print_async_exception(balance)
             traceback.print_exc()
+            return None
 
     async def execute_orders(self, orders: [dict]) -> [dict]:
         if len(orders) == 0:

@@ -8,7 +8,7 @@ from procedures import load_ccxt_version
 
 ccxt_version_req = load_ccxt_version()
 assert (
-        ccxt.__version__ == ccxt_version_req
+    ccxt.__version__ == ccxt_version_req
 ), f"Currently ccxt {ccxt.__version__} is installed. Please pip reinstall requirements.txt or install ccxt v{ccxt_version_req} manually"
 import json
 import hjson
@@ -95,19 +95,19 @@ def sort_symbols(ohlcvs, config):
         for elm in by_func:
             print(elm)
         by_func = by_func[
-                  : max(int(round(len(by_func) * config[f"{title}_clip_threshold"])), min_n_syms)
-                  ]
+            : max(int(round(len(by_func) * config[f"{title}_clip_threshold"])), min_n_syms)
+        ]
         filtered_syms = [elm[1] for elm in by_func]
     return by_func
 
 
 def generate_yaml(
-        sorted_syms,
-        config,
-        current_positions_long,
-        current_positions_short,
-        current_open_orders_long,
-        current_open_orders_short,
+    sorted_syms,
+    config,
+    current_positions_long,
+    current_positions_short,
+    current_open_orders_long,
+    current_open_orders_short,
 ):
     yaml = f"session_name: {config['user']}\nwindows:\n"
     user = config["user"]
@@ -402,10 +402,10 @@ async def dump_yaml(cc, config):
                 for symbol in symbols_map_inv:
                     fnamesf = [f for f in fnames if symbol in f]
                     if fnamesf and not any(
-                            [
-                                symbol in x
-                                for x in [config[f"live_configs_map_{side}"], config["live_configs_map"]]
-                            ]
+                        [
+                            symbol in x
+                            for x in [config[f"live_configs_map_{side}"], config["live_configs_map"]]
+                        ]
                     ):
                         config[f"live_configs_map_{side}"][symbol] = os.path.join(
                             config[f"live_configs_dir_{side}"], fnamesf[0]
@@ -428,7 +428,7 @@ async def dump_yaml(cc, config):
                         s
                         for s in approved
                         if (symbols_map_inv[s] in first_timestamps)
-                           and (first_timestamps[symbols_map_inv[s]] < first_timestamp_threshold)
+                        and (first_timestamps[symbols_map_inv[s]] < first_timestamp_threshold)
                     ]
                     removed = sorted(set(approved) - set(new_approved))
                     print(
@@ -439,10 +439,10 @@ async def dump_yaml(cc, config):
                 pass
     approved = sorted(set(approved) - set(config["symbols_to_ignore"]))
     if (config["approved_symbols_long"] or config["n_longs"] == 0) and (
-            config["approved_symbols_short"] or config["n_shorts"] == 0
+        config["approved_symbols_short"] or config["n_shorts"] == 0
     ):
         approved = set(approved) & (
-                set(config["approved_symbols_long"]) | set(config["approved_symbols_short"])
+            set(config["approved_symbols_long"]) | set(config["approved_symbols_short"])
         )
 
     print("getting current bots...")

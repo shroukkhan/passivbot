@@ -425,6 +425,7 @@ class Bot:
         self.ts_locked["update_position"] = time.time()
         try:
             position = await self.fetch_position()
+            assert position is not None
             position["wallet_balance"] = self.adjust_wallet_balance(position["wallet_balance"])
             # isolated equity, not cross equity
             position["equity"] = position["wallet_balance"] + calc_upnl(
@@ -1056,7 +1057,12 @@ class Bot:
                     elif self.short_mode != "manual":
                         to_create.append(elm)
 
-            to_cancel = sorted(to_cancel, key=lambda x: calc_diff(x["price"], self.price))
+            to_cancel = sorted(
+                to_cancel,
+                key=lambda x: calc_diff(
+                    x["price"] if x["price"] is not None else self.price, self.price
+                ),
+            )
             to_create = sorted(to_create, key=lambda x: calc_diff(x["price"], self.price))
 
             """

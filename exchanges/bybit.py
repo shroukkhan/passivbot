@@ -11,9 +11,12 @@ from pure_funcs import determine_pos_side_ccxt, floatify, calc_hash, ts_to_date_
 
 import ccxt.async_support as ccxt
 
+from procedures import load_ccxt_version
+
+ccxt_version_req = load_ccxt_version()
 assert (
-    ccxt.__version__ == "4.0.57"
-), f"Currently ccxt {ccxt.__version__} is installed. Please pip reinstall requirements.txt or install ccxt v4.0.57 manually"
+    ccxt.__version__ == ccxt_version_req
+), f"Currently ccxt {ccxt.__version__} is installed. Please pip reinstall requirements.txt or install ccxt v{ccxt_version_req} manually"
 
 
 class BybitBot(Bot):
@@ -103,7 +106,7 @@ class BybitBot(Bot):
                     "order_id": e["id"],
                     "custom_id": e["clientOrderId"],
                     "symbol": e["symbol"],
-                    "price": e["price"],
+                    "price": e["price"] if e["price"] is not None else self.price,
                     "qty": e["amount"],
                     "type": e["type"],
                     "side": e["side"],
@@ -118,9 +121,6 @@ class BybitBot(Bot):
             traceback.print_exc()
             return False
 
-    async def transfer_from_derivatives_to_spot(self, coin: str, amount: float):
-        return
-
     async def get_server_time(self):
         server_time = None
         try:
@@ -133,17 +133,17 @@ class BybitBot(Bot):
 
     async def fetch_position(self) -> dict:
         positions, balance = None, None
+        position = {
+            "long": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
+            "short": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
+            "wallet_balance": 0.0,
+            "equity": 0.0,
+        }
         try:
             positions, balance = await asyncio.gather(
                 self.cc.fetch_positions(self.symbol), self.cc.fetch_balance()
             )
             positions = [e for e in positions if e["symbol"] == self.symbol]
-            position = {
-                "long": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
-                "short": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
-                "wallet_balance": 0.0,
-                "equity": 0.0,
-            }
             if positions:
                 for p in positions:
                     if p["side"] == "long":
@@ -169,51 +169,7 @@ class BybitBot(Bot):
             print_async_exception(positions)
             print_async_exception(balance)
             traceback.print_exc()
-        return
-
-        positions, balance = None, None
-        try:
-            positions, balance = await asyncio.gather(
-                self.cc.fetch_positions(),
-                self.cc.fetch_balance(),
-            )
-            positions = [e for e in positions if e["symbol"] == self.symbol]
-            position = {
-                "long": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
-                "short": {"size": 0.0, "price": 0.0, "liquidation_price": 0.0},
-                "wallet_balance": 0.0,
-                "equity": 0.0,
-            }
-            if positions:
-                for p in positions:
-                    if p["side"] == "long":
-                        position["long"] = {
-                            "size": p["contracts"],
-                            "price": p["entryPrice"],
-                            "liquidation_price": p["liquidationPrice"]
-                            if p["liquidationPrice"]
-                            else 0.0,
-                        }
-                    elif p["side"] == "short":
-                        position["short"] = {
-                            "size": p["contracts"],
-                            "price": p["entryPrice"],
-                            "liquidation_price": p["liquidationPrice"]
-                            if p["liquidationPrice"]
-                            else 0.0,
-                        }
-            if balance:
-                for elm in balance["info"]["data"]:
-                    for elm2 in elm["details"]:
-                        if elm2["ccy"] == self.quote:
-                            position["wallet_balance"] = float(elm2["cashBal"])
-                            break
-            return position
-        except Exception as e:
-            logging.error(f"error fetching pos or balance {e}")
-            print_async_exception(positions)
-            print_async_exception(balance)
-            traceback.print_exc()
+            return None
 
     async def execute_orders(self, orders: [dict]) -> [dict]:
         return await self.execute_multiple(
@@ -289,7 +245,7 @@ class BybitBot(Bot):
     async def execute_cancellation(self, order: dict) -> dict:
         executed = None
         try:
-            executed = await self.cc.cancel_derivatives_order(order["order_id"], symbol=self.symbol)
+            executed = await self.cc.cancel_order(order["order_id"], symbol=self.symbol)
             return {
                 "symbol": executed["symbol"],
                 "side": order["side"],
@@ -345,6 +301,24 @@ class BybitBot(Bot):
             print_async_exception(ohlcvs)
             traceback.print_exc()
 
+    async def transfer_from_derivatives_to_spot(self, coin: str, amount: float):
+        transferred = None
+        try:
+            transferred = await self.cc.private_post_v5_asset_transfer_inter_transfer(
+                params={
+                    "transferId": str(uuid4()),
+                    "coin": coin,
+                    "amount": str(amount),
+                    "fromAccountType": "CONTRACT",
+                    "toAccountType": "SPOT",
+                }
+            )
+            return transferred
+        except Exception as e:
+            logging.error(f"error transferring from derivatives to spot {e}")
+            print_async_exception(transferred)
+            traceback.print_exc()
+
     async def get_all_income(
         self,
         symbol: str = None,
@@ -352,17 +326,30 @@ class BybitBot(Bot):
         income_type: str = "Trade",
         end_time: int = None,
     ):
-        return await self.fetch_income(symbol=symbol, start_time=start_time, end_time=end_time)
-
-    async def transfer_from_derivatives_to_spot(self, coin: str, amount: float):
-        transferred = None
-        try:
-            transferred = await self.cc.transfer(coin, amount, "CONTRACT", "SPOT")
-            return transferred
-        except:
-            logging.error(f"error transferring from derivatives to spot {e}")
-            print_async_exception(transferred)
-            traceback.print_exc()
+        if start_time is not None:
+            week = 1000 * 60 * 60 * 24 * 7
+            income = []
+            if end_time is None:
+                end_time = int(utc_ms() + 1000 * 60 * 60 * 24)
+            # bybit has limit of 7 days per pageinated fetch
+            # fetch multiple times
+            i = 1
+            while i < 52:  # limit n fetches to 52 (one year)
+                sts = end_time - week * i
+                ets = sts + week
+                sts = max(sts, start_time)
+                fetched = await self.fetch_income(symbol=symbol, start_time=sts, end_time=ets)
+                income.extend(fetched)
+                if sts <= start_time:
+                    break
+                i += 1
+                logging.debug(f"fetching income for more than a week {ts_to_date_utc(sts)}")
+                # print(f"fetching income for more than a week {ts_to_date_utc(sts)}")
+            return sorted(
+                {calc_hash(elm): elm for elm in income}.values(), key=lambda x: x["timestamp"]
+            )
+        else:
+            return await self.fetch_income(symbol=symbol, start_time=start_time, end_time=end_time)
 
     async def fetch_income(
         self,
@@ -371,30 +358,44 @@ class BybitBot(Bot):
         end_time: int = None,
     ):
         fetched = None
-        incomed = {}
+        income_d = {}
+        limit = 100
         try:
-            limit = 100
             params = {"category": "linear", "limit": limit}
             if symbol is not None:
                 params["symbol"] = symbol
+            if start_time is not None:
+                params["startTime"] = int(start_time)
             if end_time is not None:
                 params["endTime"] = int(end_time)
             fetched = await self.cc.private_get_v5_position_closed_pnl(params)
-            fetched["result"]["list"] = floatify(fetched["result"]["list"])
+            fetched["result"]["list"] = sorted(
+                floatify(fetched["result"]["list"]), key=lambda x: x["updatedTime"]
+            )
             while True:
                 if fetched["result"]["list"] == []:
                     break
+                # print(f"fetching income {ts_to_date_utc(fetched['result']['list'][-1]['updatedTime'])}")
+                logging.debug(
+                    f"fetching income {ts_to_date_utc(fetched['result']['list'][-1]['updatedTime'])}"
+                )
+                if (
+                    calc_hash(fetched["result"]["list"][0]) in income_d
+                    and calc_hash(fetched["result"]["list"][-1]) in income_d
+                ):
+                    break
                 for elm in fetched["result"]["list"]:
-                    incomed[calc_hash(elm)] = elm
+                    income_d[calc_hash(elm)] = elm
                 if start_time is None:
                     break
-                if fetched["result"]["list"][-1]["updatedTime"] <= start_time:
+                if fetched["result"]["list"][0]["updatedTime"] <= start_time:
+                    break
+                if not fetched["result"]["nextPageCursor"]:
                     break
                 params["cursor"] = fetched["result"]["nextPageCursor"]
                 fetched = await self.cc.private_get_v5_position_closed_pnl(params)
-                fetched["result"]["list"] = floatify(fetched["result"]["list"])
-                logging.debug(
-                    f"fetching income {ts_to_date_utc(fetched['result']['list'][-1]['updatedTime'])}"
+                fetched["result"]["list"] = sorted(
+                    floatify(fetched["result"]["list"]), key=lambda x: x["updatedTime"]
                 )
             return [
                 {
@@ -402,13 +403,14 @@ class BybitBot(Bot):
                     "income": elm["closedPnl"],
                     "token": "USDT",
                     "timestamp": elm["updatedTime"],
+                    "date": ts_to_date_utc(elm["updatedTime"]),
                     "info": elm,
                     "transaction_id": elm["orderId"],
                     "trade_id": elm["orderId"],
+                    "position_side": determine_pos_side_ccxt(elm),
                 }
-                for elm in sorted(incomed.values(), key=lambda x: x["updatedTime"])
+                for elm in sorted(income_d.values(), key=lambda x: x["updatedTime"])
             ]
-            return sorted(incomed.values(), key=lambda x: x["updatedTime"])
         except Exception as e:
             logging.error(f"error fetching income {e}")
             print_async_exception(fetched)
@@ -452,12 +454,15 @@ class BybitBot(Bot):
 
     async def init_exchange_config(self):
         try:
-            res = await self.cc.set_derivatives_margin_mode(
+            res = await self.cc.set_margin_mode(
                 marginMode="cross", symbol=self.symbol, params={"leverage": self.leverage}
             )
             logging.info(f"cross mode set {res}")
         except Exception as e:
-            logging.error(f"error setting cross mode: {e}")
+            if "margin mode is not modified" in str(e):
+                logging.info(str(e))
+            else:
+                logging.error(f"error setting cross mode: {e}")
         try:
             res = await self.cc.set_position_mode(hedged=True)
             logging.info(f"hedge mode set {res}")
@@ -467,4 +472,7 @@ class BybitBot(Bot):
             res = await self.cc.set_leverage(int(self.leverage), symbol=self.symbol)
             logging.info(f"leverage set {res}")
         except Exception as e:
-            logging.error(f"error setting leverage: {e}")
+            if "leverage not modified" in str(e):
+                logging.info(str(e))
+            else:
+                logging.error(f"error setting leverage: {e}")
