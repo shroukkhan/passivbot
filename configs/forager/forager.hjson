@@ -1,10 +1,10 @@
 {
   // supported exchanges: [kucoin, okx, bybit, binance]
   user: binance_01
-  twe_long: 0.5
+  twe_long: 1.2
   twe_short: 1
-  n_longs: 4
-  n_shorts: 5
+  n_longs: 9
+  n_shorts: 7
   max_min_cost: 12.0
   n_ohlcvs: 100
   ohlcv_interval: 1h
@@ -17,7 +17,8 @@
   noisiness_clip_threshold: 0.52 // include 52% of symbols with highest noisiness
 
   max_n_panes: 10
-
+d
+d
   // forager restarts bots every x minutes
   update_interval_minutes: 60
 
