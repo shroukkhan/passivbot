@@ -26,6 +26,10 @@
     ETHUSDT
     LINKUSDT
     TRBUSDT
+    SOLUSDT
+    ADAUSDT
+    AVAXUSDT
+    XRPUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
