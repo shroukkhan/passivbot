@@ -69,7 +69,6 @@
     FOOTBALLUSDT: configs/live/longs/FOOTBALLUSDT.json
     ZILUSDT: configs/live/longs/ZILUSDT.json
     ATOMUSDT: configs/live/longs/ATOMUSDT.json
-    ANTUSDT: configs/live/longs/ANTUSDT.json
     GRTUSDT: configs/live/longs/GRTUSDT.json
     ENJUSDT: configs/live/longs/ENJUSDT.json
     1000SHIBUSDT: configs/live/longs/1000SHIBUSDT.json
