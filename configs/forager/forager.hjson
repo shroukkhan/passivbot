@@ -124,7 +124,6 @@
     ATOMUSDT: configs/live/shorts/ATOMUSDT.json
     JASMYUSDT: configs/live/shorts/JASMYUSDT.json
     OCEANUSDT: configs/live/shorts/OCEANUSDT.json
-    XMRUSDT: configs/live/shorts/XMRUSDT.json
     LUNA2USDT: configs/live/shorts/LUNA2USDT.json
     ZECUSDT: configs/live/shorts/ZECUSDT.json
     APEUSDT: configs/live/shorts/APEUSDT.json
