@@ -1,10 +1,10 @@
 {
   // supported exchanges: [kucoin, okx, bybit, binance]
   user: binance_01
-  twe_long: 2.2
+  twe_long: 3
   twe_short: 0.8
   n_longs: 16
-  n_shorts: 7
+  n_shorts: 5
   max_min_cost: 14.0
   n_ohlcvs: 100
   ohlcv_interval: 1h
