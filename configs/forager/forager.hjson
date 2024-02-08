@@ -5,7 +5,7 @@
   twe_short: 0.8
   n_longs: 16
   n_shorts: 5
-  max_min_cost: 14.0
+  max_min_cost: 20
   n_ohlcvs: 100
   ohlcv_interval: 1h
   leverage: 8
