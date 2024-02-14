@@ -30,7 +30,6 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
-    
     COMPUSDT
   ]
 
@@ -109,7 +108,7 @@
     QNTUSDT: configs/live/longs/QNTUSDT.json
     OMGUSDT: configs/live/longs/OMGUSDT.json
     PHBUSDT: configs/live/longs/PHBUSDT.json
-    COMPUSDT: configs/live/longs/COMPUSDT.json
+    //COMPUSDT: configs/live/longs/COMPUSDT.json
     HIGHUSDT: configs/live/longs/HIGHUSDT.json
     ARPAUSDT: configs/live/longs/ARPAUSDT.json
     KAVAUSDT: configs/live/longs/KAVAUSDT.json
@@ -171,7 +170,7 @@
     ENSUSDT: configs/live/shorts/ENSUSDT.json
     DEFIUSDT: configs/live/shorts/DEFIUSDT.json
     FXSUSDT: configs/live/shorts/FXSUSDT.json
-    COMPUSDT: configs/live/shorts/COMPUSDT.json
+    //COMPUSDT: configs/live/shorts/COMPUSDT.json
   }
 
 }
