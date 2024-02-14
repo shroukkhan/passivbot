@@ -30,6 +30,8 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
+    
+    COMPUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -169,7 +171,7 @@
     ENSUSDT: configs/live/shorts/ENSUSDT.json
     DEFIUSDT: configs/live/shorts/DEFIUSDT.json
     FXSUSDT: configs/live/shorts/FXSUSDT.json
-    //COMPUSDT: configs/live/shorts/COMPUSDT.json
+    COMPUSDT: configs/live/shorts/COMPUSDT.json
   }
 
 }
