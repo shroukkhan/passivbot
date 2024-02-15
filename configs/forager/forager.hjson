@@ -4,7 +4,7 @@
   twe_long: 3
   twe_short: 0.4
   n_longs: 16
-  n_shorts: 3
+  n_shorts: 0
   max_min_cost: 20
   n_ohlcvs: 100
   ohlcv_interval: 1h
