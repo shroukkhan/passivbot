@@ -5,7 +5,7 @@
   twe_short: 0.4
   n_longs: 16
   n_shorts: 0
-  max_min_cost: 20
+  max_min_cost: 25
   n_ohlcvs: 100
   ohlcv_interval: 1h
   leverage: 8
@@ -29,8 +29,6 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
-    COMPUSDT
-    RLCUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
