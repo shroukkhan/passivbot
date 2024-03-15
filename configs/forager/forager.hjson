@@ -29,6 +29,7 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
+    MINAUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -91,7 +92,7 @@
     FETUSDT: configs/live/longs/FETUSDT.json
     SFPUSDT: configs/live/longs/SFPUSDT.json
     API3USDT: configs/live/longs/API3USDT.json
-    MINAUSDT: configs/live/longs/MINAUSDT.json
+    //MINAUSDT: configs/live/longs/MINAUSDT.json
     TUSDT: configs/live/longs/TUSDT.json
     CKBUSDT: configs/live/longs/CKBUSDT.json
     NEARUSDT: configs/live/longs/NEARUSDT.json
