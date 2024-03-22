@@ -4,7 +4,7 @@
   twe_long: 2.5
   twe_short: 0.25
   n_longs: 8
-  n_shorts: 2
+  n_shorts: 0
   max_min_cost: 25
   n_ohlcvs: 100
   ohlcv_interval: 1h
@@ -30,6 +30,7 @@
     AVAXUSDT
     ETCUSDT
     MINAUSDT
+    JASMYUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -121,7 +122,7 @@
     SUSHIUSDT: configs/live/shorts/SUSHIUSDT.json
     ANTUSDT: configs/live/shorts/ANTUSDT.json
     ATOMUSDT: configs/live/shorts/ATOMUSDT.json
-    JASMYUSDT: configs/live/shorts/JASMYUSDT.json
+    //JASMYUSDT: configs/live/shorts/JASMYUSDT.json
     OCEANUSDT: configs/live/shorts/OCEANUSDT.json
     LUNA2USDT: configs/live/shorts/LUNA2USDT.json
     ZECUSDT: configs/live/shorts/ZECUSDT.json
