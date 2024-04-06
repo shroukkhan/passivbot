@@ -6,7 +6,14 @@ import pprint
 import asyncio
 import traceback
 import numpy as np
-from pure_funcs import multi_replace, floatify, ts_to_date_utc, calc_hash, determine_pos_side_ccxt
+from pure_funcs import (
+    multi_replace,
+    floatify,
+    ts_to_date_utc,
+    calc_hash,
+    determine_pos_side_ccxt,
+    shorten_custom_id,
+)
 from procedures import print_async_exception, utc_ms
 
 
@@ -35,44 +42,15 @@ class BitgetBot(Passivbot):
             "buy": {"long": "open_long", "short": "close_short"},
             "sell": {"long": "close_long", "short": "open_short"},
         }
+        self.custom_id_max_length = 64
 
     async def init_bot(self):
-        # require symbols to be formatted to ccxt standard COIN/USDT:USDT
-        self.markets_dict = await self.cca.load_markets()
-        self.symbols = {}
-        for symbol_ in sorted(set(self.config["symbols"])):
-            symbol = symbol_
-            if not symbol.endswith("/USDT:USDT"):
-                coin_extracted = multi_replace(
-                    symbol_, [("/", ""), (":", ""), ("USDT", ""), ("BUSD", ""), ("USDC", "")]
-                )
-                symbol_reformatted = coin_extracted + "/USDT:USDT"
-                logging.info(
-                    f"symbol {symbol_} is wrongly formatted. Trying to reformat to {symbol_reformatted}"
-                )
-                symbol = symbol_reformatted
-            if symbol not in self.markets_dict:
-                logging.info(f"{symbol} missing from {self.exchange}")
-            else:
-                elm = self.markets_dict[symbol]
-                if elm["type"] != "swap":
-                    logging.info(f"wrong market type for {symbol}: {elm['type']}")
-                elif not elm["active"]:
-                    logging.info(f"{symbol} not active")
-                elif not elm["linear"]:
-                    logging.info(f"{symbol} is not a linear market")
-                else:
-                    self.symbols[symbol] = self.config["symbols"][symbol_]
-        self.quote = "USDT"
-        self.inverse = False
-        self.symbol_ids_inv = {
-            self.markets_dict[symbol]["id"]: symbol for symbol in self.markets_dict
-        }
+        await self.init_symbols()
         for symbol in self.symbols:
             elm = self.markets_dict[symbol]
             self.symbol_ids[symbol] = elm["id"]
-            self.min_costs[symbol] = (
-                0.1 if elm["limits"]["cost"]["min"] is None else elm["limits"]["cost"]["min"]
+            self.min_costs[symbol] = max(
+                5.1, 0.1 if elm["limits"]["cost"]["min"] is None else elm["limits"]["cost"]["min"]
             )
             self.min_qtys[symbol] = elm["limits"]["amount"]["min"]
             self.qty_steps[symbol] = elm["precision"]["amount"]
@@ -197,10 +175,7 @@ class BitgetBot(Passivbot):
     async def fetch_tickers(self):
         fetched = None
         try:
-            fetched = await self.cca.public_mix_get_mix_v1_market_tickers(
-                params={"productType": "UMCBL"}
-            )
-            tickers = self.cca.parse_tickers(fetched["data"])
+            tickers = await self.cca.fetch_tickers()
             return tickers
         except Exception as e:
             logging.error(f"error fetching tickers {e}")
@@ -342,7 +317,7 @@ class BitgetBot(Passivbot):
                     "reduceOnly": order["reduce_only"],
                     "timeInForceValue": "post_only",
                     "side": self.order_side_map[order["side"]][order["position_side"]],
-                    "clientOid": f"{self.broker_code}#{order['custom_id']}_{str(uuid4())}"[:64],
+                    "clientOid": order["custom_id"],
                 },
             )
             if "symbol" not in executed or executed["symbol"] is None:
@@ -362,3 +337,16 @@ class BitgetBot(Passivbot):
 
     async def update_exchange_config(self):
         pass
+
+    def format_custom_ids(self, orders: [dict]) -> [dict]:
+        # bitget needs broker code plus '#' at the beginning of the custom_id
+        new_orders = []
+        for order in orders:
+            order["custom_id"] = (
+                self.broker_code
+                + "#"
+                + shorten_custom_id(order["custom_id"] if "custom_id" in order else "")
+                + uuid4().hex
+            )[: self.custom_id_max_length]
+            new_orders.append(order)
+        return new_orders
