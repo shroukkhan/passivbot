@@ -1,7 +1,7 @@
 {
   // supported exchanges: [kucoin, okx, bybit, binance]
   user: binance_01
-  twe_long: 2.75
+  twe_long: 2
   twe_short: 0.85
   n_longs: 10
   n_shorts: 0
