@@ -1,7 +1,7 @@
 {
   // supported exchanges: [kucoin, okx, bybit, binance]
   user: binance_01
-  twe_long: 2
+  twe_long: 2.5
   twe_short: 0.85
   n_longs: 10
   n_shorts: 4
@@ -31,10 +31,8 @@
     ETCUSDT
     JASMYUSDT  // keep it commented out, since it is on the binance watch list of risky symbols https://www.binance.com/en/markets/coinInfo-Monitoring
     //--- save my big crash
-    OPUSDT
     LDOUSDT
     BAKEUSDT
-    AAVEUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
