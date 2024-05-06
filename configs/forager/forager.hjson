@@ -33,6 +33,8 @@
     //--- save my big crash
     LDOUSDT
     BAKEUSDT
+    AGIXUSDT
+    ARUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
