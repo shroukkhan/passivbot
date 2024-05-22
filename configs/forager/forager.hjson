@@ -29,11 +29,8 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
-    JASMYUSDT  // keep it commented out, since it is on the binance watch list of risky symbols https://www.binance.com/en/markets/coinInfo-Monitoring
     //--- save my big crash
-    LDOUSDT
-    BAKEUSDT
-    AGIXUSDT
+    GALAUSDT
     ARUSDT
   ]
 
@@ -110,7 +107,7 @@
     DGBUSDT: configs/live/longs/DGBUSDT.json
     LDOUSDT: configs/live/longs/LDOUSDT.json
     QNTUSDT: configs/live/longs/QNTUSDT.json
-    //OMGUSDT: configs/live/longs/OMGUSDT.json
+    OMGUSDT: configs/live/longs/OMGUSDT.json
     PHBUSDT: configs/live/longs/PHBUSDT.json
     COMPUSDT: configs/live/longs/COMPUSDT.json
     HIGHUSDT: configs/live/longs/HIGHUSDT.json
@@ -129,12 +126,12 @@
     //JASMYUSDT: configs/live/shorts/JASMYUSDT.json
     OCEANUSDT: configs/live/shorts/OCEANUSDT.json
     LUNA2USDT: configs/live/shorts/LUNA2USDT.json
-    //ZECUSDT: configs/live/shorts/ZECUSDT.json
+    ZECUSDT: configs/live/shorts/ZECUSDT.json
     APEUSDT: configs/live/shorts/APEUSDT.json
     DOGEUSDT: configs/live/shorts/DOGEUSDT.json
     BNXUSDT: configs/live/shorts/BNXUSDT.json
     BALUSDT: configs/live/shorts/BALUSDT.json
-    //ZENUSDT: configs/live/shorts/ZENUSDT.json
+    ZENUSDT: configs/live/shorts/ZENUSDT.json
     GMXUSDT: configs/live/shorts/GMXUSDT.json
     1000LUNCUSDT: configs/live/shorts/1000LUNCUSDT.json
     DARUSDT: configs/live/shorts/DARUSDT.json
@@ -161,7 +158,7 @@
     HOTUSDT: configs/live/shorts/HOTUSDT.json
     GALUSDT: configs/live/shorts/GALUSDT.json
     GALAUSDT: configs/live/shorts/GALAUSDT.json
-    //REEFUSDT: configs/live/shorts/REEFUSDT.json
+    REEFUSDT: configs/live/shorts/REEFUSDT.json
     ASTRUSDT: configs/live/shorts/ASTRUSDT.json
     RVNUSDT: configs/live/shorts/RVNUSDT.json
     DOTUSDT: configs/live/shorts/DOTUSDT.json
