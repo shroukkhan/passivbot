@@ -1,10 +1,10 @@
 {
   // supported exchanges: [kucoin, okx, bybit, binance]
   user: binance_01
-  twe_long: 2.5
-  twe_short: 0.85
-  n_longs: 10
-  n_shorts: 4
+  twe_long: 2
+  twe_short: 1
+  n_longs: 8
+  n_shorts: 5
   max_min_cost: 25
   n_ohlcvs: 100
   ohlcv_interval: 1h
@@ -30,8 +30,6 @@
     AVAXUSDT
     ETCUSDT
     //--- save my big crash
-    GALAUSDT
-    ARUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
