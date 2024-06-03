@@ -105,7 +105,7 @@
     DGBUSDT: configs/live/longs/DGBUSDT.json
     LDOUSDT: configs/live/longs/LDOUSDT.json
     QNTUSDT: configs/live/longs/QNTUSDT.json
-    OMGUSDT: configs/live/longs/OMGUSDT.json
+    //OMGUSDT: configs/live/longs/OMGUSDT.json // delist
     PHBUSDT: configs/live/longs/PHBUSDT.json
     COMPUSDT: configs/live/longs/COMPUSDT.json
     HIGHUSDT: configs/live/longs/HIGHUSDT.json
