@@ -30,6 +30,7 @@
     AVAXUSDT
     ETCUSDT
     //--- save my big crash
+    DOGEUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -101,7 +102,7 @@
     XLMUSDT: configs/live/longs/XLMUSDT.json
     NEOUSDT: configs/live/longs/NEOUSDT.json
     AGIXUSDT: configs/live/longs/AGIXUSDT.json
-    DOGEUSDT: configs/live/longs/DOGEUSDT.json
+    //DOGEUSDT: configs/live/longs/DOGEUSDT.json
     DGBUSDT: configs/live/longs/DGBUSDT.json
     LDOUSDT: configs/live/longs/LDOUSDT.json
     QNTUSDT: configs/live/longs/QNTUSDT.json
@@ -126,7 +127,7 @@
     LUNA2USDT: configs/live/shorts/LUNA2USDT.json
     ZECUSDT: configs/live/shorts/ZECUSDT.json
     APEUSDT: configs/live/shorts/APEUSDT.json
-    DOGEUSDT: configs/live/shorts/DOGEUSDT.json
+    //DOGEUSDT: configs/live/shorts/DOGEUSDT.json
     BNXUSDT: configs/live/shorts/BNXUSDT.json
     BALUSDT: configs/live/shorts/BALUSDT.json
     ZENUSDT: configs/live/shorts/ZENUSDT.json
