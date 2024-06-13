@@ -31,6 +31,8 @@
     ETCUSDT
     //--- save my big crash
     DOGEUSDT
+    AGIXUSDT
+    CRVUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -55,7 +57,7 @@
     RNDRUSDT: configs/live/longs/RNDRUSDT.json
     HBARUSDT: configs/live/longs/HBARUSDT.json
     ALPHAUSDT: configs/live/longs/ALPHAUSDT.json
-    CRVUSDT: configs/live/longs/CRVUSDT.json
+    // CRVUSDT: configs/live/longs/CRVUSDT.json
     ONEUSDT: configs/live/longs/ONEUSDT.json
     DYDXUSDT: configs/live/longs/DYDXUSDT.json
     EGLDUSDT: configs/live/longs/EGLDUSDT.json
@@ -101,7 +103,7 @@
     MANAUSDT: configs/live/longs/MANAUSDT.json
     XLMUSDT: configs/live/longs/XLMUSDT.json
     NEOUSDT: configs/live/longs/NEOUSDT.json
-    AGIXUSDT: configs/live/longs/AGIXUSDT.json
+    //AGIXUSDT: configs/live/longs/AGIXUSDT.json
     //DOGEUSDT: configs/live/longs/DOGEUSDT.json
     DGBUSDT: configs/live/longs/DGBUSDT.json
     LDOUSDT: configs/live/longs/LDOUSDT.json
@@ -151,7 +153,7 @@
     NEARUSDT: configs/live/shorts/NEARUSDT.json
     BLUEBIRDUSDT: configs/live/shorts/BLUEBIRDUSDT.json
     RLCUSDT: configs/live/shorts/RLCUSDT.json
-    AGIXUSDT: configs/live/shorts/AGIXUSDT.json
+    //AGIXUSDT: configs/live/shorts/AGIXUSDT.json
     ANKRUSDT: configs/live/shorts/ANKRUSDT.json
     1000SHIBUSDT: configs/live/shorts/1000SHIBUSDT.json
     HOTUSDT: configs/live/shorts/HOTUSDT.json
