@@ -33,6 +33,8 @@
     DOGEUSDT
     AGIXUSDT
     CRVUSDT
+    KNCUSDT
+    CHZUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -52,7 +54,7 @@
 
   // will override long configs from live_configs_map
   live_configs_map_long: {
-    CHZUSDT: configs/live/longs/CHZUSDT.json
+    //CHZUSDT: configs/live/longs/CHZUSDT.json
     RSRUSDT: configs/live/longs/RSRUSDT.json
     RNDRUSDT: configs/live/longs/RNDRUSDT.json
     HBARUSDT: configs/live/longs/HBARUSDT.json
@@ -83,7 +85,7 @@
     TOMOUSDT: configs/live/longs/TOMOUSDT.json
     ANKRUSDT: configs/live/longs/ANKRUSDT.json
     MATICUSDT: configs/live/longs/MATICUSDT.json
-    KNCUSDT: configs/live/longs/KNCUSDT.json
+    //KNCUSDT: configs/live/longs/KNCUSDT.json
     RVNUSDT: configs/live/longs/RVNUSDT.json
     TRUUSDT: configs/live/longs/TRUUSDT.json
     IMXUSDT: configs/live/longs/IMXUSDT.json
@@ -168,7 +170,7 @@
     PEOPLEUSDT: configs/live/shorts/PEOPLEUSDT.json
     DGBUSDT: configs/live/shorts/DGBUSDT.json
     SKLUSDT: configs/live/shorts/SKLUSDT.json
-    CHZUSDT: configs/live/shorts/CHZUSDT.json
+    //CHZUSDT: configs/live/shorts/CHZUSDT.json
     ENSUSDT: configs/live/shorts/ENSUSDT.json
     DEFIUSDT: configs/live/shorts/DEFIUSDT.json
     FXSUSDT: configs/live/shorts/FXSUSDT.json
