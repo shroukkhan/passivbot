@@ -82,7 +82,7 @@
     DOTUSDT: configs/live/longs/DOTUSDT.json
     TOMOUSDT: configs/live/longs/TOMOUSDT.json
     ANKRUSDT: configs/live/longs/ANKRUSDT.json
-    MATICUSDT: configs/live/longs/MATICUSDT.json
+    //MATICUSDT: configs/live/longs/MATICUSDT.json
     //KNCUSDT: configs/live/longs/KNCUSDT.json
     RVNUSDT: configs/live/longs/RVNUSDT.json
     TRUUSDT: configs/live/longs/TRUUSDT.json
