@@ -4,7 +4,7 @@
   twe_long: 2
   twe_short: 1
   n_longs: 15
-  n_shorts: 12
+  n_shorts: 8
   max_min_cost: 25
   n_ohlcvs: 100
   ohlcv_interval: 1h
@@ -30,9 +30,10 @@
     AVAXUSDT
     ETCUSDT
     //--- save my big crash
-    BNXUSDT
-    KNCUSDT
-    CHZUSDT
+    SUSHIUSDT
+    GALAUSDT
+    SANDUSDT
+    CKBUSDT
   ]
 
   // if symbol is missing from live_configs_map, default to this config
@@ -67,7 +68,7 @@
     ARUSDT: configs/live/longs/ARUSDT.json
     KSMUSDT: configs/live/longs/KSMUSDT.json
     FTMUSDT: configs/live/longs/FTMUSDT.json
-    GALAUSDT: configs/live/longs/GALAUSDT.json
+    //GALAUSDT: configs/live/longs/GALAUSDT.json
     BAKEUSDT: configs/live/longs/BAKEUSDT.json
     FOOTBALLUSDT: configs/live/longs/FOOTBALLUSDT.json
     ZILUSDT: configs/live/longs/ZILUSDT.json
@@ -82,8 +83,8 @@
     DOTUSDT: configs/live/longs/DOTUSDT.json
     TOMOUSDT: configs/live/longs/TOMOUSDT.json
     ANKRUSDT: configs/live/longs/ANKRUSDT.json
-    //MATICUSDT: configs/live/longs/MATICUSDT.json
-    //KNCUSDT: configs/live/longs/KNCUSDT.json
+    //MATICUSDT: configs/live/longs/MATICUSDT.json // dlist
+    KNCUSDT: configs/live/longs/KNCUSDT.json
     RVNUSDT: configs/live/longs/RVNUSDT.json
     TRUUSDT: configs/live/longs/TRUUSDT.json
     IMXUSDT: configs/live/longs/IMXUSDT.json
@@ -97,7 +98,7 @@
     API3USDT: configs/live/longs/API3USDT.json
     MINAUSDT: configs/live/longs/MINAUSDT.json
     TUSDT: configs/live/longs/TUSDT.json
-    CKBUSDT: configs/live/longs/CKBUSDT.json
+    //CKBUSDT: configs/live/longs/CKBUSDT.json
     NEARUSDT: configs/live/longs/NEARUSDT.json
     OGNUSDT: configs/live/longs/OGNUSDT.json
     MANAUSDT: configs/live/longs/MANAUSDT.json
@@ -121,7 +122,7 @@
     BNBUSDT: configs/live/shorts/BNBUSDT.json
     AUDIOUSDT: configs/live/shorts/AUDIOUSDT.json
     UNFIUSDT: configs/live/shorts/UNFIUSDT.json
-    SUSHIUSDT: configs/live/shorts/SUSHIUSDT.json
+    //SUSHIUSDT: configs/live/shorts/SUSHIUSDT.json
     ANTUSDT: configs/live/shorts/ANTUSDT.json
     ATOMUSDT: configs/live/shorts/ATOMUSDT.json
     //JASMYUSDT: configs/live/shorts/JASMYUSDT.json
@@ -130,7 +131,7 @@
     ZECUSDT: configs/live/shorts/ZECUSDT.json
     APEUSDT: configs/live/shorts/APEUSDT.json
     DOGEUSDT: configs/live/shorts/DOGEUSDT.json
-    //BNXUSDT: configs/live/shorts/BNXUSDT.json
+    BNXUSDT: configs/live/shorts/BNXUSDT.json
     BALUSDT: configs/live/shorts/BALUSDT.json
     ZENUSDT: configs/live/shorts/ZENUSDT.json
     GMXUSDT: configs/live/shorts/GMXUSDT.json
@@ -141,10 +142,10 @@
     VETUSDT: configs/live/shorts/VETUSDT.json
     ACHUSDT: configs/live/shorts/ACHUSDT.json
     ENJUSDT: configs/live/shorts/ENJUSDT.json
-    CKBUSDT: configs/live/shorts/CKBUSDT.json
+    //CKBUSDT: configs/live/shorts/CKBUSDT.json
     IOTXUSDT: configs/live/shorts/IOTXUSDT.json
     CTKUSDT: configs/live/shorts/CTKUSDT.json
-    SANDUSDT: configs/live/shorts/SANDUSDT.json
+    //SANDUSDT: configs/live/shorts/SANDUSDT.json
     BANDUSDT: configs/live/shorts/BANDUSDT.json
     ONEUSDT: configs/live/shorts/ONEUSDT.json
     ARUSDT: configs/live/shorts/ARUSDT.json
@@ -158,7 +159,7 @@
     1000SHIBUSDT: configs/live/shorts/1000SHIBUSDT.json
     HOTUSDT: configs/live/shorts/HOTUSDT.json
     GALUSDT: configs/live/shorts/GALUSDT.json
-    GALAUSDT: configs/live/shorts/GALAUSDT.json
+    //GALAUSDT: configs/live/shorts/GALAUSDT.json
     REEFUSDT: configs/live/shorts/REEFUSDT.json
     ASTRUSDT: configs/live/shorts/ASTRUSDT.json
     RVNUSDT: configs/live/shorts/RVNUSDT.json
@@ -168,7 +169,7 @@
     PEOPLEUSDT: configs/live/shorts/PEOPLEUSDT.json
     DGBUSDT: configs/live/shorts/DGBUSDT.json
     SKLUSDT: configs/live/shorts/SKLUSDT.json
-    //CHZUSDT: configs/live/shorts/CHZUSDT.json
+    CHZUSDT: configs/live/shorts/CHZUSDT.json
     ENSUSDT: configs/live/shorts/ENSUSDT.json
     DEFIUSDT: configs/live/shorts/DEFIUSDT.json
     FXSUSDT: configs/live/shorts/FXSUSDT.json
