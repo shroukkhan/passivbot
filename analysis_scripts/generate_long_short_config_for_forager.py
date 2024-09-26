@@ -124,17 +124,21 @@ C:/AgodaGit/passivbot/backtests/binance/FXSUSDT/plots/2023-08-21T100652/live_con
 C:/AgodaGit/passivbot/backtests/binance/COMPUSDT/plots/2023-08-21T054834/live_config.json
 '''
 
-import shutil , os
+import os
+import shutil
+
 
 def get_symbol_from_file(config_file):
     symbol = config_file.split('/')[-4]
     return symbol
 
-def copy_file_to_directory(config_file, directory ):
+
+def copy_file_to_directory(config_file, directory):
     src = config_file
     dst = directory + '/' + get_symbol_from_file(config_file) + '.json'
     if os.path.isfile(src):
         shutil.copyfile(src, dst)
+
 
 def copy_files(text, directory):
     for line in text.split('\n'):
@@ -142,13 +146,16 @@ def copy_files(text, directory):
             line = line.replace('\\', '/')
             copy_file_to_directory(line, directory)
 
-def get_output_from_files(text,longs_or_shorts):
+
+def get_output_from_files(text, longs_or_shorts):
     outputs = []
     for line in text.split('\n'):
         if line:
             line = line.replace('\\', '/')
-            outputs.append(f'{get_symbol_from_file(line)}: configs/live/{longs_or_shorts}/{get_symbol_from_file(line)}.json')
+            outputs.append(
+                f'{get_symbol_from_file(line)}: configs/live/scud2/{longs_or_shorts}/{get_symbol_from_file(line)}.json')
     return outputs
+
 
 def delete_files(directory):
     # delete all json files in folder
@@ -156,15 +163,16 @@ def delete_files(directory):
         if file.endswith('.json'):
             os.remove(f'{directory}/{file}')
 
+
 # write main method like ___main___ in python
 if __name__ == '__main__':
-    
-    #create a dictionary for longs and shorts directories
-    directories = {'longs': r'C:\AgodaGit\passivbot\configs\live\longs', 
-                   'shorts': r'C:\AgodaGit\passivbot\configs\live\shorts'}
-    
+
+    # create a dictionary for longs and shorts directories
+    directories = {'longs': r'C:\AgodaGit\passivbot\configs\live\scud2\longs',
+                   'shorts': r'C:\AgodaGit\passivbot\configs\live\scud2\shorts'}
+
     outputs = {'longs': [], 'shorts': []}
-    
+
     # iterate over key value of directories
     for key, value in directories.items():
         # delete files in directory
@@ -176,11 +184,8 @@ if __name__ == '__main__':
         else:
             copy_files(shorts, value)
             outputs['shorts'] = get_output_from_files(shorts, 'shorts')
-    
+
     # print longs as a string separated by new line
     print('\n'.join(outputs['longs']))
     print('\n\n-----\n\n')
-    print('\n'.join(outputs['shorts']))    
-
-
-
+    print('\n'.join(outputs['shorts']))

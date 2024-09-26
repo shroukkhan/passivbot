@@ -363,3 +363,5 @@ downloaded_configs/*
 .metals/*
 logs/*
 ~$*
+
+backtest_commands_*.ps1
