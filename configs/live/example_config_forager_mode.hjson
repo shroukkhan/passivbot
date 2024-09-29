@@ -8,13 +8,13 @@
   pnls_max_lookback_days: 30
 
   // how much below past peak balance to allow losses (default 1% == 0.01). Set to 0.0 to disable multisym auto unstuck.
-  loss_allowance_pct: 0.005
+  loss_allowance_pct: 0.00286
 
   // if wallet_exposure / wallet_exposure_limit > stuck_threshold: consider position as stuck
-  stuck_threshold: 0.89
+  stuck_threshold: 0.55
 
   // percentage of balance * wallet_exposure_limit to close for each unstucking order (default 1% == 0.01)
-  unstuck_close_pct: 0.005
+  unstuck_close_pct: 0.0046
 
   // delay between executions to exchange. Set to 60 to simulate 1m ohlcv backtest.
   execution_delay_seconds: 2
@@ -56,12 +56,7 @@
   // -sw: float: wallet exposure limit short. Overrides value from live config.
   // -lev int: leverage set on exchange, if applicable. Default is 10.
   // -lc str: live config path. Specify live config path to override config from live_configs_dir and default_config_path.
-  approved_symbols:
-  {
-    COIN1: -lm n -sm gs -lc configs/live/custom/COIN1USDT.json
-    COIN2: -lm n -sm gs -sw 0.4
-    COIN3: -lm gs -sm n  -lw 0.15 -lev 12
-  }
+  approved_symbols: []
 
   // Force all positions to the same mode. Individually flagged modes take precedence.
   // Choices: [n (normal), m (manual), gs (graceful_stop), p (panic), t (take_profit_only)]
@@ -74,12 +69,12 @@
   // 1. Specify directory containing live configs.
   // They are sorted alphabetically, then the first config whose filename includes symbol is selected.
   // Set to "" to disable
-  live_configs_dir: configs/live/multisymbol/no_AU/
+  live_configs_dir: ""
 
   // 2. Specify single config file
   // if symbol is missing from live_configs_dir, default to this config
   // Set to "" to disable
-  default_config_path: configs/live/recursive_grid_mode.example.json
+  default_config_path: ""
 
   // 3. Specify live config for all symbols directly
   universal_live_config:
@@ -126,7 +121,7 @@
 
   // Max number of positions to have open.
   // If n_longs and n_shorts are both zero, forager mode is disabled.
-  n_longs: 0 // if > 0, overrides longs_enabled
+  n_longs: 5 // if > 0, overrides longs_enabled
   n_shorts: 0 // if > 0, overrides shorts_enabled
 
   // minimum market age. Don't trade markets younger than x days. Set to zero to allow all markets.

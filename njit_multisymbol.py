@@ -30,22 +30,20 @@ from njit_funcs import (
     calc_pnl_long,
     calc_pnl_short,
     round_,
+    round_up,
     calc_min_entry_qty,
+    calc_bankruptcy_price,
 )
 from njit_funcs_recursive_grid import calc_recursive_entry_long, calc_recursive_entry_short
 
 
 @njit
-def calc_pnl_sum(poss_long, poss_short, market_prices, c_mults):
+def calc_pnl_sum(poss_long, poss_short, lows, highs, c_mults):
     pnl_sum = 0.0
     for i in range(len(poss_long)):
-        pnl_sum += calc_pnl_long(
-            poss_long[i][1], market_prices[i], poss_long[i][0], False, c_mults[i]
-        )
+        pnl_sum += calc_pnl_long(poss_long[i][1], lows[i], poss_long[i][0], False, c_mults[i])
     for i in range(len(poss_short)):
-        pnl_sum += calc_pnl_short(
-            poss_short[i][1], market_prices[i], poss_short[i][0], False, c_mults[i]
-        )
+        pnl_sum += calc_pnl_short(poss_short[i][1], highs[i], poss_short[i][0], False, c_mults[i])
     return pnl_sum
 
 
@@ -157,9 +155,11 @@ def get_open_orders_short(
     closes = calc_close_grid_short(
         cfgs[4],  # backwards_tp
         balance,
-        min(0.0, -abs(pos_short[0]) + abs(unstucking_close[0]))
-        if unstucking_close[0]
-        else pos_short[0],
+        (
+            min(0.0, -abs(pos_short[0]) + abs(unstucking_close[0]))
+            if unstucking_close[0]
+            else pos_short[0]
+        ),
         pos_short[1],
         close_price,  # close price
         min(emas),
@@ -213,6 +213,9 @@ def calc_fills(
     pos = poss_long[idx] if pside_idx == 0 else poss_short[idx]
     new_pos = (pos[0], pos[1])
     new_balance = balance
+    new_equity = new_balance + calc_pnl_sum(
+        poss_long, poss_short, hlc[:, 1], hlc[:, 0], c_mults
+    )  # compute total equity at this time step
     while entry[0] != 0.0 and (
         (pside_idx == 0 and hlc[idx][1] < entry[1]) or (pside_idx == 1 and hlc[idx][0] > entry[1])
     ):
@@ -225,9 +228,6 @@ def calc_fills(
         )
         fee_paid = -qty_to_cost(entry[0], entry[1], inverse, c_mults[idx]) * maker_fee
         new_balance = max(new_balance * 1e-6, new_balance + fee_paid)
-        new_equity = new_balance + calc_pnl_sum(
-            poss_long, poss_short, hlc[:, 2], c_mults
-        )  # compute total equity
         wallet_exposure = qty_to_cost(new_pos[0], new_pos[1], inverse, c_mults[idx]) / new_balance
         fills.append(
             (
@@ -303,9 +303,6 @@ def calc_fills(
         )
         new_pos = new_pos_
         new_balance = max(new_balance * 1e-6, new_balance + fee_paid + pnl)
-        new_equity = new_balance + calc_pnl_sum(
-            poss_long, poss_short, hlc[:, 2], c_mults
-        )  # compute total equity
         wallet_exposure = qty_to_cost(new_pos[0], new_pos[1], inverse, c_mults[idx]) / new_balance
         fills.append(
             (
@@ -680,7 +677,11 @@ def backtest_multisymbol_recursive_grid(
                                 ),
                             ),
                         )
-                        unstucking_close = (abs(close_qty), close_price, "unstuck_close_short")
+                        unstucking_close = (
+                            min(abs(close_qty), abs(poss_short[s_i][0])),
+                            close_price,
+                            "unstuck_close_short",
+                        )
                     else:  # long
                         close_price = max(hlcs[s_i][k][2], emas_long[s_i].max())  # upper ema band
                         upnl = calc_pnl_long(
@@ -716,7 +717,11 @@ def backtest_multisymbol_recursive_grid(
                                 ),
                             ),
                         )
-                        unstucking_close = (-abs(close_qty), close_price, "unstuck_close_long")
+                        unstucking_close = (
+                            -min(abs(close_qty), abs(poss_long[s_i][0])),
+                            close_price,
+                            "unstuck_close_long",
+                        )
 
         # check if open orders long need to be updated
         for i in idxs_long:
@@ -770,7 +775,9 @@ def backtest_multisymbol_recursive_grid(
 
         if k % 60 == 0:
             # update stats hourly
-            equity = balance + calc_pnl_sum(poss_long, poss_short, hlcs[:, k, 2], c_mults)
+            equity = balance + calc_pnl_sum(
+                poss_long, poss_short, hlcs[:, k, 1], hlcs[:, k, 0], c_mults
+            )
             stats.append(
                 (
                     k,
@@ -785,7 +792,7 @@ def backtest_multisymbol_recursive_grid(
                 # bankrupt
                 bankrupt = True
                 break
-    equity = balance + calc_pnl_sum(poss_long, poss_short, hlcs[:, k, 2], c_mults)
+    equity = balance + calc_pnl_sum(poss_long, poss_short, hlcs[:, k, 1], hlcs[:, k, 0], c_mults)
     if bankrupt:
         # force equity to be close to zero if bankrupt
         stats.append(
@@ -810,3 +817,251 @@ def backtest_multisymbol_recursive_grid(
             )
         )
     return fills, stats
+
+
+@njit
+def backtest_fast_recursive(
+    hlcs,
+    starting_balance,
+    maker_fee,
+    qty_step,
+    price_step,
+    min_qty,
+    min_cost,
+    initial_qty_pct,
+    wallet_exposure_limit,
+    ddown_factor,
+    rentry_pprice_dist,
+    rentry_pprice_dist_wallet_exposure_weighting,
+    min_markup,
+):
+    # assume initial entry at first hlc close price
+    # break loop if position closes
+    # break loop if bankrupt
+    # break loop if pprice diff > threshold
+    pos_long = (
+        round_(
+            cost_to_qty(
+                starting_balance * wallet_exposure_limit * initial_qty_pct, hlcs[0][2], False, 1.0
+            ),
+            qty_step,
+        ),
+        hlcs[0][2],
+    )
+    entry_long = calc_recursive_entry_long(
+        starting_balance,
+        pos_long[0],
+        pos_long[1],
+        pos_long[1],
+        pos_long[1],
+        False,
+        qty_step,
+        price_step,
+        min_qty,
+        min_cost,
+        1.0,
+        initial_qty_pct,
+        0.0,
+        ddown_factor,
+        rentry_pprice_dist,
+        rentry_pprice_dist_wallet_exposure_weighting,
+        wallet_exposure_limit,
+        0.0,
+        0.0,
+        False,
+    )
+    close_long = (pos_long[0], round_up(pos_long[1] * (1 + min_markup), price_step))
+    bkr_price = calc_bankruptcy_price(
+        starting_balance, pos_long[0], pos_long[1], 0.0, 0.0, False, 1.0
+    )
+    pprice_diff_threshold_pct = 0.25  # max 25% pos price diff
+    pprice_diff_threshold = pos_long[1] * (1 - pprice_diff_threshold_pct)
+    fills = [(0, 0.0, bkr_price, pos_long[0], pos_long[1], "ientry_long")]
+
+    for k in range(1, len(hlcs)):
+        # check for fills
+        if hlcs[k][0] > close_long[1]:
+            pnl = calc_pnl_long(pos_long[1], close_long[1], close_long[0], False, 1.0)
+            fills.append((k, pnl, 0.0, close_long[0], close_long[1], "close_long"))
+            return fills
+        if hlcs[k][1] < entry_long[1]:
+            n_psize = round_(pos_long[0] + entry_long[0], qty_step)
+            n_pprice = pos_long[1] * (pos_long[0] / n_psize) + entry_long[1] * (
+                entry_long[0] / n_psize
+            )
+            bkr_price = calc_bankruptcy_price(
+                starting_balance, n_psize, n_pprice, 0.0, 0.0, False, 1.0
+            )
+            fills.append((k, 0.0, bkr_price, entry_long[0], entry_long[1], "rentry_long"))
+            pos_long = (n_psize, n_pprice)
+            entry_long = calc_recursive_entry_long(
+                starting_balance,
+                pos_long[0],
+                pos_long[1],
+                pos_long[1],
+                pos_long[1],
+                False,
+                qty_step,
+                price_step,
+                min_qty,
+                min_cost,
+                1.0,
+                initial_qty_pct,
+                0.0,
+                ddown_factor,
+                rentry_pprice_dist,
+                rentry_pprice_dist_wallet_exposure_weighting,
+                wallet_exposure_limit,
+                0.0,
+                0.0,
+                False,
+            )
+            close_long = (pos_long[0], round_up(pos_long[1] * (1 + min_markup), price_step))
+            pprice_diff_threshold = pos_long[1] * (1 - pprice_diff_threshold_pct)
+        if hlcs[k][1] <= bkr_price:
+            fills.append((k, -starting_balance, 0.0, pos_long[0], hlcs[k][1], "liquidation_long"))
+            return fills
+        if hlcs[k][1] <= pprice_diff_threshold:
+            fills.append((k, 0.0, bkr_price, 0.0, hlcs[k][1], "pprice diff break"))
+            return fills
+    return fills
+
+
+def backtest_forager(
+    hlcs,
+    starting_balance,
+    maker_fee,
+    n_longs,
+    n_shorts,
+    c_mults,
+    symbols,
+    qty_steps,
+    price_steps,
+    min_costs,
+    min_qtys,
+    universal_live_config,
+    noisiness_timeframe,
+):
+    """
+    hlcs contains all eligible symbols, time frame is 1m
+    hlcs structure: (n_minutes, n_markets, 3)
+    hlcs:
+    [
+        [
+            [sym0_high0, sym0_low0, sym0_close0],
+            [sym0_high1, sym0_low1, sym0_close1],
+            [...],
+        ],
+        [
+            [sym1_high0, sym1_low0, sym1_close0],
+            [sym1_high1, sym1_low1, sym1_close1],
+            [...],
+        ],
+        ...
+    ]
+
+    universal config for all symbols
+    new positions are placed according to noisiness
+
+    universal_live_config structure:
+    [
+        [
+            0 global_TWE_long
+            1 global_TWE_short
+            2 global_loss_allowance_pct
+            3 global_stuck_threshold
+            4 global_unstuck_close_pct
+        ],
+        [
+            0 long_ddown_factor
+            1 long_ema_span_0
+            2 long_ema_span_1
+            3 long_enabled
+            4 long_initial_eprice_ema_dist
+            5 long_initial_qty_pct
+            6 long_markup_range
+            7 long_min_markup
+            8 long_n_close_orders
+            9 long_rentry_pprice_dist
+            10 long_rentry_pprice_dist_wallet_exposure_weighting
+            11 long_wallet_exposure_limit
+        ],
+        [
+            0 short_ddown_factor
+            1 short_ema_span_0
+            2 short_ema_span_1
+            3 short_enabled
+            4 short_initial_eprice_ema_dist
+            5 short_initial_qty_pct
+            6 short_markup_range
+            7 short_min_markup
+            8 short_n_close_orders
+            9 short_rentry_pprice_dist
+            10 short_rentry_pprice_dist_wallet_exposure_weighting
+            11 short_wallet_exposure_limit
+        ],
+    ]
+    """
+
+    ulc = universal_live_config
+    spans_long = [ulc[1][1], ulc[1][2], (ulc[1][1] * ulc[1][2]) ** 0.5]
+    spans_long = np.array(sorted(spans_long))
+    spans_short = [ulc[2][1], ulc[2][2], (ulc[2][1] * ulc[2][2]) ** 0.5]
+    spans_short = np.array(sorted(spans_short))
+    assert max(spans_long) < len(hlcs), "ema span long larger than len(prices)"
+    assert max(spans_short) < len(hlcs), "ema span short larger than len(prices)"
+    spans_long = np.where(spans_long < 1.0, 1.0, spans_long)
+    spans_short = np.where(spans_short < 1.0, 1.0, spans_short)
+    emas_long = np.repeat(hlcs[0, :, 2][:, np.newaxis], 3, axis=1)
+    emas_short = np.repeat(hlcs[0, :, 2][:, np.newaxis], 3, axis=1)
+    alphas_long = 2.0 / (spans_long + 1.0)
+    alphas__long = 1.0 - alphas_long
+    alphas_short = 2.0 / (spans_short + 1.0)
+    alphas__short = 1.0 - alphas_short
+
+    noisiness = np.zeros(len(hlcs))
+
+    n_empty_slots_long = n_longs
+    n_empty_slots_short = n_shorts
+
+    positions_long = np.zeros((len(hlcs[0], 2)))
+    positions_short = np.zeros((len(hlcs[0], 2)))
+
+    open_orders_entry_long = [(0.0, 0.0, "") for _ in range(len(hlcs[0]))]
+    open_orders_entry_short = [(0.0, 0.0, "") for _ in range(len(hlcs[0]))]
+
+    open_orders_closes_long = [[(0.0, 0.0, "")] for _ in range(len(hlcs[0]))]
+    open_orders_closes_short = [[(0.0, 0.0, "")] for _ in range(len(hlcs[0]))]
+
+    fills = [
+        (
+            0,  # index
+            "",  # symbol
+            0.0,  # realized pnl
+            0.0,  # fee paid
+            0.0,  # balance after fill
+            0.0,  # equity
+            0.0,  # fill qty
+            0.0,  # fill price
+            0.0,  # psize after fill
+            0.0,  # pprice after fill
+            "",  # fill type
+            0.0,  # stuckness
+        )
+    ]
+
+    for k in range(len(hlcs)):
+        # calc emas
+        emas_long = calc_ema(alphas_long, alphas__long, emas_long, hlcs[k, :, 2])
+        emas_short = calc_ema(alphas_short, alphas__short, emas_short, hlcs[k, :, 2])
+
+        # calc noisiness
+        # only calc noisiness if there are empty position slots
+        if n_empty_slots_long or n_empty_slots_short:
+            pass
+
+        # check for fills
+        pass
+        # update open orders
+        # record stats
+        pass
