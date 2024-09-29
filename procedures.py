@@ -49,6 +49,9 @@ def dump_live_config(config: dict, path: str):
     pretty_str = config_pretty_str(candidate_to_live_config(config))
     with open(path, "w") as f:
         f.write(pretty_str)
+    # dump config to file in json format
+    with open(path.replace("live_config.json", "original_config.json"), "w") as f:
+        f.write(json.dumps(config, indent=4))
 
 
 def load_config_files(config_paths: []) -> dict:
