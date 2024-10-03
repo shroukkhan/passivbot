@@ -13,7 +13,7 @@
 
   passivbot_root_dir: "~/passivbot2"
   // add venv if needed, e.g. "source bin/activate"
-  before_command: ""
+  before_command: "source bin/activate"
 
   // set to zero to disable
   volume_clip_threshold: 0.51  // include 51% of the highest volume coins
