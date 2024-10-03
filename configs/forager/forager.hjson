@@ -1,22 +1,33 @@
 {
-  // supported exchanges: [kucoin, okx, bybit, binance]
-  user: binance_01
-  twe_long: 3
-  twe_short: 0.25
+  // supported exchanges: [kucoin, okx, bybit, binance, bitget]
+  user: binance_02
+  twe_long: 1.6
+  twe_short: 0.8
   n_longs: 15
-  n_shorts: 3
-  max_min_cost: 15
+  n_shorts: 5
+  max_min_cost: 5.0
   n_ohlcvs: 100
   ohlcv_interval: 1h
   leverage: 8
   price_distance_threshold: 0.3
+
+  passivbot_root_dir: "~/passivbot2"
+  // add venv if needed, e.g. "source bin/activate"
+  before_command: ""
 
   // set to zero to disable
   volume_clip_threshold: 0.51  // include 51% of the highest volume coins
   unilateralness_clip_threshold: 0.49 // include 49% of symbols with lowest unilateralness
   noisiness_clip_threshold: 0.52 // include 52% of symbols with highest noisiness
 
+  // don't allow symbols younger than threshold. Format YYYY-MM. Set to 0 to allow all symbols.
+  market_age_threshold: 2023-09
+
   max_n_panes: 10
+
+  // start bots with x seconds delay
+  sleep_interval: 5
+
   // forager restarts bots every x minutes
   update_interval_minutes: 60
 
@@ -29,151 +40,204 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
-    JASMYUSDT  // keep it commented out, since it is on the binance watch list of risky symbols https://www.binance.com/en/markets/coinInfo-Monitoring
   ]
-
-  // if symbol is missing from live_configs_map, default to this config
-  default_config_path: configs/live/clock_mode.example.json
-
-  // if true, allow only symbols present in live_configs_map or live_configs_map_{long/short}
-  // if false, will use default_config_path when symbol is missing from live_configs_map
+  
   approved_symbols_only: true
 
-  // if symbol is present in live_configs_map_{long/short}, use that config for {long/short}
-  // elif symbol is present in live_configs_map, use that config for {long/short}
-  // else use default_config_path for {long/short}
+  // if approved_symbols_long is empty, all symbols are approved for longs
+  approved_symbols_long: [
+          1000BONKUSDT
+          1000PEPEUSDT
+          1000RATSUSDT
+          1000SHIBUSDT
+          1000XECUSDT
+          1INCHUSDT
+          AAVEUSDT
+          ALGOUSDT
+          ANKRUSDT
+          APEUSDT
+          APTUSDT
+          ARUSDT
+          ASTRUSDT
+          ATAUSDT
+          ATOMUSDT
+          BATUSDT
+          BNBUSDT
+          BTCDOMUSDT
+          CELOUSDT
+          CHRUSDT
+          COMPUSDT
+          CRVUSDT
+          CTSIUSDT
+          DASHUSDT
+          DEFIUSDT
+          DOGEUSDT
+          DOTUSDT
+          DYDXUSDT
+          EGLDUSDT
+          ENJUSDT
+          EOSUSDT
+          ETCUSDT
+          FETUSDT
+          FILUSDT
+          FTMUSDT
+          GALAUSDT
+          GRTUSDT
+          HBARUSDT
+          HFTUSDT
+          ICPUSDT
+          IMXUSDT
+          IOSTUSDT
+          IOTAUSDT
+          IOTXUSDT
+          JASMYUSDT
+          KASUSDT
+          KSMUSDT
+          LITUSDT
+          LRCUSDT
+          LTCUSDT
+          MANAUSDT
+          MANTAUSDT
+          MINAUSDT
+          MYROUSDT
+          NEARUSDT
+          OMGUSDT
+          ONDOUSDT
+          ONEUSDT
+          OPUSDT
+          ORDIUSDT
+          PHBUSDT
+          QNTUSDT
+          QTUMUSDT
+          REEFUSDT
+          RENUSDT
+          RLCUSDT
+          ROSEUSDT
+          RSRUSDT
+          RVNUSDT
+          SANDUSDT
+          SFPUSDT
+          SKLUSDT
+          STMXUSDT
+          STXUSDT
+          SUSHIUSDT
+          TAOUSDT
+          THETAUSDT
+          TONUSDT
+          UNFIUSDT
+          UNIUSDT
+          VETUSDT
+          WOOUSDT
+          XLMUSDT
+          XMRUSDT
+          XRPUSDT
+          XTZUSDT
+          YFIUSDT
+          ZECUSDT
+          ZENUSDT
+          ZILUSDT
+  ]
 
+  // if approved_symbols_short is empty, all symbols are approved for shorts
+  approved_symbols_short: [
+        1000SHIBUSDT
+            1INCHUSDT
+            ACHUSDT
+            ALGOUSDT
+            ALPHAUSDT
+            APEUSDT
+            API3USDT
+            ARPAUSDT
+            ARUSDT
+            ASTRUSDT
+            ATAUSDT
+            AXSUSDT
+            BALUSDT
+            BATUSDT
+            BELUSDT
+            C98USDT
+            CFXUSDT
+            CHRUSDT
+            COMBOUSDT
+            COMPUSDT
+            CRVUSDT
+            CTSIUSDT
+            DASHUSDT
+            DEFIUSDT
+            DOGEUSDT
+            DOTUSDT
+            DUSKUSDT
+            DYDXUSDT
+            ENSUSDT
+            EOSUSDT
+            FLOWUSDT
+            FXSUSDT
+            GTCUSDT
+            HBARUSDT
+            HIGHUSDT
+            HOOKUSDT
+            KNCUSDT
+            KSMUSDT
+            LDOUSDT
+            LINAUSDT
+            LITUSDT
+            LRCUSDT
+            NEARUSDT
+            NEOUSDT
+            OGNUSDT
+            ONEUSDT
+            ONTUSDT
+            PERPUSDT
+            RDNTUSDT
+            RLCUSDT
+            ROSEUSDT
+            RVNUSDT
+            SANDUSDT
+            SFPUSDT
+            SKLUSDT
+            SNXUSDT
+            SPELLUSDT
+            SSVUSDT
+            STMXUSDT
+            SUSHIUSDT
+            THETAUSDT
+            UNFIUSDT
+            XLMUSDT
+            XMRUSDT
+            XTZUSDT
+            YFIUSDT
+            ZENUSDT
+            ZILUSDT
+  ]
+
+  // Specify directory containing live configs.
+  // They are sorted alphabetically, then the first config whose filename includes symbol is selected.
+  // Set to "" to disable
+  live_configs_dir_long: "configs/live/longs/"
+  live_configs_dir_short: "configs/live/shorts/"
+
+  // overrides live_configs_dir
   live_configs_map: {
+        
+  }
+
+  // overrides long configs from live_configs_map
+  live_configs_map_long: {
+        
+  }
+
+  // overrides short configs from live_configs_map
+  live_configs_map_short: {
     
   }
 
-  // will override long configs from live_configs_map
-  live_configs_map_long: {
-    CHZUSDT: configs/live/scud2/longs/CHZUSDT.json
-    RSRUSDT: configs/live/scud2/longs/RSRUSDT.json
-    RNDRUSDT: configs/live/scud2/longs/RNDRUSDT.json
-    HBARUSDT: configs/live/scud2/longs/HBARUSDT.json
-    ALPHAUSDT: configs/live/scud2/longs/ALPHAUSDT.json
-    CRVUSDT: configs/live/scud2/longs/CRVUSDT.json
-    ONEUSDT: configs/live/scud2/longs/ONEUSDT.json
-    DYDXUSDT: configs/live/scud2/longs/DYDXUSDT.json
-    EGLDUSDT: configs/live/scud2/longs/EGLDUSDT.json
-    XRPUSDT: configs/live/scud2/longs/XRPUSDT.json
-    ROSEUSDT: configs/live/scud2/longs/ROSEUSDT.json
-    AAVEUSDT: configs/live/scud2/longs/AAVEUSDT.json
-    ARUSDT: configs/live/scud2/longs/ARUSDT.json
-    KSMUSDT: configs/live/scud2/longs/KSMUSDT.json
-    FTMUSDT: configs/live/scud2/longs/FTMUSDT.json
-    GALAUSDT: configs/live/scud2/longs/GALAUSDT.json
-    BAKEUSDT: configs/live/scud2/longs/BAKEUSDT.json
-    FOOTBALLUSDT: configs/live/scud2/longs/FOOTBALLUSDT.json
-    ZILUSDT: configs/live/scud2/longs/ZILUSDT.json
-    ATOMUSDT: configs/live/scud2/longs/ATOMUSDT.json
-    ANTUSDT: configs/live/scud2/longs/ANTUSDT.json
-    GRTUSDT: configs/live/scud2/longs/GRTUSDT.json
-    ENJUSDT: configs/live/scud2/longs/ENJUSDT.json
-    1000SHIBUSDT: configs/live/scud2/longs/1000SHIBUSDT.json
-    BALUSDT: configs/live/scud2/longs/BALUSDT.json
-    LPTUSDT: configs/live/scud2/longs/LPTUSDT.json
-    ASTRUSDT: configs/live/scud2/longs/ASTRUSDT.json
-    MKRUSDT: configs/live/scud2/longs/MKRUSDT.json
-    DOTUSDT: configs/live/scud2/longs/DOTUSDT.json
-    TOMOUSDT: configs/live/scud2/longs/TOMOUSDT.json
-    ANKRUSDT: configs/live/scud2/longs/ANKRUSDT.json
-    MATICUSDT: configs/live/scud2/longs/MATICUSDT.json
-    KNCUSDT: configs/live/scud2/longs/KNCUSDT.json
-    RVNUSDT: configs/live/scud2/longs/RVNUSDT.json
-    TRUUSDT: configs/live/scud2/longs/TRUUSDT.json
-    IMXUSDT: configs/live/scud2/longs/IMXUSDT.json
-    BNBUSDT: configs/live/scud2/longs/BNBUSDT.json
-    ICPUSDT: configs/live/scud2/longs/ICPUSDT.json
-    OPUSDT: configs/live/scud2/longs/OPUSDT.json
-    1000XECUSDT: configs/live/scud2/longs/1000XECUSDT.json
-    FLOWUSDT: configs/live/scud2/longs/FLOWUSDT.json
-    FETUSDT: configs/live/scud2/longs/FETUSDT.json
-    SFPUSDT: configs/live/scud2/longs/SFPUSDT.json
-    API3USDT: configs/live/scud2/longs/API3USDT.json
-    MINAUSDT: configs/live/scud2/longs/MINAUSDT.json
-    TUSDT: configs/live/scud2/longs/TUSDT.json
-    CKBUSDT: configs/live/scud2/longs/CKBUSDT.json
-    NEARUSDT: configs/live/scud2/longs/NEARUSDT.json
-    OGNUSDT: configs/live/scud2/longs/OGNUSDT.json
-    MANAUSDT: configs/live/scud2/longs/MANAUSDT.json
-    XLMUSDT: configs/live/scud2/longs/XLMUSDT.json
-    NEOUSDT: configs/live/scud2/longs/NEOUSDT.json
-    AGIXUSDT: configs/live/scud2/longs/AGIXUSDT.json
-    DOGEUSDT: configs/live/scud2/longs/DOGEUSDT.json
-    DGBUSDT: configs/live/scud2/longs/DGBUSDT.json
-    LDOUSDT: configs/live/scud2/longs/LDOUSDT.json
-    QNTUSDT: configs/live/scud2/longs/QNTUSDT.json
-    OMGUSDT: configs/live/scud2/longs/OMGUSDT.json
-    PHBUSDT: configs/live/scud2/longs/PHBUSDT.json
-    COMPUSDT: configs/live/scud2/longs/COMPUSDT.json
-    HIGHUSDT: configs/live/scud2/longs/HIGHUSDT.json
-    ARPAUSDT: configs/live/scud2/longs/ARPAUSDT.json
-    KAVAUSDT: configs/live/scud2/longs/KAVAUSDT.json
-  }
+  // if symbol is missing from live_configs_map, default to this config
+  default_config_path: ''
 
-  // will override short configs from live_configs_map
-  live_configs_map_short: {
-    BNBUSDT: configs/live/scud2/shorts/BNBUSDT.json
-    AUDIOUSDT: configs/live/scud2/shorts/AUDIOUSDT.json
-    UNFIUSDT: configs/live/scud2/shorts/UNFIUSDT.json
-    SUSHIUSDT: configs/live/scud2/shorts/SUSHIUSDT.json
-    ANTUSDT: configs/live/scud2/shorts/ANTUSDT.json
-    ATOMUSDT: configs/live/scud2/shorts/ATOMUSDT.json
-    JASMYUSDT: configs/live/scud2/shorts/JASMYUSDT.json
-    OCEANUSDT: configs/live/scud2/shorts/OCEANUSDT.json
-    XMRUSDT: configs/live/scud2/shorts/XMRUSDT.json
-    LUNA2USDT: configs/live/scud2/shorts/LUNA2USDT.json
-    ZECUSDT: configs/live/scud2/shorts/ZECUSDT.json
-    APEUSDT: configs/live/scud2/shorts/APEUSDT.json
-    DOGEUSDT: configs/live/scud2/shorts/DOGEUSDT.json
-    BNXUSDT: configs/live/scud2/shorts/BNXUSDT.json
-    BALUSDT: configs/live/scud2/shorts/BALUSDT.json
-    ZENUSDT: configs/live/scud2/shorts/ZENUSDT.json
-    GMXUSDT: configs/live/scud2/shorts/GMXUSDT.json
-    1000LUNCUSDT: configs/live/scud2/shorts/1000LUNCUSDT.json
-    DARUSDT: configs/live/scud2/shorts/DARUSDT.json
-    KSMUSDT: configs/live/scud2/shorts/KSMUSDT.json
-    ZILUSDT: configs/live/scud2/shorts/ZILUSDT.json
-    VETUSDT: configs/live/scud2/shorts/VETUSDT.json
-    ACHUSDT: configs/live/scud2/shorts/ACHUSDT.json
-    ENJUSDT: configs/live/scud2/shorts/ENJUSDT.json
-    CKBUSDT: configs/live/scud2/shorts/CKBUSDT.json
-    IOTXUSDT: configs/live/scud2/shorts/IOTXUSDT.json
-    CTKUSDT: configs/live/scud2/shorts/CTKUSDT.json
-    SANDUSDT: configs/live/scud2/shorts/SANDUSDT.json
-    BANDUSDT: configs/live/scud2/shorts/BANDUSDT.json
-    ONEUSDT: configs/live/scud2/shorts/ONEUSDT.json
-    ARUSDT: configs/live/scud2/shorts/ARUSDT.json
-    MATICUSDT: configs/live/scud2/shorts/MATICUSDT.json
-    PERPUSDT: configs/live/scud2/shorts/PERPUSDT.json
-    NEARUSDT: configs/live/scud2/shorts/NEARUSDT.json
-    BLUEBIRDUSDT: configs/live/scud2/shorts/BLUEBIRDUSDT.json
-    RLCUSDT: configs/live/scud2/shorts/RLCUSDT.json
-    AGIXUSDT: configs/live/scud2/shorts/AGIXUSDT.json
-    ANKRUSDT: configs/live/scud2/shorts/ANKRUSDT.json
-    1000SHIBUSDT: configs/live/scud2/shorts/1000SHIBUSDT.json
-    HOTUSDT: configs/live/scud2/shorts/HOTUSDT.json
-    GALUSDT: configs/live/scud2/shorts/GALUSDT.json
-    GALAUSDT: configs/live/scud2/shorts/GALAUSDT.json
-    REEFUSDT: configs/live/scud2/shorts/REEFUSDT.json
-    ASTRUSDT: configs/live/scud2/shorts/ASTRUSDT.json
-    RVNUSDT: configs/live/scud2/shorts/RVNUSDT.json
-    DOTUSDT: configs/live/scud2/shorts/DOTUSDT.json
-    TRBUSDT: configs/live/scud2/shorts/TRBUSDT.json
-    DASHUSDT: configs/live/scud2/shorts/DASHUSDT.json
-    CHRUSDT: configs/live/scud2/shorts/CHRUSDT.json
-    PEOPLEUSDT: configs/live/scud2/shorts/PEOPLEUSDT.json
-    TRBUSDT: configs/live/scud2/shorts/TRBUSDT.json
-    DGBUSDT: configs/live/scud2/shorts/DGBUSDT.json
-    SKLUSDT: configs/live/scud2/shorts/SKLUSDT.json
-    CHZUSDT: configs/live/scud2/shorts/CHZUSDT.json
-    ENSUSDT: configs/live/scud2/shorts/ENSUSDT.json
-    DEFIUSDT: configs/live/scud2/shorts/DEFIUSDT.json
-    FXSUSDT: configs/live/scud2/shorts/FXSUSDT.json
-    COMPUSDT: configs/live/scud2/shorts/COMPUSDT.json
-  }
+  // if symbol is approved:
+  // if symbol is present in live_configs_map_{long/short}, use that config for {long/short}
+  // elif symbol is present in live_configs_map, use that config for {long/short}
+  // elif there is a filename in live_configs_dir_{long/short} containing symbol, use that config for {long/short}
+  // else use default_config_path for {long/short}
 
 }

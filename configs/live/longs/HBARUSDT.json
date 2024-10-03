@@ -1,4 +1,4 @@
-{"config_name": "clock_HBARUSDT_172days",
+{"config_name": "clock_HBARUSDT_120days",
  "long": {"backwards_tp": true,
           "delay_between_fills_minutes_close": 500,
           "delay_between_fills_minutes_entry": 251.18584349298837,
@@ -14,7 +14,7 @@
           "n_close_orders": 3,
           "qty_pct_close": 0.01,
           "qty_pct_entry": 0.01,
-          "wallet_exposure_limit": 0.3,
+          "wallet_exposure_limit": 0.1333,
           "we_multiplier_close": 29.495746179856425,
           "we_multiplier_entry": 124.57930911588245},
  "short": {"backwards_tp": true,
@@ -32,6 +32,6 @@
            "n_close_orders": 5,
            "qty_pct_close": 0.09110056493532268,
            "qty_pct_entry": 0.04697526553071604,
-           "wallet_exposure_limit": 1.0,
+           "wallet_exposure_limit": 0.0,
            "we_multiplier_close": 21.63132061106019,
            "we_multiplier_entry": 25.269512898596677}}

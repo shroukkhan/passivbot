@@ -1,4 +1,4 @@
-{"config_name": "clock_AAVEUSDT_172days",
+{"config_name": "clock_AAVEUSDT_120days",
  "long": {"backwards_tp": true,
           "delay_between_fills_minutes_close": 473.1851475018244,
           "delay_between_fills_minutes_entry": 313.5690357756996,
@@ -14,7 +14,7 @@
           "n_close_orders": 2,
           "qty_pct_close": 0.010226487725547012,
           "qty_pct_entry": 0.010621148813016467,
-          "wallet_exposure_limit": 0.3,
+          "wallet_exposure_limit": 0.1333,
           "we_multiplier_close": 15.534369653466829,
           "we_multiplier_entry": 104.66319263743496},
  "short": {"backwards_tp": true,
@@ -32,6 +32,6 @@
            "n_close_orders": 13,
            "qty_pct_close": 0.01613721397669853,
            "qty_pct_entry": 0.06284989075570915,
-           "wallet_exposure_limit": 1.0,
+           "wallet_exposure_limit": 0.0,
            "we_multiplier_close": 1.8372709878726856,
            "we_multiplier_entry": 29.49866886430198}}
