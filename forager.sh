@@ -1,5 +1,6 @@
 #!/bin/bash
-cd ~/passivbot
+cd ~/passivbot2
+source bin/activate
 echo Runing : python3 forager.py configs/forager/forager.hjson ...
 while true; do
   python3 forager.py configs/forager/forager.hjson
