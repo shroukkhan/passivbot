@@ -44,8 +44,10 @@
     CKBUSDT
     
     //--- for the followings, i have no config , so lets kill them gracefully
-    //DARUSDT
-    
+    DARUSDT
+    1000LUNCUSDT
+    LUNA2USDT
+     
   ]
   
   approved_symbols_only: true
