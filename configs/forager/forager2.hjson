@@ -3,8 +3,8 @@
   user: binance_02
   twe_long: 2
   twe_short: 1
-  n_longs: 20
-  n_shorts: 12
+  n_longs: 18
+  n_shorts: 10
   max_min_cost: 5.0
   n_ohlcvs: 100
   ohlcv_interval: 1h
