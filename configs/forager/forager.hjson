@@ -3,9 +3,9 @@
   user: binance_01
   twe_long: 2
   twe_short: 1
-  n_longs: 15
-  n_shorts: 8
-  max_min_cost: 25
+  n_longs: 20
+  n_shorts: 12
+  max_min_cost: 8
   n_ohlcvs: 100
   ohlcv_interval: 1h
   leverage: 8
