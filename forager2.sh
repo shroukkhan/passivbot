@@ -3,7 +3,7 @@ cd ~/passivbot2
 source bin/activate
 echo Runing : python3 forager.py configs/forager/forager2.hjson ...
 while true; do
-  python3 forager.py configs/forager/forager.hjson
+  python3 forager.py configs/forager/forager2.hjson
   echo died..restarting in 5
   sleep 1
   echo died..restarting in 4
