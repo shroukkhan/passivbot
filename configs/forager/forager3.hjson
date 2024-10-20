@@ -40,6 +40,9 @@
     ADAUSDT
     AVAXUSDT
     ETCUSDT
+    
+    //--- save my big crash
+    APEUSDT
   ]
   
   approved_symbols_only: true
