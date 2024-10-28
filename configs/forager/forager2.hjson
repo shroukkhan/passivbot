@@ -43,6 +43,7 @@
     
     //--- save my big crash
     APEUSDT
+    UNFIUSDT
   ]
   
   approved_symbols_only: true
