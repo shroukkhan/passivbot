@@ -42,7 +42,8 @@
     ETCUSDT
     //--- save my big crash
     APEUSDT
-    UNFIUSDT
+    CELOUSDT
+    
     
     //--- for the followings, i have no config , so lets kill them gracefully
     DARUSDT
@@ -134,7 +135,6 @@
           TAOUSDT
           THETAUSDT
           TONUSDT
-          UNFIUSDT
           UNIUSDT
           VETUSDT
           WOOUSDT
@@ -211,7 +211,6 @@
             STMXUSDT
             SUSHIUSDT
             THETAUSDT
-            UNFIUSDT
             XLMUSDT
             XMRUSDT
             XTZUSDT

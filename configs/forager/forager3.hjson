@@ -42,8 +42,7 @@
     ETCUSDT
     
     //--- save my big crash
-    APEUSDT
-    UNFIUSDT
+    CELOUSDT
   ]
   
   approved_symbols_only: true
@@ -128,7 +127,6 @@
           TAOUSDT
           THETAUSDT
           TONUSDT
-          UNFIUSDT
           UNIUSDT
           VETUSDT
           WOOUSDT
@@ -205,7 +203,6 @@
             STMXUSDT
             SUSHIUSDT
             THETAUSDT
-            UNFIUSDT
             XLMUSDT
             XMRUSDT
             XTZUSDT
