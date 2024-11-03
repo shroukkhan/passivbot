@@ -43,12 +43,7 @@
     //--- save my big crash
     APEUSDT
     CELOUSDT
-    
-    
-    //--- for the followings, i have no config , so lets kill them gracefully
-    DARUSDT
-    1000LUNCUSDT
-    LUNA2USDT
+    IMXUSDT
     
      
   ]
