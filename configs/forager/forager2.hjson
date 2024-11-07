@@ -43,6 +43,8 @@
     
     //--- save my big crash
     CELOUSDT
+    DYDXUSDT
+    CRVUSDT
   ]
   
   approved_symbols_only: true
