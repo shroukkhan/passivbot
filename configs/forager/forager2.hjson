@@ -42,9 +42,12 @@
     ETCUSDT
     
     //--- save my big crash
-    CELOUSDT
+    
     DYDXUSDT
     CRVUSDT
+    HBARUSDT
+    RVNUSDT
+    API3USDT
   ]
   
   approved_symbols_only: true
