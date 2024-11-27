@@ -2,9 +2,9 @@
   // supported exchanges: [kucoin, okx, bybit, binance, bitget]
   user: binance_03
   twe_long: 2
-  twe_short: 1
-  n_longs: 18
-  n_shorts: 10
+  twe_short: 0.5
+  n_longs: 8
+  n_shorts: 4
   max_min_cost: 5.0
   n_ohlcvs: 100
   ohlcv_interval: 1h
@@ -44,6 +44,11 @@
     //--- save my big crash
     DYDXUSDT
     CRVUSDT
+    HBARUSDT
+    RVNUSDT
+    API3USDT
+    CTSIUSDT
+    PERPUSDT
   ]
   
   approved_symbols_only: true

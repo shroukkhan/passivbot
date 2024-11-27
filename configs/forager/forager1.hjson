@@ -2,9 +2,9 @@
   // supported exchanges: [kucoin, okx, bybit, binance, bitget]
   user: binance_01
   twe_long: 2
-  twe_short: 1
-  n_longs: 18
-  n_shorts: 10
+   twe_short: 0.5
+  n_longs: 16
+  n_shorts: 5
   max_min_cost: 8.0
   n_ohlcvs: 100
   ohlcv_interval: 1h
@@ -41,10 +41,8 @@
     AVAXUSDT
     ETCUSDT
     //--- save my big crash
-    APEUSDT
     DYDXUSDT
     CRVUSDT
-    
     HBARUSDT
     RVNUSDT
      
