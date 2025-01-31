@@ -45,10 +45,7 @@
     DYDXUSDT
     CRVUSDT
     HBARUSDT
-    RVNUSDT
-    API3USDT
-    CTSIUSDT
-    PERPUSDT
+    ATAUSDT
   ]
   
   approved_symbols_only: true
